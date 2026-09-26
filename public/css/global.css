@@ -528,8 +528,11 @@ input[type="text"] {
 .reply-image {
   float: left;
   margin: 0;
-  max-height: 170px;
-  max-width: 150px;
+  max-width: 125px;
+  max-height: 125px;
+  width: auto !important;
+  height: auto !important;
+  display: block;
 }
 
 .quote-preview .reply-content p,
@@ -961,17 +964,13 @@ input[type="text"] {
 
 #bannerCnt {
   margin: 5px auto;
-  width: 300px;
-  height: 100px;
   max-width: 100%;
 }
 
 .banner-img {
   border: 1px solid var(--border-color);
   display: block;
-  height: 100px;
   margin: 0 auto;
-  width: 300px;
 }
 
 #delete-modal,

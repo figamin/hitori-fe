@@ -20,6 +20,11 @@ Search <input name="filter" value="<%= query.filter || '' %>">
 <label><input type="checkbox" name="orphaned" value="1" <%= query.orphaned ? 'checked' : '' %>> Orphaned</label>
 <button type="submit">Go</button>
 </form>
+<% if (typeof vichanImport !== 'undefined' && vichanImport && (vichanImport.imported || vichanImport.remaining)) { %>
+<p class="file-info">
+  Imported <%= vichanImport.imported %> upload<%= vichanImport.imported === 1 ? '' : 's' %> made with vichan<% if (vichanImport.remaining) { %> &middot; <%= vichanImport.remaining %> still pending, reload the page to continue<% } %><% if (vichanImport.missing) { %> &middot; <%= vichanImport.missing %> file(s) no longer on disk were skipped<% } %>
+</p>
+<% } %>
 <div class="mod-media">
 <% media.forEach(m => { %>
 <div>

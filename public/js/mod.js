@@ -434,13 +434,26 @@ document.querySelectorAll('.delete-global-filter').forEach((btn) => {
   });
 });
 
+const bannerInput = document.querySelector('#banner-upload-form input[type="file"]');
+bannerInput?.addEventListener('change', () => {
+  const status = document.getElementById('banner-upload-status');
+  if (!status) return;
+  const count = bannerInput.files ? bannerInput.files.length : 0;
+  status.textContent = count ? `${count} file${count === 1 ? '' : 's'} selected` : '';
+});
+
 document.getElementById('banner-upload-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);
+  const files = [...((e.target.querySelector('input[type="file"]') || {}).files || [])];
+  if (!files.length) return alert('Select at least one banner');
   try {
     const res = await fetch('/mod/api/global/banners', { method: 'POST', headers: csrfHeaders(), body: fd });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Upload failed');
+    if (data.skipped?.length) {
+      alert(`Uploaded ${data.count} banner(s).\nSkipped:\n${data.skipped.join('\n')}`);
+    }
     location.reload();
   } catch (err) {
     alert(err.message);

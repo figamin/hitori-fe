@@ -1,8 +1,10 @@
 <% title = 'Global Banners'; %>
 <form id="banner-upload-form" enctype="multipart/form-data">
-<input type="file" name="banner" accept="image/jpeg,image/png,image/gif,image/webp" required>
+<input type="file" name="banners" accept="image/jpeg,image/png,image/gif,image/webp" multiple required>
 <button type="submit">Upload</button>
+<span id="banner-upload-status" class="file-info"></span>
 </form>
+<p class="file-info">Select one or more images at once. File names are kept as-is; a number is appended if a banner with that name already exists.</p>
 <% banners.forEach(b => { %>
 <p>
 <img src="<%= b.filename %>" alt=""><br>

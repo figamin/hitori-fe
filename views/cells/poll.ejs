@@ -38,7 +38,7 @@
   
   <div class="poll-footer">
     <% if (new Date() <= poll.expiresAt) { %>
-      <button class="vote-button edit-profile-btn">Vote</button>
+      <button class="vote-button edit-profile-btn" type="button">Vote</button>
     <% } else { %>
       <span class="poll-expired">Poll has expired</span>
     <% } %>

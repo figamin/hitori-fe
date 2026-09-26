@@ -2,8 +2,8 @@
 <header class="header">
   <nav class="board-list">
     [
-    <% if (navBoards.length) { navBoards.forEach(function(board, i) { %>
-    <a href="/<%= board.boardUri %>/"><%= board.boardUri %></a><% if (i < navBoards.length - 1) { %> /<% } %>
+    <% var navList = locals.navBoards || []; if (navList.length) { navList.forEach(function(board, i) { %>
+    <a href="/<%= board.boardUri %>/"><%= board.boardUri %></a><% if (i < navList.length - 1) { %> /<% } %>
     <% }); } %>
     ] [ <a href="/all">all</a> ]
   </nav>
