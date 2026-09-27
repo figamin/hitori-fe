@@ -1,90 +1,502 @@
-<% title = siteName; %>
-<div class="box-layout">
-<%- include('partials/banner', { title: siteName, boardUri: false }) %>
-<%- include('partials/announcement') %>
-<% if (latestNews) { %>
-<div class="box-outer top-box">
-  <div class="boxcontent" style="text-align: center;">
-    <p>Current news:</p>
-    <h1><a href="/news"><span style="text-transform: uppercase;"><%= latestNews.title %></span></a></h1>
-    <p>by <a href="mailto:<%= latestNews.authorEmail %>"><%= latestNews.author %></a> - <%= new Date(latestNews.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' }) %> @ <%= new Date(latestNews.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %> (UTC)</p>
-  </div>
-</div>
-<% } %>
-<% if (activeThreads.length > 0) { %>
-<div class="box-outer top-box">
-  <div class="boxbar"><h2>Active Threads</h2></div>
-  <div class="boxcontent">
-    <div id="c-threads">
-      <% activeThreads.slice(0, 8).forEach(thread => { %>
-      <div class="c-thread active-thread" data-last-bump="<%= new Date(thread.lastBump).getTime() %>">
-        <div class="c-board"><%= thread.boardName %></div>
-        <% if (thread.files && thread.files.length > 0) { %>
-        <a href="/<%= thread.boardUri %>/thread/<%= thread.threadId %>" class="boardlink active-thread-img">
-          <img alt="" class="c-thumb" src="<%= thread.files[0].thumb %>">
-        </a>
-        <% } %>
-        <div class="c-teaser"><% if (thread.subject) { %><b><%- thread.subject %></b>: <% } %><%- thread.message %></div>
-      </div>
-      <% }) %>
+<%
+var boardMap = {};
+(boards || []).forEach(function (b) { boardMap[b.boardUri] = b; });
+
+var bumpMap = {};
+(activeThreads || []).forEach(function (t) {
+  var ts = new Date(t.lastBump).getTime();
+  if (!bumpMap[t.boardUri] || ts > bumpMap[t.boardUri]) bumpMap[t.boardUri] = ts;
+});
+
+function boardLatest(uri) {
+  var b = boardMap[uri];
+  return b && b.recentThreads && b.recentThreads.length ? b.recentThreads[0] : null;
+}
+
+/* Timestamp (ms) of the newest activity on a board: the bump time of the thread
+   shown in the card, falling back to the site-wide active threads list (which
+   only covers the busiest boards) and finally to 0 when the board is empty. */
+function boardBump(uri) {
+  var lt = boardLatest(uri);
+  if (lt && lt.lastBump) {
+    var ts = new Date(lt.lastBump).getTime();
+    if (!isNaN(ts)) return ts;
+  }
+  return bumpMap[uri] || 0;
+}
+
+function boardLabel(uri) {
+  return boardMap[uri] && boardMap[uri].boardName ? boardMap[uri].boardName : uri;
+}
+
+/* First characters of a post's text, with formatting and HTML removed, used as
+   the board-card topic when an OP has no subject. */
+function postSnippet(text, len) {
+  var s = String(text == null ? '' : text)
+    .replace(/<br\s*\/?>/gi, ' ')
+    .replace(/\[\/?[a-zA-Z0-9*]+\]/g, '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return s.length > len ? s.slice(0, len).trim() + '…' : s;
+}
+
+function boardTimeLabel(ts) {
+  if (!ts) return '';
+  var diffMin = Math.floor((Date.now() - ts) / 60000);
+  if (diffMin < 1) return 'Just now';
+
+  var d = new Date(ts);
+  var now = new Date();
+  var timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  var startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  var startOfThat = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  var dayDiff = Math.round((startOfToday - startOfThat) / 86400000);
+
+  if (dayDiff === 0) return 'Today, ' + timeStr;
+  if (dayDiff === 1) return 'Yesterday, ' + timeStr;
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + timeStr;
+}
+
+/* Active threads: granular "X minutes ago" / "X hour(s), Y minutes ago",
+   scaling up through days/months/years. Mirrored client-side in
+   frontpage.js so the ".relative-time" spans keep ticking after load. */
+function activeTimeLabel(ts) {
+  if (!ts) return '';
+  var diffMin = Math.floor((Date.now() - ts) / 60000);
+  if (diffMin < 1) return 'Just now';
+  if (diffMin < 60) return diffMin + ' minute' + (diffMin === 1 ? '' : 's') + ' ago';
+
+  var hours = Math.floor(diffMin / 60);
+  var mins = diffMin % 60;
+  if (hours < 24) {
+    var hourStr = hours + ' hour' + (hours === 1 ? '' : 's');
+    return mins === 0 ? hourStr + ' ago' : hourStr + ', ' + mins + ' minute' + (mins === 1 ? '' : 's') + ' ago';
+  }
+
+  var days = Math.floor(hours / 24);
+  if (days < 30) return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+
+  var months = Math.floor(days / 30);
+  if (months < 12) return months + ' month' + (months === 1 ? '' : 's') + ' ago';
+
+  var years = Math.floor(months / 12);
+  return years + ' year' + (years === 1 ? '' : 's') + ' ago';
+}
+
+function postUrl(post) {
+  return '/' + post.boardUri + '/thread/' + post.threadId + (post.isThread ? '' : '#' + post.postId);
+}
+
+var newsList = Array.isArray(latestNews) ? latestNews.slice(0, 4) : (latestNews ? [latestNews] : []);
+
+var boardSections = [
+  {
+    key: 'vocal-synths',
+    title: 'VOCAL-SYNTHS',
+    actions: true,
+    boards: [
+      { uri: 'leek', name: 'Vocaloid Lounge', icon: '1.png', nsfw: false, desc: 'Your go-to board for all things Vocaloid, covering fandom, music, culture, and other related topics.' },
+      { uri: 'negi', name: 'ボーカロイド・ラウンジ', icon: '10.png', nsfw: false, desc: '日本語版の/leek/。Vocaloidに関するあらゆる話題を扱う掲示板です。' },
+      { uri: 'mmd', name: 'MikuMikuDance', icon: '2.png', nsfw: true, desc: 'A board for discussing MikuMikuDance and other software for creating anime-style 3D computer graphics.' },
+      { uri: 'live', name: 'Vocaloid Live Events', icon: '3.png', nsfw: false, desc: 'This board is dedicated to discussions about Vocaloid-related events, including concerts, meetups, etc.' }
+    ]
+  },
+  {
+    key: 'artwork',
+    title: 'ARTWORK',
+    actions: false,
+    boards: [
+      { uri: 'c', name: 'Vocaloid/Cute', icon: '4.png', nsfw: false, desc: 'An image-sharing board dedicated to cute Vocaloid images, guaranteed to make you say “Aww”.' },
+      { uri: 'o', name: 'Art / Oekaki', icon: '6.png', nsfw: true, desc: 'Share your Vocaloid themed artwork with the community, fulfill requests, or simply enjoy the creative works of others.' }
+    ]
+  },
+  {
+    key: 'off-topic',
+    title: 'OFF-TOPIC',
+    actions: false,
+    boards: [
+      { uri: 'g', name: 'General Discussion', icon: '7.png', nsfw: false, desc: "39chan's 'everything else' section. For any topics that don't belong in the other boards." },
+      { uri: 'j', name: 'Japanese Culture', icon: '8.png', nsfw: false, desc: 'A board for the discussion of Japanese topics, including Otaku hobbies. (Note: Political content is banned.)' },
+      { uri: 'meta', name: 'Site Discussion', icon: '9.png', nsfw: false, desc: 'Got any questions or complaints? You can use this board to yell at us in our faces.' }
+    ]
+  }
+];
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title><%= siteName %></title>
+    <meta name="description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+    <meta name="robots" content="index, follow">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="<%= siteName %>">
+    <meta property="og:site_name" content="<%= siteName %>">
+    <meta property="og:description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+    <meta property="og:image" content="/items/card.png">
+    <meta property="og:url" content="<%= siteUrl %>/">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<%= siteName %>">
+    <meta name="twitter:description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+    <meta name="twitter:image" content="/items/card.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/frontpage.css">
+</head>
+
+<body>
+
+    <div class="topbar theme-surface" id="topbar" role="banner">
+        <div class="topbar-main">
+            <button class="btn-icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+            <div class="brand">
+				<a href="/"><img src="/items/39logo2.png" alt="<%= siteName %>"></a>
+            </div>
+            <button class="btn-icon" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Search..." autocomplete="off">
+            <button class="chan-app-btn-text" id="searchCancel">Cancel</button>
+        </div>
     </div>
-  </div>
-</div>
-<% } %>
-<table>
-  <tr>
-    <td class="left-col">
-      <% if (pinnedThreads && pinnedThreads.length > 0) { %>
-      <div class="box-outer box-green">
-        <div class="boxbar"><h2>Featured Threads</h2></div>
-        <div class="boxcontent">
-        
-          <% pinnedThreads.slice(0, 3).forEach(thread => { %>
-          <a class="featured-thread" href="/<%= thread.boardUri %>/thread/<%= thread.threadId %>">
-            <% if (thread.files && thread.files.length > 0) { %>
-            <img src="<%= thread.files[0].thumb %>" alt="" class="featured-thumb">
+
+    <header class="site-header theme-surface">
+        <div class="logo">
+            <a href="/"><img src="/items/39logo.png" alt="<%= siteName %>"></a>
+        </div>
+        <div class="header-actions">
+            <div class="chan-header-clock">
+                <img src="/items/icons/daytime.gif" alt="" class="clock-icon">
+                <div class="clock-lines">
+                    <div class="clock-main">
+                        <span class="clock-date">Today is Loading...</span>
+                        <span class="clock-time">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <form class="header-search" action="/search" method="GET">
+                <input type="text" name="general" placeholder="Search..." autocomplete="off">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+    </header>
+
+    <nav class="forumnav">
+        <div class="tabs">
+            <a href="/" class="tab active"><i class="fas fa-home"></i> Home</a>
+            <a href="/news" class="tab"><i class="fas fa-newspaper"></i> News</a>
+            <a href="/faq" class="tab"><i class="fas fa-question-circle"></i> FAQ</a>
+            <a href="/rules" class="tab"><i class="fas fa-gavel"></i> Rules</a>
+            <a href="/links" class="tab"><i class="fas fa-link"></i> Link Us</a>
+            <a href="/all/" class="tab"><i class="fas fa-th"></i> All Boards</a>
+            <a href="https://radio.39chan.moe/" class="tab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
+            <a href="https://downloads.39chan.moe/" class="tab"><i class="fas fa-download"></i> Downloads</a>
+        </div>
+        <div class="navquote" id="navQuote"></div>
+    </nav>
+
+    <div class="wrap">
+
+        <aside class="sidebar">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+            <div class="box mobnav">
+                <div class="box-title">SITE NAVIGATION</div>
+                <div class="box-body mobtabs">
+                    <a href="/" class="mobtab active"><i class="fas fa-home"></i> Home</a>
+                    <a href="/news" class="mobtab"><i class="fas fa-newspaper"></i> News</a>
+                    <a href="/faq" class="mobtab"><i class="fas fa-question-circle"></i> FAQ</a>
+                    <a href="/rules" class="mobtab"><i class="fas fa-gavel"></i> Rules</a>
+                    <a href="/links" class="mobtab"><i class="fas fa-link"></i> Link Us</a>
+                    <a href="/all/" class="mobtab"><i class="fas fa-th"></i> All Boards</a>
+                    <a href="https://radio.39chan.moe/" class="mobtab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
+                    <a href="https://downloads.39chan.moe/" class="mobtab"><i class="fas fa-download"></i> Downloads</a>
+                </div>
+            </div>
+
+            <div class="box" data-collapse-key="welcome">
+                <div class="box-title box-title-flex">
+                    <span>WELCOME TO <%= siteName.toUpperCase() %>!</span>
+                    <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <div class="box-body center collapsible">
+                   <img src="/items/luka.gif" width="121" class="mascot">
+                    <span class="center dim" style="display: block;">We're an anonymous community VOCALOID fans dedicated to casual discussion, fan creation, vocal synth culture. <b>You don't need an account to start posting</b>, but we encourage you to read the rules first!.</span>
+                </div>
+            </div>
+
+            <% if (newsList.length > 0) { %>
+            <div class="box" data-collapse-key="blog">
+                <div class="box-title box-title-flex">
+                    <span>NEWS</span>
+                    <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <ul class="bloglist collapsible">
+                    <% newsList.forEach(function (article) { %>
+                    <li>
+                        <div class="blog-info">
+                            <a href="/news" class="blog-title"><%= article.title %></a>
+                            <span class="blog-meta"><%= new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %> &bull; by <%= article.author %></span>
+                        </div>
+                    </li>
+                    <% }); %>
+                </ul>
+            </div>
             <% } %>
-            <span class="featured-info">
-              <span class="featured-title"><%- thread.subject || 'No subject' %></span>
-              <span class="featured-teaser"><%- thread.message %></span>
-              <span class="featured-board">/<%= thread.boardUri %>/ - <%= thread.boardName %></span>
-            </span>
-          </a>
-          <% }) %>
-        </div>
-      </div>
-      <% } %>
-      <div class="box-outer box-green">
-        <div class="boxbar"><h2>Recent Images</h2></div>
-        <div class="boxcontent images-list image-box-content">
-          <% latestImages.slice(0, 9).forEach(image => { %>
-          <a href="/<%= image.boardUri %>/thread/<%= image.threadId %><%= !image.isThread ? '#' + image.postId : '' %>" class="image-link image-item" data-creation="<%= new Date(image.creation).getTime() %>">
-            <img src="<%= image.thumb %>" alt="" loading="lazy">
-          </a>
-          <% }) %>
-        </div>
-      </div>
-    </td>
-    <td class="right-col">
-      <div class="box-outer box-blue">
-        <div class="boxbar"><h2>Latest Posts</h2></div>
-        <div class="boxcontent posts-list">
-          <% latestPosts.forEach(post => { %>
-          <a class="latest-post" href="/<%= post.boardUri %>/thread/<%= post.threadId %><%= !post.isThread ? '#' + post.postId : '' %>">
-            <span class="latest-link">>>/<%= post.boardUri %>/<%= post.postId || post.threadId %></span> <span class="latest-text"><%- post.message || 'No message' %></span>
-          </a>
-          <% }) %>
-        </div>
-      </div>
-      <div class="box-outer box-blue">
-        <div class="boxbar"><h2>Stats</h2></div>
-        <div class="boxcontent stats-list">
-          <div>Total Posts: <%= siteStats.totalPosts.toLocaleString() %></div>
-          <div>Unique IPs: <%= siteStats.totalUniquePosters.toLocaleString() %></div>
-          <div>Active Content: <%= siteStats.totalMediaSize %> GB</div>
-        </div>
-      </div>
-    </td>
-  </tr>
-</table>
+
+            <a href="/rules" style="display:block; margin-bottom: 10px;">
+                <img src="/items/buttons/rules.png" class="promo" alt="Rules">
+            </a>
+
+            <div class="box">
+                <div class="box-body">
+                    <div class="stat"><span>Total Posts:</span> <span><%= Number(siteStats.totalPosts || 0).toLocaleString() %></span></div>
+                    <div class="stat"><span>Total Members (UIPs):</span> <span><%= Number(siteStats.totalUniquePosters || 0).toLocaleString() %></span></div>
+                    <div class="stat"><span>Most Users Online:</span> <span><%= Number(siteStats.mostUsersOnline || 0).toLocaleString() %></span></div>
+                    <div class="stat"><span>Storage:</span> <span><%= siteStats.totalMediaSize %> GB</span></div>
+                    <div class="sep"></div>
+                    <a href="/all/" class="center dim" style="margin-bottom: 3px; display: block;">View All Boards</a>
+                    <span class="center dim" style="display: block;"><small>Users online now: NULL</small></span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+
+            <div class="box mob-clock">
+                <img src="" class="clock-icon" alt="">
+                <div class="clock-lines">
+                    <div class="clock-main">
+                        <span class="dim clock-date">Today is December 31, 1969</span>
+                        <span class="clock-time">0:00:00 PM</span>
+                    </div>
+                </div>
+            </div>
+
+            <% if (announcement) { %>
+            <div class="box">
+                <div class="box-body center"><%- announcement %></div>
+            </div>
+            <% } %>
+
+            <% if (pinnedThreads && pinnedThreads.length > 0) { %>
+            <div class="box" data-collapse-key="featured">
+                <div class="box-title box-title-flex">
+                    <span>FEATURED THREADS</span>
+                    <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <div class="featured collapsible">
+                    <% pinnedThreads.slice(0, 4).forEach(function (thread) { %>
+                    <a href="/<%= thread.boardUri %>/thread/<%= thread.threadId %>" class="item">
+                        <div class="fthumb">
+                            <% if (thread.files && thread.files.length > 0) { %>
+                            <img src="<%= thread.files[0].thumb %>" alt="">
+                            <% } %>
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle"><%- thread.subject || 'No subject' %></div>
+                            <div class="fboard"><%= thread.boardName %></div>
+                        </div>
+                    </a>
+                    <% }); %>
+                </div>
+            </div>
+            <% } %>
+
+            <% boardSections.forEach(function (section) { %>
+            <div class="box" data-collapse-key="<%= section.key %>">
+                <div class="box-title box-title-flex box-title-alt">
+                    <h2><%= section.title %></h2>
+                    <% if (section.actions) { %>
+                    <div class="title-actions">
+                        <a href="/all/" class="btn-accent" id="viewAllPosts">View All Posts</a>
+                        <button class="btn-accent" id="toggleNsfw">Hide NSFW Boards</button>
+                        <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                    </div>
+                    <% } else { %>
+                    <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                    <% } %>
+                </div>
+                <div class="collapsible">
+                    <% section.boards.forEach(function (b) { %>
+                    <% var lt = boardLatest(b.uri); %>
+                    <div class="board<%= b.nsfw ? ' nsfw' : '' %>" data-href="/<%= b.uri %>/" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="/<%= b.uri %>/"><%= b.name %></a><% if (b.nsfw) { %> <span class="badge">NSFW</span><% } %></h3>
+                            <p><%= b.desc %></p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="/items/icons/notif.png" alt="icon"> <% var ltTs = boardBump(b.uri); %><% if (ltTs) { %><span class="board-time" data-ts="<%= ltTs %>"><%= boardTimeLabel(ltTs) %></span><% } else { %>No posts yet<% } %></div>
+                            <div class="topic">In: <% if (lt) { %><a href="/<%= b.uri %>/thread/<%= lt.threadId %>"><%= lt.subject || postSnippet(lt.message, 30) || 'No subject' %></a><% } else { %>&mdash;<% } %></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="/items/icons/<%= b.icon %>" alt="Icon"></div>
+                    </div>
+                    <% }); %>
+                </div>
+            </div>
+            <% }); %>
+
+            <div class="activity">
+                <div class="box chan-activity-col">
+                    <div class="box-title">RECENT POSTS</div>
+                    <div class="box-body posts">
+                        <% (latestPosts || []).slice(0, 12).forEach(function (post) { %>
+                        <div class="line"><a href="/<%= post.boardUri %>/" class="pboard"><%= boardLabel(post.boardUri) %></a> - <span class="snippet"><a href="<%= postUrl(post) %>" class="snippet-link"><%- post.message || 'No message' %></a></span></div>
+                        <% }); %>
+                    </div>
+                </div>
+
+                <div class="box chan-activity-col">
+                    <div class="box-title">ACTIVE THREADS</div>
+                    <div class="box-body threads">
+                        <% (activeThreads || []).slice(0, 8).forEach(function (thread) { %>
+                        <a href="/<%= thread.boardUri %>/thread/<%= thread.threadId %>" class="thread">
+                            <div class="tthumb"><% if (thread.files && thread.files.length > 0) { %><img src="<%= thread.files[0].thumb %>" alt="Thread thumbnail"><% } %></div>
+                            <div class="chan-active-thread-info">
+                                <div class="tboard"><%= thread.boardName %></div>
+                                <div class="ttitle"><%- thread.subject || thread.message || 'No subject' %></div>
+                                <div class="tmeta"><%= thread.postCount %> replies &bull; <span class="relative-time" data-ts="<%= new Date(thread.lastBump).getTime() %>"><%= activeTimeLabel(new Date(thread.lastBump).getTime()) %></span></div>
+                            </div>
+                        </a>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-title box-title-alt">
+                    <h2>RECENT IMAGES</h2>
+                </div>
+                <div class="gallery">
+                    <div class="scroll" id="scroller">
+                        <% (latestImages || []).slice(0, 24).forEach(function (image) { %>
+                        <a href="<%= postUrl(image) %>"><img src="<%= image.thumb %>" alt="Small thumbnail" loading="lazy"></a>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <aside class="panel">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+<div class="box" data-collapse-key="producers">
+    <div class="box-title box-title-flex">
+        <span>PRODUCERS TRENDING THIS MONTH</span>
+        <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+    </div>
+    <div class="box-body collapsible">
+        <ol class="ranklist" id="producersList">
+            <li class="ranklist-loading"><img src="/items/icons/loading.gif" alt="Loading..."></li>
+        </ol>
+        <div class="ranklist-footnote dim">(Powered by <a href="https://vocadb.net/" target="_blank" rel="noopener">VocaDB</a>)</div>
+    </div>
 </div>
+
+<div class="box" data-collapse-key="songs">
+    <div class="box-title box-title-flex">
+        <span>SONGS TRENDING THIS WEEK</span>
+        <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+    </div>
+    <div class="box-body collapsible">
+        <ol class="ranklist" id="songsList">
+            <li class="ranklist-loading"><img src="/items/icons/loading.gif" alt="Loading..."></li>
+        </ol>
+        <div class="ranklist-footnote dim">(Powered by <a href="https://vocadb.net/" target="_blank" rel="noopener">VocaDB</a>)</div>
+    </div>
+</div>
+
+            <div class="box" data-collapse-key="resources">
+                <div class="box-title box-title-flex">
+                    <span>RESOURCES</span>
+                    <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <ul class="linklist collapsible">
+                    <li><a href="https://vocadb.net/#">VocaDB</a></li>
+                    <li><a href="https://vocaverse.network/">VocaVerse Network</a></li>
+                    <li><a href="https://utaforum.net/">UTAForum</a></li>
+                    <li><a href="https://vocaloid.fandom.com/">Vocaloid Wiki</a></li>
+                    <li><a href="https://vocaloidlyrics.miraheze.org/">Vocaloid Lyrics Wiki</a></li>
+                    <li><a href="https://utau.fandom.com/">UTAU Wiki</a></li>
+                    <li><a href="http://utau.wikidot.com/">UTAU 2.0 Wiki</a></li>
+                    <li><a href="https://www.youtube.com/channel/UCJwGWV914kBlV4dKRn7AEFA">39ch (YouTube)</a></li>
+                </ul>
+            </div>
+        </aside>
+
+    </div>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <nav class="dock" id="dock">
+        <button class="nav-item nav-arrow" data-nav="info" aria-label="Open left sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="nav-item active" data-nav="home" aria-label="Home">
+            <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-nav="search" aria-label="Search">
+            <span class="nav-icon"><i class="fas fa-search"></i></span><span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item nav-arrow" data-nav="threads" aria-label="Open links sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </nav>
+
+    <div class="partners">
+        <div class="ptitle">Partners</div>
+        <div class="badges">
+            <a href="https://mvcdb.miraheze.org/"><img src="/items/buttons/MVCDB.png" alt="MVCDB"></a>
+            <a href="https://endchan.org/miku/"><img src="/items/buttons/slashmiku.png" alt="slashmiku"></a>
+            <a href="https://hikari3.ch/"><img src="/items/buttons/hikari3.gif" alt="hikari3"></a>
+            <a href="https://holotower.org/"><img src="/items/buttons/hlt.png" alt="hlt"></a>
+            <a href="https://kissu.moe/"><img src="/items/buttons/kissu.gif" alt="kissu"></a>
+            <a href="https://wapchan.org/"><img src="/items/buttons/wapchan.gif" alt="wapchan"></a>
+        </div>
+        <div class="apply">
+            Want to apply for a space here? <a href="/meta/thread/416">Read this thread</a>.
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="links">
+            <a href="https://x.com/39chanmoe">Twitter</a> &bull;
+            <a href="https://bsky.app/profile/39chan.moe">Bluesky</a> &bull;
+            <a href="https://stats.uptimerobot.com/OdWm6iTfcy">Site Status</a> &bull;
+            <a href="/rss.xml">RSS Feed</a> &bull;
+            <a href="/contact">Contact</a>
+        </div>
+        <div>Powered by hitori (koshi fork) | Backgrounds by <a href="https://twitter.com/intent/user?user_id=16203043">kaku sugar</a>, <a href="https://twitter.com/intent/user?user_id=726438981496246272">baisishaonian</a>, <a href="https://twitter.com/intent/user?user_id=1307204963022503939">064</a> | 39chan © 2024-2026</div>
+        <div style="margin-top: 6px; font-size: 9px;">
+          <p>
+        <strong>39chan</strong> is an independent website and is not affiliated with,
+        endorsed by, or associated with <strong>Yamaha</strong>, <strong>Crypton Future Media</strong>, the
+        <strong>VOCALOID</strong>, brand, or the creators, publishers, or rights
+        holders of any content discussed on this site.
+    </p>
+
+    <p>
+        All trademarks, copyrights, and other intellectual property remain the
+        property of their respective owners. Images, files, comments, and all other user-submitted content are the
+        sole responsibility of the users who post them.
+    </p>
+
+    <p>User comments and posts on <strong>39chan</strong> are the opinions of
+        their respective authors and do not necessarily reflect the views,
+        opinions, or policies of the site's staff or administration.</p>
+        </div>
+    </footer>
+
+    <script src="/frontpage.js"></script>
+    <script src="/verify.js"></script>
+
+</body>
+</html>

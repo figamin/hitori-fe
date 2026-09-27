@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>39chan - FAQ</title>
+	<meta name="description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+	<meta name="robots" content="index, follow">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        .wrap {
+            grid-template-columns: 1fr !important;
+            max-width: 750px !important;
+            margin: 20px auto !important;
+        }
+
+        @media (min-width: 901px) {
+            .wrap {
+                grid-template-columns: minmax(0, 1fr) 230px !important;
+                max-width: 1000px !important;
+                align-items: start !important;
+            }
+            .sidebar {
+                display: none !important;
+            }
+            .panel {
+                display: block !important;
+                position: sticky !important;
+                top: 20px !important;
+            }
+        }
+        
+        .faq-item {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--chan-border);
+        }
+        .faq-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 5px;
+        }
+        .faq-q {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--chan-pink);
+            margin-bottom: 6px;
+        }
+        .faq-a {
+            color: var(--chan-text);
+            line-height: 1.6;
+            font-size: 11px;
+        }
+        
+        .faq-a p {
+    margin: 0 0 10px;
+}
+
+.faq-a p:last-child {
+    margin-bottom: 0;
+}
+        
+        .trip-example {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--chan-bg-main);
+    border: 1px solid var(--chan-border);
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.trip-label {
+    color: var(--chan-text-dim);
+}
+
+.trip {
+    color: var(--chan-pink);
+    font-weight: bold;
+}
+
+.faq-toc-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: faq-toc-counter;
+}
+.faq-toc-list li {
+    counter-increment: faq-toc-counter;
+    font-size: 10.5px;
+    border-bottom: 1px dotted var(--chan-border);
+}
+.faq-toc-list li:last-child {
+    border-bottom: none;
+}
+.faq-toc-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 7px 2px;
+    line-height: 1.35;
+    color: var(--chan-text);
+    text-decoration: none;
+}
+.faq-toc-list a::before {
+    content: counter(faq-toc-counter) ".";
+    color: var(--chan-pink);
+    font-weight: bold;
+    flex-shrink: 0;
+}
+.faq-toc-list a:hover {
+    color: var(--chan-pink);
+}
+.faq-item {
+    scroll-margin-top: 90px;
+}
+.faq-back-top {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--chan-text-dim);
+    text-decoration: none;
+}
+.faq-back-top:hover {
+    color: var(--chan-pink);
+}
+    </style>
+</head>
+<body>
+
+    <div class="topbar theme-surface" id="topbar" role="banner">
+        <div class="topbar-main">
+            <button class="btn-icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+            <div class="brand">
+                <img src="items/39logo2.png" alt="39chan Logo">
+            </div>
+            <button class="btn-icon" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button class="chan-app-btn-text" id="searchCancel">Cancel</button>
+        </div>
+    </div>
+
+    <header class="site-header theme-surface">
+        <div class="logo">
+            <a href="/"><img src="items/39logo.png" alt="Logo"></a>
+        </div>
+        <div class="header-actions">
+            <div class="header-search">
+                <input type="text" placeholder="Search...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="forumnav">
+        <div class="tabs">
+            <a href="/" class="tab"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="tab"><i class="fas fa-newspaper"></i> Blog</a>
+            <a href="faq.html" class="tab active"><i class="fas fa-question-circle"></i> FAQ</a>
+            <a href="rules.html" class="tab"><i class="fas fa-gavel"></i> Rules</a>
+            <a href="linkus.html" class="tab"><i class="fas fa-link"></i> Link Us</a>
+            <a href="/frames" class="tab"><i class="fas fa-window-restore"></i> Frames</a>
+            <a href="https://radio.39chan.moe/" class="tab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
+            <a href="https://downloads.39chan.moe/" class="tab"><i class="fas fa-download"></i> Downloads</a>
+        </div>
+    </nav>
+
+    <div class="wrap">
+
+        <aside class="sidebar">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+            <div class="box mobnav">
+                <div class="box-title">SITE NAVIGATION</div>
+                <div class="box-body mobtabs">
+                    <a href="/" class="mobtab"><i class="fas fa-home"></i> Home</a>
+                    <a href="blog.html" class="mobtab"><i class="fas fa-newspaper"></i> Blog</a>
+                    <a href="faq.html" class="mobtab active"><i class="fas fa-question-circle"></i> FAQ</a>
+                    <a href="rules.html" class="mobtab"><i class="fas fa-gavel"></i> Rules</a>
+                    <a href="linkus.html" class="mobtab"><i class="fas fa-link"></i> Link Us</a>
+                    <a href="https://radio.39chan.moe/" class="mobtab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
+                    <a href="https://downloads.39chan.moe/" class="mobtab"><i class="fas fa-download"></i> Downloads</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="box">
+                <div class="box-title">FREQUENTLY ASKED QUESTIONS</div>
+                <div class="box-body" style="padding: 20px;">
+
+<div id="faq-1" class="faq-item">
+    <div class="faq-q">Who is this "39chan"?</div>
+    <div class="faq-a">
+        <p>39chan (pronounced "Mikuchan") is an anonymous English-language web forum for fans of Vocaloid. Since its initial launch on September 19, 2024, 39chan has grown into a space for casual discussion and has become the birthplace of various creatives, including artists, producers, and even UTAUloid makers. Due to the anonymous and unfiltered nature of the site, 39chan is intended for users aged 18 and older.</p>
+        <p>We operate similarly to other imageboard websites such as Futaba Channel, 4chan, etc. However, 39chan has a focus on vocal-synth threads and discussions. 39chan aims to be a safe hub for otaku and old-school Vocaloid fans without the strict censorship of modern websites. Please familiarize yourself with the rules before posting.</p>
+    </div>
+</div>
+
+<div id="faq-2" class="faq-item">
+    <div class="faq-q">When was 39chan created?</div>
+    <div class="faq-a">
+        <p>Conceptually, 39chan saw the light of day in 2024 as "VocaHaven", a phpBB forum created by former staff member "moth", intended as a drama-free website for old-school fans of Vocaloid to talk about their favorite singing synthesizers. It would be shut down later the same year due to a lack of activity.</p>
+        <p>Around September, a project known as "Nanachan" entered private testing. This project was originally created as an anonymous imageboard for otaku culture and themes. But due to the oversaturation of imageboards covering such topics, it would later be repurposed into a Vocaloid-themed discussion website named "vsqchan" (in reference to the Vocaloid Editor's file format). The site officially launched under the name 39chan on September 19, 2024.</p>
+    </div>
+</div>
+
+<div id="faq-3" class="faq-item">
+    <div class="faq-q">Why is it called "39"chan?</div>
+    <div class="faq-a">
+        <p>39 is one of the ways to spell out "Miku" in Japanese, with the number 3 being pronounced "Mi" (み) and the number 9 being pronounced "Ku" (く) in Goroawase. Therefore, 39chan is intended to be pronounced "Mikuchan".</p>
+    </div>
+</div>
+
+<div id="faq-4" class="faq-item">
+    <div class="faq-q">Isn't this the same thing as 4chan?</div>
+    <div class="faq-a">
+        <p>Functionality wise, yes. Community wise, no. 39chan's software is modeled after 4chan's, but that's where the similarities end. The only real connection is that the site was founded by former users of 4chan's /jp/ board.</p>
+        <p>We have our own distinct rules, and following them is essential to remain part of the community. Our staff is dedicated to keeping 39chan a comfortable, welcoming space for everyone 18+ who shares an interest in Vocaloid.</p>
+    </div>
+</div>
+
+<div id="faq-5" class="faq-item">
+    <div class="faq-q">Why is 39chan a 18+ site?</div>
+    <div class="faq-a">
+        <p>39chan is an anonymous imageboard with little to no restrictions on what can be discussed. As a result, users are able to express their unfiltered opinions, and you may come across discussions on sensitive topics which are unsuitable for those under the age of 18, as well as imagery that could be considered NSFW.</p>
+    </div>
+</div>
+
+<div id="faq-6" class="faq-item">
+    <div class="faq-q">How do I create an account?</div>
+    <div class="faq-a">
+        <p>39chan doesn't require any kind of registration. Just choose a board, type your post, and hit submit. The name field is entirely optional.</p>
+    </div>
+</div>
+
+<div id="faq-7" class="faq-item">
+    <div class="faq-q">How do I create a thread?</div>
+    <div class="faq-a">
+        <p>To create a thread simply fill the "Subject" and "Comment" sections of the form, complete the captcha, and click the "New Topic" button. You can reply to an existing thread by opening it via the "Reply" button and filling the required sections of the form like you would when making a new thread.</p>
+        <p>If you want to reply to a thread without bumping it to the top of the page you can use the "Sage" option. This is especially useful to prevent necrobumps.</p>
+    </div>
+</div>
+
+<div id="make-thread" class="faq-item">
+    <div class="faq-q">Why should I make a thread?</div>
+    <div class="faq-a">
+        <p>New threads keep the website fresh and present new topics of discussion. With that said, we highly encourage that you make new threads instead of centralizing all potential topics under one single thread.</p>
+    </div>
+</div>
+
+<div id="faq-9" class="faq-item">
+    <div class="faq-q">What's a tripcode and how do I use one?</div>
+    <div class="faq-a">
+        <p>A tripcode <span class="highlight-text">(#password)</span> is a basic method of user identification that generates a hashed string visible next to the username. However, it offers limited security and can be easily spoofed.</p>
+
+        <p>A secure tripcode <span class="highlight-text">(##password)</span> uses server-side encryption, providing a significantly higher level of protection and ensuring that only the original user can generate the same identifier.</p>
+
+        <div class="trip-example">
+            <span class="trip-label">Example Name:</span> Matthew # Tripcode<br>
+            <span class="trip-label">Example Name:</span> Robert ## Secure Tripcode
+        </div>
+    </div>
+</div>
+
+<div id="faq-10" class="faq-item">
+    <div class="faq-q">Does 39chan have a Discord server / IRC?</div>
+    <div class="faq-a">
+        <p>We are against Discord servers, as we believe they detract from activity on platforms designed for discussion, such as 39chan. For that reason, 39chan does not have an official Discord server and likely never will. An IRC channel may be considered in the future, but nothing is currently planned or confirmed.</p>
+    </div>
+</div>
+
+<div id="faq-11" class="faq-item">
+    <div class="faq-q">Where can I contact you?</div>
+    <div class="faq-a">
+        <p>You can reach out to staff via the /meta/ board or the contact page listed in the footer. Our social media accounts are not owned by 39chan staff members and are used exclusively for posting news and updates. We are planning on adding a contact form to 39chan.</p>
+    </div>
+</div>
+
+<div id="faq-12" class="faq-item">
+    <div class="faq-q">Who owns 39chan?</div>
+    <div class="faq-a">
+        <p>39chan is currently owned by <strong>Team 39</strong> (T39), a small group of developers and moderators formed specifically for this project. Figamin currently serves as the owner and manages and moderates the imageboard.</p>
+    </div>
+</div>
+
+                </div>
+            </div>
+        </main>
+
+        <aside class="panel">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+            <div class="box faq-toc-box">
+                <div class="box-title">Table of Contents</div>
+                <div class="box-body" style="padding: 14px;">
+                    <ol class="faq-toc-list">
+                        <li><a href="#faq-1">Who is this "39chan"?</a></li>
+                        <li><a href="#faq-2">When was 39chan created?</a></li>
+                        <li><a href="#faq-3">Why is it called "39"chan?</a></li>
+                        <li><a href="#faq-4">Isn't this the same thing as 4chan?</a></li>
+                        <li><a href="#faq-5">Why is 39chan a 18+ site?</a></li>
+                        <li><a href="#faq-6">How do I create an account?</a></li>
+                        <li><a href="#faq-7">How do I create a thread?</a></li>
+                        <li><a href="#make-thread">Why should I make a thread?</a></li>
+                        <!-- I know it looks tempting but don't change the ID for this one please. -->
+                        <li><a href="#faq-9">What's a tripcode and how do I use one?</a></li>
+                        <li><a href="#faq-10">Does 39chan have a Discord server / IRC?</a></li>
+                        <li><a href="#faq-11">Where can I contact you?</a></li>
+                        <li><a href="#faq-12">Who owns 39chan?</a></li>
+                    </ol>
+                </div>
+            </div>
+        </aside>
+
+    </div>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <nav class="dock" id="dock">
+        <button class="nav-item nav-arrow" data-nav="info" aria-label="Open left sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="nav-item active" data-nav="home" aria-label="Home">
+            <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-nav="search" aria-label="Search">
+            <span class="nav-icon"><i class="fas fa-search"></i></span><span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item nav-arrow" data-nav="threads" aria-label="Open links sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </nav>
+
+    <footer class="footer">
+        <div class="links">
+            <a href="https://x.com/39chanmoe">Twitter</a> &bull;
+            <a href="https://bsky.app/profile/39chan.moe">Bluesky</a> &bull;
+            <a href="https://stats.uptimerobot.com/OdWm6iTfcy">Site Status</a> &bull;
+            <a href="https://39chan.moe/rss.xml">RSS Feed</a> &bull;
+            <a href="contact.html">Contact</a>
+        </div>
+        <div>Powered by hitori (koshi fork) | Backgrounds by <a href="https://twitter.com/intent/user?user_id=16203043">kaku sugar</a>, <a href="https://twitter.com/intent/user?user_id=726438981496246272">baisishaonian</a>, <a href="https://twitter.com/intent/user?user_id=1307204963022503939">064</a> | 39chan © 2024-2026</div>
+        <div style="margin-top: 6px; font-size: 9px;">
+          <p>
+        <strong>39chan</strong> is an independent website and is not affiliated with,
+        endorsed by, or associated with <strong>Yamaha</strong>, <strong>Crypton Future Media</strong>, the
+        <strong>VOCALOID</strong>, brand, or the creators, publishers, or rights
+        holders of any content discussed on this site.
+    </p>
+
+    <p>
+        All trademarks, copyrights, and other intellectual property remain the
+        property of their respective owners. Images, files, comments, and all other user-submitted content are the
+        sole responsibility of the users who post them.
+    </p>
+       
+    <p>User comments and posts on <strong>39chan</strong> are the opinions of
+        their respective authors and do not necessarily reflect the views,
+        opinions, or policies of the site's staff or administration.</p>
+        </div>
+    </footer>
+
+   <!--I compiled all the homepage scripts into a single file because it's convenient. Also hello to the dumbass reading this.-->
+    <script src="scripts.js"></script>
+    <script src="verify.js"></script>
+</body>
+</html>

@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+	
+    <title>39chan - First Imageboard of the Future</title>
+	<meta name="description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+	<meta name="robots" content="index, follow">
+
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="39chan - First Imageboard of the Future">
+	<meta property="og:site_name" content="39chan">
+	<meta property="og:description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+	<meta property="og:image" content="items/card.png">
+	<meta property="og:url" content="https://39chan.moe/">
+
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:title" content="39chan - First Imageboard of the Future">
+	<meta name="twitter:description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+	<meta name="twitter:image" content="items/card.png">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="topbar theme-surface" id="topbar" role="banner">
+        <div class="topbar-main">
+            <button class="btn-icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+            <div class="brand">
+				<a href="/"><img src="items/39logo2.png" alt="Logo"></a>
+            </div>
+            <button class="btn-icon" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button class="chan-app-btn-text" id="searchCancel">Cancel</button>
+        </div>
+    </div>
+
+    <header class="site-header theme-surface">
+        <div class="logo">
+            <a href="/"><img src="items/39logo.png" alt="Logo"></a>
+        </div>
+        <div class="header-actions">
+            <div class="chan-header-clock">
+                <img src="items/icons/daytime.gif" alt="" class="clock-icon">
+                <div class="clock-lines">
+                    <div class="clock-main">
+                        <span class="clock-date">Today is Loading...</span>
+                        <span class="clock-time">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-search">
+                <input type="text" placeholder="Search...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="forumnav">
+        <div class="tabs">
+            <a href="/" class="tab active"><i class="fas fa-home"></i> Home</a>
+            <a href="blog.html" class="tab"><i class="fas fa-newspaper"></i> Blog</a>
+            <a href="faq.html" class="tab"><i class="fas fa-question-circle"></i> FAQ</a>
+            <a href="rules.html" class="tab"><i class="fas fa-gavel"></i> Rules</a>
+            <a href="linkus.html" class="tab"><i class="fas fa-link"></i> Link Us</a>
+            <a href="/frames" class="tab"><i class="fas fa-window-restore"></i> Frames</a>
+            <a href="https://radio.39chan.moe/" class="tab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
+            <a href="https://downloads.39chan.moe/" class="tab"><i class="fas fa-download"></i> Downloads</a>
+        </div>
+        <div class="navquote" id="navQuote"></div>
+    </nav>
+
+    <div class="wrap">
+        
+        <aside class="sidebar">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+            <div class="box mobnav">
+                <div class="box-title">SITE NAVIGATION</div>
+                <div class="box-body mobtabs">
+                    <a href="/" class="mobtab active"><i class="fas fa-home"></i> Home</a>
+                    <a href="blog.html" class="mobtab"><i class="fas fa-newspaper"></i> Blog</a>
+                    <a href="faq.html" class="mobtab"><i class="fas fa-question-circle"></i> FAQ</a>
+                    <a href="rules.html" class="mobtab"><i class="fas fa-gavel"></i> Rules</a>
+                    <a href="linkus.html" class="mobtab"><i class="fas fa-link"></i> Link Us</a>
+                    <a href="https://radio.39chan.moe/" class="mobtab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
+                    <a href="https://downloads.39chan.moe/" class="mobtab"><i class="fas fa-download"></i> Downloads</a>
+                </div>
+            </div>
+            
+            <div class="box" data-collapse-key="welcome">
+                <div class="box-title box-title-flex">
+                    <span>WELCOME TO 39CHAN!</span>
+                    <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <div class="box-body center collapsible">
+                   <img src="items/luka.gif" width="121" class="mascot">
+                    <span class="center dim" style="display: block;">We're an anonymous community VOCALOID fans dedicated to casual discussion, fan creation, vocal synth culture. <b>You don't need an account to start posting</b>, but we encourage you to read the rules first!.</span>
+                </div>
+            </div>
+
+            <div class="box" data-collapse-key="blog">
+                <div class="box-title box-title-flex">
+                    <span>BLOG</span>
+                    <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <ul class="bloglist collapsible">
+                    <li>
+                        <div class="blog-info">
+                            <a href="blog.html" class="blog-title">Placeholder</a>
+                            <span class="blog-meta">Sept 9, 2026 &bull; by Placeholder</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            
+            <a href="rules.html" style="display:block; margin-bottom: 10px;">
+                <img src="items/buttons/rules.png" class="promo">
+            </a>
+
+            <div class="box">
+                <div class="box-body">
+                    <div class="stat"><span>Total Posts:</span> <span>NULL</span></div>
+                    <div class="stat"><span>Total Members (UIPs):</span> <span>NULL</span></div>
+                    <div class="stat"><span>Most Users Online:</span> <span>NULL</span></div>
+                    <div class="stat"><span>Storage:</span> <span>NULL</span></div>
+                    <div class="sep"></div>
+                    <a href="#" class="center dim" style="margin-bottom: 3px; display: block;">Stats for Nerds</a>
+                    <span class="center dim" style="display: block;"><small>Users online now: NULL</small></span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+
+            <div class="box mob-clock">
+                <img src="" class="clock-icon">
+                <div class="clock-lines">
+                    <div class="clock-main">
+                        <span class="dim clock-date">Today is December 31, 1969</span>
+                        <span class="clock-time">0:00:00 PM</span>
+                    </div>
+                </div>
+            </div>
+
+			<!-- Remind me to replace this during events -->
+            <!-- <a href="#">
+                <img src="items/banner.png" alt="Banner" class="banner" style="margin-bottom: 15px;">
+            </a> -->
+
+            <div class="box" data-collapse-key="featured">
+                <div class="box-title box-title-flex">
+                    <span>FEATURED THREADS</span>
+                    <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <div class="featured collapsible">
+                    <a href="#" class="item">
+                        <div class="fthumb">
+                            <img src="1783223027713.png">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">NEW GAME | Hatsune Miku: Starry Party</div>
+                            <div class="fboard">Vocaloid Lounge</div>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="item">
+                        <div class="fthumb">
+                            <img src="1783196384271.png">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">39chan @ Otakon 2026 Thread</div>
+                            <div class="fboard">Vocaloid Live Events</div>
+                        </div>
+                    </a>
+                    
+                    <a href="#" class="item">
+                        <div class="fthumb">
+                            <img src="1762144102072.png">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">/leek/ Original Content Thread</div>
+                            <div class="fboard">Vocaloid Lounge</div>
+                        </div>
+                    </a>
+
+                    <a href="#" class="item">
+                        <div class="fthumb">
+                            <img src="1781984866014.jpeg">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">TETOEC, Tokyo: Live UTAU Concert</div>
+                            <div class="fboard">Vocaloid Live Events</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="box" data-collapse-key="vocal-synths">
+                <div class="box-title box-title-flex box-title-alt">
+                    <h2>VOCAL-SYNTHS</h2>
+                    <div class="title-actions">
+                        <!-- note to self: replace href="#" with the real "view all posts" link once ready -->
+                        <a href="#" class="btn-accent" id="viewAllPosts" onclick="return false;">View All Posts</a>
+                        <button class="btn-accent" id="toggleNsfw">Hide NSFW Boards</button>
+                        <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                    </div>
+                </div>
+                <div class="collapsible">
+                    <div class="board" data-href="/leek" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">Vocaloid Lounge</a></h3>
+                            <p>Your go-to board for all things Vocaloid, covering fandom, music, culture, and other related topics.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Today, 11:37 AM</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/1.png" alt="Icon"></div>
+                    </div>
+
+                    <div class="board" data-href="/negi" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">ボーカロイド・ラウンジ</a></h3>
+                            <p>日本語版の/leek/。Vocaloidに関するあらゆる話題を扱う掲示板です。</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Yesterday, 09:12 PM</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/10.png" alt="Icon"></div>
+                    </div>
+
+                    <div class="board nsfw" data-href="/mmd" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">MikuMikuDance</a> <span class="badge">NSFW</span></h3>
+                            <p>A board for discussing MikuMikuDance and other software for creating anime-style 3D computer graphics.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Today, 10:15 AM</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/2.png" alt="Icon"></div>
+                    </div>
+
+                    <div class="board" data-href="/live" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">Vocaloid Live Events</a></h3>
+                            <p>This board is dedicated to discussions about Vocaloid-related events, including concerts, meetups, etc.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Jul 18, 08:34 PM</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/3.png" alt="Icon"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box" data-collapse-key="artwork">
+                <div class="box-title box-title-flex box-title-alt">
+                    <h2>ARTWORK</h2>
+                    <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <div class="collapsible">
+                    <div class="board" data-href="/c" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">Vocaloid/Cute</a></h3>
+                            <p>An image-sharing board dedicated to cute Vocaloid images, guaranteed to make you say “Aww	”.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Today, 01:22 PM</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/4.png" alt="Icon"></div>
+                    </div>
+
+                    <div class="board nsfw" data-href="/o" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">Art / Oekaki</a> <span class="badge">NSFW</span></h3>
+                            <p>Share your Vocaloid themed artwork with the community, fulfill requests, or simply enjoy the creative works of others.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Today, 02:45 AM</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/6.png" alt="Icon"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box" data-collapse-key="off-topic">
+                <div class="box-title box-title-flex box-title-alt">
+                    <h2>OFF-TOPIC</h2>
+                    <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <div class="collapsible">
+                    <div class="board" data-href="/g" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">General Discussion</a></h3>
+                            <p>39chan's 'everything else' section. For any topics that don't belong in the other boards.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Just now</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/7.png" alt="Icon"></div>
+                    </div>
+                    <div class="board" data-href="/k" tabindex="0" role="link">
+                        <div class="info">
+                            <h3><a href="#">Japanese Culture</a></h3>
+                            <p>A board for the discussion of Japanese topics, including Otaku hobbies. <b>(Note: Political content is banned.)</b></p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Just now</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/8.png" alt="Icon"></div>
+                    </div>
+                    
+                    <div class="board" data-href="/meta" tabindex="0" role="link">
+                        <div class="info">	
+                            <h3><a href="#">Site Discussion</a></h3>
+                            <p>Got any questions or complaints? You can use this board to yell at us in our faces.</p>
+                        </div>
+                        <div class="recent">
+                            <div class="time"><img src="items/icons/notif.png" alt="icon"> Just now</div>
+                            <div class="topic">In: <a href="#">null</a></div>
+                        </div>
+                        <div class="chan-board-icon"><img src="items/icons/9.png" alt="Icon"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="activity">
+                <div class="box chan-activity-col">
+                    <div class="box-title">RECENT POSTS</div>
+                    <div class="box-body posts">
+                        <div class="line"><a href="/mmd" class="pboard">MikuMikuDance</a> - <span class="snippet"><a href="" class="snippet-link">null</a></span></div>
+                    </div>
+                </div>
+
+                <div class="box chan-activity-col">
+                    <div class="box-title">ACTIVE THREADS</div>
+                    <div class="box-body threads">
+                        <a href="#" class="thread">
+                            <div class="tthumb"><img src="" alt="Thread thumbnail"></div>
+                            <div class="chan-active-thread-info">
+                                <div class="tboard">MikuMikuDance</div>
+                                <div class="ttitle">Placeholder</div>
+                                <div class="tmeta">54 replies &bull; 3 minutes ago</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-title box-title-alt">
+                    <h2>RECENT IMAGES</h2>
+                </div>
+                <div class="gallery">
+                    <div class="scroll" id="scroller">
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                        <a href="#"><img src="" alt="Small thumbnail"></a>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <aside class="panel">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+<div class="box" data-collapse-key="producers">
+    <div class="box-title box-title-flex">
+        <span>PRODUCERS TRENDING THIS MONTH</span>
+        <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+    </div>
+    <div class="box-body collapsible">
+        <ol class="ranklist" id="producersList">
+            <li class="ranklist-loading"><img src="items/icons/loading.gif" alt="Loading..."></li>
+        </ol>
+        <div class="ranklist-footnote dim">(Powered by <a href="https://vocadb.net/" target="_blank" rel="noopener">VocaDB</a>)</div>
+    </div>
+</div>
+
+<div class="box" data-collapse-key="songs">
+    <div class="box-title box-title-flex">
+        <span>SONGS TRENDING THIS WEEK</span>
+        <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+    </div>
+    <div class="box-body collapsible">
+        <ol class="ranklist" id="songsList">
+            <li class="ranklist-loading"><img src="items/icons/loading.gif" alt="Loading..."></li>
+        </ol>
+        <div class="ranklist-footnote dim">(Powered by <a href="https://vocadb.net/" target="_blank" rel="noopener">VocaDB</a>)</div>
+    </div>
+</div>
+
+            <div class="box" data-collapse-key="resources">
+                <div class="box-title box-title-flex">
+                    <span>RESOURCES</span>
+                    <button class="collapse-toggle" aria-expanded="true" aria-label="Toggle section">&minus;</button>
+                </div>
+                <ul class="linklist collapsible">
+                    <li><a href="https://vocadb.net/#">VocaDB</a></li>
+                    <li><a href="https://vocaverse.network/">VocaVerse Network</a></li>
+                    <li><a href="https://utaforum.net/">UTAForum</a></li>
+                    <li><a href="https://vocaloid.fandom.com/">Vocaloid Wiki</a></li>
+                    <li><a href="https://vocaloidlyrics.miraheze.org/">Vocaloid Lyrics Wiki</a></li>
+                    <li><a href="https://utau.fandom.com/">UTAU Wiki</a></li>
+                    <li><a href="http://utau.wikidot.com/">UTAU 2.0 Wiki</a></li>
+                    <li><a href="https://www.youtube.com/channel/UCJwGWV914kBlV4dKRn7AEFA">39ch (YouTube)</a></li>
+                </ul>
+            </div>
+        </aside>
+
+    </div>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <nav class="dock" id="dock">
+        <button class="nav-item nav-arrow" data-nav="info" aria-label="Open left sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="nav-item active" data-nav="home" aria-label="Home">
+            <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-nav="search" aria-label="Search">
+            <span class="nav-icon"><i class="fas fa-search"></i></span><span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item nav-arrow" data-nav="threads" aria-label="Open links sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </nav>
+
+    <div class="partners">
+        <div class="ptitle">Partners</div>
+        <div class="badges">
+            <a href="https://mvcdb.miraheze.org/"><img src="items/buttons/MVCDB.png" alt="MVCDB"></a>
+            <a href="https://endchan.org/miku/"><img src="items/buttons/slashmiku.png" alt="slashmiku"></a>
+            <a href="https://hikari3.ch/"><img src="items/buttons/hikari3.gif" alt="hikari3"></a>
+            <a href="https://holotower.org/"><img src="items/buttons/hlt.png" alt="hlt"></a>
+            <a href="https://kissu.moe/"><img src="items/buttons/kissu.gif" alt="kissu"></a>
+            <a href="https://wapchan.org/"><img src="items/buttons/wapchan.gif" alt="wapchan"></a>
+        </div>
+        <div class="apply">
+            Want to apply for a space here? <a href="https://39chan.moe/meta/thread/416">Read this thread</a>.
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="links">
+            <a href="https://x.com/39chanmoe">Twitter</a> &bull;
+            <a href="https://bsky.app/profile/39chan.moe">Bluesky</a> &bull;
+            <a href="https://stats.uptimerobot.com/OdWm6iTfcy">Site Status</a> &bull;
+            <a href="https://39chan.moe/rss.xml">RSS Feed</a> &bull;
+            <a href="contact.html">Contact</a>
+        </div>
+        <div>Powered by hitori (koshi fork) | Backgrounds by <a href="https://twitter.com/intent/user?user_id=16203043">kaku sugar</a>, <a href="https://twitter.com/intent/user?user_id=726438981496246272">baisishaonian</a>, <a href="https://twitter.com/intent/user?user_id=1307204963022503939">064</a> | 39chan © 2024-2026</div>
+        <div style="margin-top: 6px; font-size: 9px;">
+          <p>
+        <strong>39chan</strong> is an independent website and is not affiliated with,
+        endorsed by, or associated with <strong>Yamaha</strong>, <strong>Crypton Future Media</strong>, the
+        <strong>VOCALOID</strong>, brand, or the creators, publishers, or rights
+        holders of any content discussed on this site.
+    </p>
+
+    <p>
+        All trademarks, copyrights, and other intellectual property remain the
+        property of their respective owners. Images, files, comments, and all other user-submitted content are the
+        sole responsibility of the users who post them.
+    </p>
+       
+    <p>User comments and posts on <strong>39chan</strong> are the opinions of
+        their respective authors and do not necessarily reflect the views,
+        opinions, or policies of the site's staff or administration.</p>
+        </div>
+    </footer>
+
+   <!--I compiled all the homepage scripts into a single file because it's convenient. Also hello to the dumbass reading this.-->
+    <script src="scripts.js"></script>
+    <script src="verify.js"></script>
+
+</body>
+</html>

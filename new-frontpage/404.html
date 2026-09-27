@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found</title>
+
+<style>
+    html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        color: #aaa;
+        font-family: "Courier New", Courier, monospace;
+        overflow: hidden;
+    }
+
+    .dos {
+        padding: 20px;
+        font-size: 16px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        user-select: none;
+        cursor: default;
+    }
+
+    .cursor {
+        display: inline-block;
+        width: 9px;
+        height: 17px;
+        background: #aaa;
+        vertical-align: -3px;
+        animation: blink 1s steps(1) infinite;
+    }
+
+    @keyframes blink {
+        0%, 50% {
+            opacity: 1;
+        }
+        51%, 100% {
+            opacity: 0;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<div class="dos">C:\&gt; ERROR 404
+The requested file could not be found.
+
+C:\&gt; <span class="cursor"></span></div>
+
+</body>
+</html>
