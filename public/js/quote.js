@@ -6,6 +6,8 @@ const tooltips = {
   knownData: {},
   activeTooltip: null,
   activeQuote: null,
+  lastPointer: null,
+  watchTimer: null,
 
   init() {
     document.querySelectorAll('.post.op, .post.reply').forEach((post) => {
@@ -138,10 +140,48 @@ const tooltips = {
   },
 
   hideTooltip() {
+    this.stopPointerWatch();
     if (this.activeTooltip) {
       this.activeTooltip.remove();
       this.activeTooltip = null;
     }
+  },
+
+  // Close the preview and forget the anchor it belonged to. Used when the
+  // anchor moves out from under the cursor without a mouseout being fired.
+  dismiss() {
+    this.activeQuote = null;
+    this.hideTooltip();
+  },
+
+  stopPointerWatch() {
+    if (this.watchTimer) {
+      clearInterval(this.watchTimer);
+      this.watchTimer = null;
+    }
+  },
+
+  // The preview belongs to a specific quote. Scrolling (or any reflow) can move
+  // that quote out from under a stationary cursor without firing mouseout,
+  // which would otherwise leave the preview stranded. Keep checking that the
+  // pointer is still over the anchor until the preview is closed.
+  startPointerWatch() {
+    if (this.watchTimer) return;
+    this.watchTimer = setInterval(() => {
+      if (!this.activeQuote || !this.activeTooltip) {
+        this.stopPointerWatch();
+        return;
+      }
+      const rect = this.activeQuote.getBoundingClientRect();
+      const pointer = this.lastPointer;
+      const overAnchor =
+        pointer &&
+        pointer.x >= rect.left &&
+        pointer.x <= rect.right &&
+        pointer.y >= rect.top &&
+        pointer.y <= rect.bottom;
+      if (!overAnchor) this.dismiss();
+    }, 150);
   },
 
   fitTooltip(tooltip, anchorRect) {
@@ -242,10 +282,11 @@ const tooltips = {
     if (quote.dataset.quoteBound) return;
     quote.dataset.quoteBound = '1';
 
-    quote.onmouseenter = () => {
+    quote.onmouseenter = (event) => {
       const quoteUrl = quote.href;
       if (!quoteUrl || quoteUrl.endsWith('#')) return;
 
+      this.lastPointer = { x: event.clientX, y: event.clientY };
       this.hideTooltip();
       this.activeQuote = quote;
 
@@ -255,6 +296,7 @@ const tooltips = {
       document.body.appendChild(tooltip);
 
       this.activeTooltip = tooltip;
+      this.startPointerWatch();
 
       if (this.loadedContent[quoteUrl]) {
         tooltip.innerHTML = this.loadedContent[quoteUrl];
@@ -389,6 +431,17 @@ const observer = new MutationObserver((mutations) => {
 document.addEventListener('DOMContentLoaded', () => {
   tooltips.init();
   backlinks.init();
+
+  // Keep the last known pointer position up to date so the preview can tell
+  // when its anchor has slid out from under a (mostly) stationary cursor.
+  document.addEventListener('mousemove', (event) => {
+    tooltips.lastPointer = { x: event.clientX, y: event.clientY };
+  }, { passive: true });
+
+  // Scrolling moves the hovered quote/backlink away from a stationary cursor
+  // without firing mouseout, which would otherwise leave the preview stranded.
+  // Capture catches scrolling inside nested containers as well as the window.
+  window.addEventListener('scroll', () => tooltips.dismiss(), { passive: true, capture: true });
 
   const thread = document.querySelector('.thread');
   if (thread) {
