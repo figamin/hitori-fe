@@ -2,7 +2,7 @@
 <% var maxW = locals.maxWidth || 235; %>
 <% var maxH = locals.maxHeight || 235; %>
 <% var imgClass = locals.imageClass || 'thread-image'; %>
-<% var dw = file.width; var dh = file.height; if (dw && dh && file.thumb !== '/spoiler.png' && file.thumb !== '/spoiler.webp') { if (dw > maxW || dh > maxH) { var r = Math.min(maxW / dw, maxH / dh); dw = Math.round(dw * r); dh = Math.round(dh * r); } } else { dw = null; dh = null; } %>
+<% var dw = file.width; var dh = file.height; var placeholderThumbs = ['/spoiler.png', '/spoiler.webp', '/genericThumb.webp', '/audioGenericThumb.webp', '/imageNotFound.webp']; if (dw && dh && placeholderThumbs.indexOf(file.thumb) === -1) { if (dw > maxW || dh > maxH) { var r = Math.min(maxW / dw, maxH / dh); dw = Math.round(dw * r); dh = Math.round(dh * r); } } else { dw = null; dh = null; } %>
 <% var fileUrl = site + file.path; %>
 <% var matchingReplay = null; if (file.originalName && file.originalName.endsWith('-tegaki.png') && locals.files) { matchingReplay = files.find(function(f) { return f.mime === 'tegaki/replay' && f.originalName && f.originalName.slice(0, -4) === file.originalName.slice(0, -3); }); } %>
 <details open>

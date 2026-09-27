@@ -28,9 +28,9 @@ Search <input name="filter" value="<%= query.filter || '' %>">
 <div class="mod-media">
 <% media.forEach(m => { %>
 <div>
-<label><input type="checkbox" class="media-select" value="<%= m.identifier %>"><img src="<%= m.thumb %>" onerror="this.src='/imageNotFound.webp'"></label>
+<label><input type="checkbox" class="media-select" value="<%= m.identifier %>"><span class="media-thumb"><img src="<%= m.thumb %>" onerror="this.src='/imageNotFound.webp'"></span></label>
 <%= m.references %> refs<br>
-<a href="<%= m.path %>" target="_blank"><%= m.identifier %></a><br>
+<a href="<%= m.path %>" target="_blank"><%= m.filename || m.identifier %></a><br>
 <a href="/mod/media/details?identifier=<%= m.identifier %>">Details</a>
 </div>
 <% }) %>

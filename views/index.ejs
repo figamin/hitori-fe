@@ -194,7 +194,6 @@ var boardSections = [
             <a href="/faq" class="tab"><i class="fas fa-question-circle"></i> FAQ</a>
             <a href="/rules" class="tab"><i class="fas fa-gavel"></i> Rules</a>
             <a href="/links" class="tab"><i class="fas fa-link"></i> Link Us</a>
-            <a href="/all/" class="tab"><i class="fas fa-th"></i> All Boards</a>
             <a href="https://radio.39chan.moe/" class="tab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
             <a href="https://downloads.39chan.moe/" class="tab"><i class="fas fa-download"></i> Downloads</a>
         </div>
@@ -214,7 +213,6 @@ var boardSections = [
                     <a href="/faq" class="mobtab"><i class="fas fa-question-circle"></i> FAQ</a>
                     <a href="/rules" class="mobtab"><i class="fas fa-gavel"></i> Rules</a>
                     <a href="/links" class="mobtab"><i class="fas fa-link"></i> Link Us</a>
-                    <a href="/all/" class="mobtab"><i class="fas fa-th"></i> All Boards</a>
                     <a href="https://radio.39chan.moe/" class="mobtab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
                     <a href="https://downloads.39chan.moe/" class="mobtab"><i class="fas fa-download"></i> Downloads</a>
                 </div>
@@ -262,7 +260,7 @@ var boardSections = [
                     <div class="stat"><span>Storage:</span> <span><%= siteStats.totalMediaSize %> GB</span></div>
                     <div class="sep"></div>
                     <a href="/all/" class="center dim" style="margin-bottom: 3px; display: block;">View All Boards</a>
-                    <span class="center dim" style="display: block;"><small>Users online now: NULL</small></span>
+                    <span class="center dim" style="display: block;"><small>Users online now: <%= Number(siteStats.usersOnline || 0).toLocaleString() %></small></span>
                 </div>
             </div>
         </aside>
@@ -285,30 +283,57 @@ var boardSections = [
             </div>
             <% } %>
 
-            <% if (pinnedThreads && pinnedThreads.length > 0) { %>
             <div class="box" data-collapse-key="featured">
                 <div class="box-title box-title-flex">
                     <span>FEATURED THREADS</span>
                     <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
                 </div>
                 <div class="featured collapsible">
-                    <% pinnedThreads.slice(0, 4).forEach(function (thread) { %>
-                    <a href="/<%= thread.boardUri %>/thread/<%= thread.threadId %>" class="item">
+                    <a href="j/thread/753" class="item">
                         <div class="fthumb">
-                            <% if (thread.files && thread.files.length > 0) { %>
-                            <img src="<%= thread.files[0].thumb %>" alt="">
-                            <% } %>
+                            <img src="j/thumb/1789597544865.jpg">
                             <span class="star">&#9733;</span>
                         </div>
                         <div class="meta">
-                            <div class="ftitle"><%- thread.subject || 'No subject' %></div>
-                            <div class="fboard"><%= thread.boardName %></div>
+                            <div class="ftitle">Japanese Indie Horror Games</div>
+                            <div class="fboard">Japanese Culture</div>
                         </div>
                     </a>
-                    <% }); %>
+                    
+                    <a href="leek/thread/10912" class="item">
+                        <div class="fthumb">
+                            <img src="leek/thumb/1762144102072.png">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">/leek/ Original Content</div>
+                            <div class="fboard">Vocaloid Live Events</div>
+                        </div>
+                    </a>
+                    
+                    <a href="leek/thread/18662" class="item">
+                        <div class="fthumb">
+                            <img src="leek/thumb/1771708949926.png">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">A thread for producers</div>
+                            <div class="fboard">Vocaloid Lounge</div>
+                        </div>
+                    </a>
+
+                    <a href="live/thread/2479" class="item">
+                        <div class="fthumb">
+                            <img src="live/thumb/1785640119589.jpg">
+                            <span class="star">&#9733;</span>
+                        </div>
+                        <div class="meta">
+                            <div class="ftitle">MikuExpo Memories</div>
+                            <div class="fboard">Vocaloid Live Events</div>
+                        </div>
+                    </a>
                 </div>
             </div>
-            <% } %>
 
             <% boardSections.forEach(function (section) { %>
             <div class="box" data-collapse-key="<%= section.key %>">
