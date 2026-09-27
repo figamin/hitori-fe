@@ -12,7 +12,7 @@
     <span class="name" data-post-id="<%= reply.postId %>" data-board="<%= boardUri %>" data-thread-id="<%= thread.threadId %>"><%- reply.name %></span>
     <% } %>
   </span>
-  <%- include('../partials/time', { date: reply.creation }) %>&nbsp;
+  <%- include('../partials/time', { date: reply.creation }) %> 
   <span class="post-num">
     <a class="linkQuote" title="Link to this post" href="/<%= boardUri %>/<%= locals.isArchive ? 'archive/' : '' %>thread/<%= thread.threadId %>#<%= reply.postId %>">No.</a><a class="linkQuote" title="Reply to this post" href="/<%= boardUri %>/<%= locals.isArchive ? 'archive/' : '' %>thread/<%= thread.threadId %>#q<%= reply.postId %>"><%= reply.postId %></a>
   </span>

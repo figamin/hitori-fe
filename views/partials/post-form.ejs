@@ -11,6 +11,32 @@
   window.onhashchange = updateTextareaValueFromURL;
 </script>
 
+<style>
+  #postformTable {
+    width: 100%;
+    max-width: 380px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+  #postformTable .post-block {
+    width: 90px;
+    white-space: nowrap;
+  }
+  #postformTable .postform-input-cell {
+    width: auto;
+  }
+  #postformTable input[type="text"],
+  #postformTable input[type="password"],
+  #postformTable select,
+  #postformTable textarea {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  #postformTable .new-thread-btn {
+    margin-top: 4px;
+  }
+</style>
+
 <table id="postformTable">
   <tbody>
     <tr>
@@ -20,12 +46,17 @@
       </td>
     </tr>
     <tr>
-      <td class="post-block"><label>Options</label></td>
+      <td class="post-block"><label for="option_selectbox">Options</label></td>
       <td class="postform-input-cell">
-        <label>Fortune <input type="checkbox" id="fortune" name="fortune" value="true" /></label>
+        <select name="option" id="option_selectbox" autocomplete="off">
+          <option value=""></option>
+          <option value="fortune">Fortune</option>
+          <% if (isThread) { %>
+          <option value="sage">Sage (Do not bump)</option>
+          <option value="nonoko">Nonoko</option>
+          <% } %>
+        </select>
         <% if (isThread) { %>
-        <label>Sage <input type="checkbox" id="sage" name="sage" value="true" /></label>
-        <label>Nonoko <input type="checkbox" id="nonoko" name="nonoko" value="true" /></label>
         <button class="new-thread-btn" type="submit">New reply</button>
         <% } %>
       </td>
@@ -50,66 +81,71 @@
         <% var pollsOk = locals.pollsAllowed !== false; %>
         <% var tegakiOk = locals.tegakiAllowed !== false; %>
         <div class="js-only comment-block-extra">
+          <% if (youtubeOk || pollsOk || tegakiOk) { %>
+          <select id="extra-select" class="form-select" autocomplete="off">
+            <option value="">+ Add...</option>
+            <% if (youtubeOk) { %><option value="youtube">YouTube</option><% } %>
+            <% if (pollsOk) { %><option value="poll">Poll</option><% } %>
+            <% if (tegakiOk) { %><option value="tegaki">Tegaki</option><% } %>
+          </select>
+          <% } %>
           <% if (youtubeOk) { %>
-          <details id="youtube-details">
-            <summary class="format-summary" title="YouTube">YT</summary>
+          <div id="youtube-details" style="display: none; padding: 5px 0;">
             <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste YouTube URL here" style="width: 98%;" />
-          </details>
+          </div>
           <% } %>
           <% if (pollsOk) { %>
-          <details id="poll-details" class="poll-details">
-            <summary class="format-summary">Poll</summary>
-            <div style="padding: 10px;">
-              <input type="text" autocomplete="off" name="poll_question" placeholder="Poll question" style="width: 98%; margin-bottom: 5px;" />
-              <div id="poll-options" data-max-options="<%= locals.maxPollOptions || 10 %>">
-                <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 1" style="width: 90%; margin-bottom: 5px;" />
-                <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 2" style="width: 90%; margin-bottom: 5px;" />
-              </div>
-              <button type="button" id="add-option" style="margin-bottom: 5px;">+ Add Option</button>
-              <div style="margin-top: 5px;">
-                <label>Poll duration:
-                  <select name="poll_duration">
-                    <option value="1">1 day</option>
-                    <option value="3">3 days</option>
-                    <option value="7">1 week</option>
-                    <option value="30">1 month</option>
-                  </select>
-                </label>
-              </div>
+          <div id="poll-details" class="poll-details" style="display: none; padding: 10px;">
+            <input type="text" autocomplete="off" name="poll_question" placeholder="Poll question" style="width: 98%; margin-bottom: 5px;" />
+            <div id="poll-options" data-max-options="<%= locals.maxPollOptions || 10 %>">
+              <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 1" style="width: 90%; margin-bottom: 5px;" />
+              <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 2" style="width: 90%; margin-bottom: 5px;" />
             </div>
-          </details>
+            <button type="button" id="add-option" style="margin-bottom: 5px;">+ Add Option</button>
+            <div style="margin-top: 5px;">
+              <label>Poll duration:
+                <select name="poll_duration">
+                  <option value="1">1 day</option>
+                  <option value="3">3 days</option>
+                  <option value="7">1 week</option>
+                  <option value="30">1 month</option>
+                </select>
+              </label>
+            </div>
+          </div>
           <% } %>
           <% if (tegakiOk) { %>
-          <button type="button" id="tegaki-btn" title="Tegaki" class="form-button">Tegaki</button>
+          <button type="button" id="tegaki-btn" title="Tegaki" class="form-button" style="display: none;">Tegaki</button>
           <% } %>
-          <details class="formatting-details">
-            <summary class="format-summary">Styling</summary>
-          <button data-emote="[b][/b]" type="button"><span><strong>Bold</strong></span></button>
-          <button data-emote="[i][/i]" type="button"><span><em>Italics</em></span></button>
-          <button data-emote="[s][/s]" type="button"><span><s>Strike</s></span></button>
-          <button data-emote="[spoiler][/spoiler]" type="button"><span class="spoiler">Spoiler</span></button>
-          <button data-emote="[moe][/moe]" type="button"><span class="moeText">Moe</span></button>
-          <button data-emote="[doom][/doom]" type="button"><span class="doomText">DOOM</span></button>
-          <button data-emote="[s1][/s1]" type="button"><span class="s1">Size 1</span></button>
-          <button data-emote="[s2][/s2]" type="button"><span class="s2">Size 2</span></button>
-          <button data-emote="[s3][/s3]" type="button"><span class="s3">Size 3</span></button>
-          <button data-emote="[s4][/s4]" type="button"><span class="s4">Size 4</span></button>
-          <button data-emote="[s5][/s5]" type="button"><span class="s5">Size 5</span></button>
-          <button data-emote="[s6][/s6]" type="button"><span class="s6">Size 6</span></button>
-          <button data-emote="[s7][/s7]" type="button"><span class="s7">Size 7</span></button>
-          <button data-emote="[red][/red]" type="button"><span class="c1">Red</span></button>
-          <button data-emote="[orange][/orange]" type="button"><span class="c2">Orange</span></button>
-          <button data-emote="[brown][/brown]" type="button"><span class="c3">Brown</span></button>
-          <button data-emote="[purple][/purple]" type="button"><span class="c4">Purple</span></button>
-          <button data-emote="[pink][/pink]" type="button"><span class="c5">Pink</span></button>
-          <button data-emote="[yellow][/yellow]" type="button"><span class="c6">Yellow</span></button>
-          <button data-emote="[green][/green]" type="button"><span class="c7">Green</span></button>
-          <button data-emote="[blue][/blue]" type="button"><span class="c8">Blue</span></button>
-          <button data-emote="[lightblue][/lightblue]" type="button"><span class="c9">Light Blue</span></button>
-          <button data-emote="[rainbow][/rainbow]" type="button"><span class="powerful">Rainbow</span></button>
-          <button data-emote="[code][/code]" type="button"><span>Codeblock</span></button>
-          </details>
         </div>
+      </td>
+    </tr>
+    <tr>
+      <td class="post-block"><label>Emotes</label></td>
+      <td class="postform-input-cell">
+        <details id="emo" class="emoclass">
+          <summary>Show Emotes</summary>
+          <img src="/static/emotes/mikuwelcome.gif" title="mikuwelcome" class="emote" height="45">
+          <img src="/static/emotes/mikuhappy.gif" title="mikuhappy" class="emote" height="45">
+          <img src="/static/emotes/rinthumbs.gif" title="rinthumbs" class="emote" height="45">
+          <img src="/static/emotes/rinheart.gif" title="rinheart" class="emote" height="45">
+          <img src="/static/emotes/lenno.gif" title="lenno" class="emote" height="45">
+          <br>
+          <img src="/static/emotes/lensorry.gif" title="lensorry" class="emote" height="45">
+          <img src="/static/emotes/lenthumbs.gif" title="lenthumbs" class="emote" height="45">
+          <img src="/static/emotes/lenshock.gif" title="lenshock" class="emote" height="45">
+          <img src="/static/emotes/lukaclap.gif" title="lukaclap" class="emote" height="45">
+          <img src="/static/emotes/lukasparkle.gif" title="lukasparkle" class="emote" height="45">
+          <br>
+          <img src="/static/emotes/kaitocheer.gif" title="kaitocheer" class="emote" height="45">
+          <img src="/static/emotes/kaitolick.gif" title="kaitolick" class="emote" height="45">
+          <img src="/static/emotes/meikolol.gif" title="meikolol" class="emote" height="45">
+          <img src="/static/emotes/meikojoy.gif" title="meikojoy" class="emote" height="45">
+          <img src="/static/emotes/meikoangry.gif" title="meikoangry" class="emote" height="45">
+          <br>
+          <img src="/static/emotes/lukaspin.gif" title="lukaspin" class="emote" height="45">
+          <img src="/static/emotes/yukarietto.gif" title="yukarietto" class="emote" height="45">
+        </details>
       </td>
     </tr>
     <tr>
@@ -133,35 +169,72 @@
     </tr>
   </tbody>
 </table>
-<a class="js-only" style="display: none" href="/styling">Styling</a>
 
-<script src="/js/markdown-btn.js"></script>
 <script>
   document.getElementById('message').addEventListener('input', function () {
     document.getElementById('charCount').textContent = this.value.length;
   });
 </script>
+
+<script>
+  // Emote picker: click an emote to insert a tag for it at the cursor in the comment box
+  document.addEventListener('DOMContentLoaded', function () {
+    const message = document.getElementById('message');
+    document.querySelectorAll('#emo .emote').forEach(function (img) {
+      img.style.cursor = 'pointer';
+      img.addEventListener('click', function () {
+        if (!message) return;
+        const tag = '[emote:' + img.title + ']';
+        const start = message.selectionStart != null ? message.selectionStart : message.value.length;
+        const end = message.selectionEnd != null ? message.selectionEnd : message.value.length;
+        message.value = message.value.slice(0, start) + tag + message.value.slice(end);
+        message.focus();
+        message.selectionStart = message.selectionEnd = start + tag.length;
+      });
+    });
+  });
+</script>
+
 <% if (tegakiOk) { %>
 <script src="/js/tegaki-post.js"></script>
 <% } %>
-<% if (youtubeOk) { %>
+
+<% if (youtubeOk || pollsOk || tegakiOk) { %>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
+    const extraSelect = document.getElementById('extra-select');
     const youtubeDetails = document.getElementById('youtube-details');
+    const pollDetails = document.getElementById('poll-details');
+    const tegakiBtn = document.getElementById('tegaki-btn');
     const fileInput = document.getElementById('image');
     const dropZone = document.getElementById('drop-zone');
-    if (youtubeDetails) {
-      youtubeDetails.addEventListener('toggle', function () {
-        if (youtubeDetails.open) {
-          dropZone.style.opacity = '0.5';
-          fileInput.disabled = true;
-        } else {
-          dropZone.style.opacity = '1';
-          fileInput.disabled = false;
-          document.getElementById('youtube-url').value = '';
+
+    function setYoutubeMode(on) {
+      if (dropZone) dropZone.style.opacity = on ? '0.5' : '1';
+      if (fileInput) fileInput.disabled = on;
+      if (!on) {
+        const ytUrl = document.getElementById('youtube-url');
+        if (ytUrl) ytUrl.value = '';
+      }
+    }
+
+    if (extraSelect) {
+      extraSelect.addEventListener('change', function () {
+        const val = extraSelect.value;
+
+        if (youtubeDetails) youtubeDetails.style.display = val === 'youtube' ? 'block' : 'none';
+        if (pollDetails) pollDetails.style.display = val === 'poll' ? 'block' : 'none';
+        setYoutubeMode(val === 'youtube');
+
+        if (val === 'tegaki') {
+          // Tegaki isn't a panel here - it stays exactly what it was before: a plain button.
+          // Selecting it just fires that same button's click handler (from tegaki-post.js).
+          if (tegakiBtn) tegakiBtn.click();
+          extraSelect.value = '';
         }
       });
     }
+
     const standardFileInput = document.getElementById('standard-file-input');
     if (standardFileInput) standardFileInput.style.display = 'none';
   });

@@ -23,10 +23,10 @@ var role = thread.signedRole;
     <span class="name" data-post-id="<%= id %>" data-board="<%= boardUri %>"><%- thread.name %></span>
     <% } %>
   </span>
-  <%- include('../partials/time', { date: thread.creation }) %>&nbsp;
+  <%- include('../partials/time', { date: thread.creation }) %> 
   <span class="post-num">
     <a class="linkQuote" title="Link to this post" href="<%= href %>#<%= id %>">No.</a><a class="linkQuote" title="Reply to this post" href="<%= href %>#q<%= id %>"><%= id %></a>
-    <% if (!locals.isThread) { %>&nbsp;<span>[<a href="/<%= boardUri %>/thread/<%= id %>" class="reply-link">Reply</a>]</span><% } %>
+    <% if (!locals.isThread) { %> <span>[<a href="/<%= boardUri %>/thread/<%= id %>" class="reply-link">Reply</a>]</span><% } %>
   </span>
   <% if (modView) { %>
   <%- include('/mod/partials/post-links', { boardUri, thread, postId: id, isThread: true, post: thread, showIp, globalStaff }) %>

@@ -46,6 +46,10 @@
           <td class="postform-input-cell"><label><input type="checkbox" name="whole" value="1" <%= s.wholeWords || !hasActiveSearch ? 'checked' : '' %> /></label></td>
         </tr>
         <tr>
+          <td class="post-block">Highlight Results</td>
+          <td class="postform-input-cell"><label><input type="checkbox" id="search-highlight" /></label></td>
+        </tr>
+        <tr>
           <td class="post-block">Only opening posts</td>
           <td class="postform-input-cell"><label><input type="checkbox" name="op" value="1" <%= s.opOnly ? 'checked' : '' %> /></label></td>
         </tr>
@@ -95,6 +99,8 @@
     });
   </script>
 
+  <script type="application/json" id="search-highlight-terms"><%- JSON.stringify(highlight || { terms: [] }) %></script>
+
   <% if (hasActiveSearch) { %>
   <div class="search-header">
     <% if (totalResults > 0) { %>
@@ -118,13 +124,8 @@
   </fieldset>
   <% }) %>
   <% function searchPageHref(i) { return '/search?' + buildSearchPageUrl(i); } %>
-  <div class="pagelist" data-current-page="<%= page %>" data-total-pages="<%= totalPages %>">
-    <div class="prev"><a href="<%= searchPageHref(page > 1 ? page - 1 : 1) %>"><button <%= page <= 1 ? 'disabled' : '' %>>Previous</button></a></div>
-    <div class="pages">
-      <% for (let i = 1; i <= totalPages; i++) { %><% if (i === page) { %>[<strong><a href="<%= searchPageHref(i) %>"><%= i %></a></strong>] <% } else { %>[<a href="<%= searchPageHref(i) %>"><%= i %></a>] <% } %><% } %>
-    </div>
-    <div class="next"><a href="<%= searchPageHref(page < totalPages ? page + 1 : totalPages) %>"><button <%= page >= totalPages ? 'disabled' : '' %>>Next</button></a></div>
-  </div>
+  <%- include('partials/pagelist', { page, totalPages, href: searchPageHref }) %>
   <% } %>
   <% } %>
 </div>
+<script src="/js/search-highlight.js"></script>

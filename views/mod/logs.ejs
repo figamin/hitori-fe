@@ -11,8 +11,6 @@
 </tr>
 <% }) %>
 </table>
-<p>
-<% if (currentPage > 1) { %><a href="?page=<%= currentPage - 1 %>">Prev</a><% } %>
-<% if (currentPage > 1 && currentPage < totalPages) { %> / <% } %>
-<% if (currentPage < totalPages) { %><a href="?page=<%= currentPage + 1 %>">Next</a><% } %>
-</p>
+<% function pageHref(i) { return '?page=' + i; } %>
+<%- include('../partials/pagelist', { page: currentPage, totalPages, href: pageHref }) %>
+<div style="clear: both"></div>

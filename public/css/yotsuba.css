@@ -39,3 +39,15 @@
 .stats-list {
   color: #000;
 }
+
+.post-num a{
+    color: var(--text-color);
+}
+
+.post-num a:hover{
+    color: var(--hover-link-color);
+}
+
+.quoteLink {
+    color: #000080;
+}

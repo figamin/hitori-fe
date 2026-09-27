@@ -1,8 +1,9 @@
 const themes = {
   list: [
-    { label: 'Yotsuba', id: 'yotsuba' }
+    { label: 'Yotsuba', id: 'yotsuba' },
+    { label: 'Yotsuba B', id: 'yotsuba-b' }
   ],
-  defaultId: 'yotsuba-b',
+  defaultId: 'hachunedark20',
 
   ids() {
     return this.list.map((t) => t.id);
@@ -26,7 +27,7 @@ const themes = {
 
     const def = document.createElement('option');
     def.value = '';
-    def.textContent = 'Yotsuba B';
+    def.textContent = 'Hachune Dark';
     sel.appendChild(def);
 
     this.list.forEach((theme) => {

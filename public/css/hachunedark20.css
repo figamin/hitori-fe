@@ -1,0 +1,401 @@
+@font-face {
+  font-family: "Gill Sans";
+  src: url("./fonts/GillSans.woff2") format("woff2"),
+       url("./fonts/GillSans.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gill Sans";
+  src: url("./fonts/GillSans-Italic.woff2") format("woff2"),
+       url("./fonts/GillSans-Italic.woff") format("woff");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gill Sans";
+  src: url("./fonts/GillSans-Bold.woff2") format("woff2"),
+       url("./fonts/GillSans-Bold.woff") format("woff");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Gill Sans";
+  src: url("./fonts/GillSans-BoldItalic.woff2") format("woff2"),
+       url("./fonts/GillSans-BoldItalic.woff") format("woff");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+    --background-color: #151515;
+    --background-gradient: #151515;
+    --header-highlight: #151515;
+    --text-color: #e0e0e0;
+    --border-color: #393939;
+    --border-alt: #fff;
+    --post-color: #171717;
+    --marked-color: #202020;
+    --marked-border-color: #fff;
+    --link-color: #fff;
+    --hover-link-color: #a1a1a1;
+    --name-color: #00ffe5;
+    --file-info-color: #e0e0e0;
+    --input: #151515;
+    --subject-color: #fff;
+    /* --small-button: #d1d5ee; */
+    --board-title-color: #fff;
+    /* --button-background: #d6daf0; */
+}
+
+body{
+    font-family: Verdana;
+    font-size: 0.7em;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    right: 20px;
+    bottom: 28px;
+    width: 220px;
+    height: 180px;
+    background-image: url("https://files.catbox.moe/zf4ojx.png");
+    background-size: contain;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.board-title,
+.board-description{
+    font-weight: 500;
+    text-transform: uppercase;
+    font-family: Gill Sans;
+    letter-spacing: 3px;
+}
+
+input[type="text"]{
+    background: #151515;
+    border: 1px solid #393939;
+}
+
+.side-arrows{
+    display: none;
+}
+div.post.reply{
+    border: 1px solid #393939;
+    border-left: 4px solid #393939;
+    padding: 5px;
+    margin: 5px;
+}
+
+.time-info{
+    color: #878787;
+}
+
+.post-num a {
+    color: #878787;
+}
+
+.post-num a:hover {
+    color: #a1a1a1 !important;
+}
+
+.name.youName::after{
+    font-weight: 100;
+    opacity: .666;
+}
+
+.thread {
+    margin: 10px;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-left: 4px solid #333;
+}
+
+#search-op{
+    margin-left: 10px;
+}
+
+hr{
+  border-bottom: 1px solid #222;
+}
+
+.catalog-controls{
+  border-top: 1px solid #222;
+  border-bottom: 1px solid #222;
+}
+
+.pagelist > div {
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+}
+
+.pagelist{
+    font-size: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: none;
+    border: none;
+}
+
+.prev button{
+    background: none;
+    border: none;
+}
+
+.next button{
+    background: none;
+    border: none;
+}
+
+@media (min-width: 769px) {
+    .pagelist {
+        box-shadow: 0 1px 10px 1px rgb(0 0 0 / 28%);
+        position: fixed;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        text-align: center;
+        bottom: 0;
+        left: 0;
+        margin: 0;
+        padding: 5px;
+        width: 100%;
+        box-sizing: border-box;
+        border: 0;
+        border-top: 1px solid #333333;
+        background: #202020;
+        color: #ffffff;
+        font-size: 10px;
+    }
+    
+.prev button{
+    text-decoration: none;
+    background: #252525;
+    border: 1px solid #444;
+    color: #ddd;
+    font-size: 11px;
+    padding: 2px 6px;
+}
+
+.prev button:disabled{
+    background: #252525;
+    border: 1px solid #333333;
+    color: #6b6565;
+}
+
+.next button {
+    text-decoration: none;
+    background: #252525;
+    border: 1px solid #444;
+    color: #ddd;
+    font-size: 11px;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+}
+
+.board-list{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    z-index: 30;
+    box-shadow: 0 1px 5px 1px rgb(0 0 0 / 28%);
+    border-bottom: 1px solid #333333;
+    background: #202020;
+    padding: 2px;
+    text-align: center;
+    font-size: 11.2px;
+}
+
+.board-list a{
+    font-weight: bold;
+    color: #ddd;
+}
+
+.board-list a:hover{
+    font-weight: bold;
+    color: #a1a1a1;
+}
+
+.navtopright{
+    margin-top: 20px;
+    margin-bottom: 5px;
+}
+
+.navtopright a{
+    font-size: 11.2px;
+    font-weight: bold;
+    color: #ddd;
+}
+
+.header-search-form input[type="text"]{
+    font-size: 11px;
+}
+
+.header-search-form button {
+    text-decoration: none;
+    background: #252525;
+    border: 1px solid #444;
+    color: #ddd;
+    font-size: 11px;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.quoteLink{
+    color: #00ffe5;
+    text-decoration: none;
+}
+
+.quoteLink:hover{
+    color: #00ffe5;
+    text-decoration: underline;
+}
+
+.reply-link {
+    color: #fff !important;
+}
+
+.post-block{
+    border: 1px solid var(--border-color);
+    text-align: center;
+    letter-spacing: 1px;
+    font-weight: 500;
+}
+
+input[type="text"],
+#postformTable textarea#message{
+    font-size: 11px;
+    color: #919090;
+}
+
+.new-thread-btn{
+    text-decoration: none;
+    background: #252525;
+    border: 1px solid #444;
+    color: #ddd;
+    font-size: 11px;
+    padding: 3px 6px;
+    cursor: pointer;
+}
+
+.new-thread-btn:hover{
+    background: #333;
+}
+
+#drop-zone{
+    border: 1px dashed #ff009c;
+    color: #ff009c;
+    padding: 5px;
+}
+
+select {
+    background: #151515;
+    border: 1px solid #393939;
+    color: #919090;
+    font-size: 11px;
+}
+
+input[type="password"]{
+    background: #151515;
+    border: 1px solid #393939;
+    color: #919090;
+}
+
+button{
+    text-decoration: none;
+    background: #252525;
+    border: 1px solid #444;
+    color: #ddd;
+    font-size: 11px;
+    padding: 3px 6px;
+    cursor: pointer;
+}
+
+button:hover{
+    background: #333;
+}
+
+.footer-nav-tools a {
+    font-size: 11.2px;
+    font-weight: bold;
+    color: #ddd;
+}
+
+.file-info a{
+    text-decoration: none;
+}
+
+#thread-refresh-btn {
+    text-decoration: none;
+    background: #252525;
+    border: 1px solid #444;
+    color: #ddd;
+    font-size: 11px;
+    padding: 3px 6px;
+    cursor: pointer;
+}
+
+#thread-refresh-btn:hover{
+    background: #333;
+}
+
+#footer {
+    margin-bottom: 45px;
+}
+
+@media (max-width: 768px) {
+    #footer {
+        margin-bottom: 0;
+    }
+}
+
+.boxbar {
+    background: #222;
+    outline: 1px solid #222;
+    color: #fff;
+    line-height: 2em;
+    padding-left: 0.5em;
+    position: relative;
+}
+
+.box-outer {
+    background: #222;
+}
+
+.boxcontent{
+    background: #111;
+    outline: 1px solid #222;
+}
+
+#quickReply{
+    border: 1px solid #393939 !important;
+    border-left: 4px solid #393939 !important;
+}
+
+#quickReplyHeader p {
+    font-size: 10px !important;
+    font-weight: 500 !important;
+}
+
+#quickReply .qr-textarea{
+    font-size: 11px !important;
+    color: #919090 !important;
+    border: 1px solid #393939 !important;
+}

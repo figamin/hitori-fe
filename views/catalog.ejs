@@ -28,7 +28,7 @@
 </div>
 <div class="catalog-threads" id="thread-container">
   <% threads.forEach(thread => { %>
-  <article class="catalog-thread" id="<%= thread.threadId %>" data-replies="<%= thread.replyCount %>" data-bump="<%= thread.bumpDate %>" data-creation="<%= thread.createdAt %>" data-pinned="<%= thread.pinned || false %>">
+  <article class="catalog-thread" id="<%= thread.threadId %>" data-board="<%= boardUri %>" data-thread-id="<%= thread.threadId %>" data-replies="<%= thread.replyCount %>" data-bump="<%= thread.bumpDate %>" data-creation="<%= thread.createdAt %>" data-pinned="<%= thread.pinned || false %>">
     <% var catalogFile = thread.files && thread.files.find(function(f) { return f.mime !== 'tegaki/replay'; }); %>
     <% if (catalogFile) { %>
     <div class="catalog-file">

@@ -19,11 +19,8 @@
 <% } %>
 </div>
 <% }) %>
-<p>
-<% if (currentPage > 1) { %><a href="?<%= queryString %><%= queryString ? '&' : '' %>page=<%= currentPage - 1 %>">Prev</a><% } %>
-<% if (currentPage > 1 && currentPage < totalPages) { %> / <% } %>
-<% if (currentPage < totalPages) { %><a href="?<%= queryString %><%= queryString ? '&' : '' %>page=<%= currentPage + 1 %>">Next</a><% } %>
-<% if (totalPages > 0) { %> / Page <%= currentPage %> of <%= totalPages %><% } %>
-</p>
+<% function pageHref(i) { return '?' + (queryString ? queryString + '&' : '') + 'page=' + i; } %>
+<%- include('../partials/pagelist', { page: currentPage, totalPages, href: pageHref }) %>
+<div style="clear: both"></div>
 <%- include('/mod/partials/panels') %>
 <script src="/js/quote.js"></script>

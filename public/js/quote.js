@@ -1,3 +1,8 @@
+// Post content comes in a blockquote (thread/reply cells) or a plain div (text
+// boards); the catalog renders thread text as `.thread-text`.
+const QUOTE_LINK_SELECTOR =
+  '.quoteLink, .backlink, .thread-content a[href], .reply-content a[href], .thread-text a[href]';
+
 const tooltips = {
   margin: 8,
   gap: 10,
@@ -10,20 +15,34 @@ const tooltips = {
   watchTimer: null,
 
   init() {
-    document.querySelectorAll('.post.op, .post.reply').forEach((post) => {
-      this.cachePostData(post);
-    });
-
-    document.querySelectorAll('.quoteLink, .backlink').forEach((quote) => {
-      this.processQuote(quote);
-    });
+    this.cachePosts(document);
+    this.processQuotes(document);
   },
 
   refreshQuotes(root) {
+    this.cachePosts(root);
+    this.processQuotes(root);
+  },
+
+  cachePosts(root) {
     root.querySelectorAll('.post.op, .post.reply').forEach((post) => {
       this.cachePostData(post);
     });
-    root.querySelectorAll('.quoteLink, .backlink').forEach((quote) => {
+  },
+
+  // The server marks local quote links with `.quoteLink` (backlinks carry their
+  // own class). Links to a post on *another* board or thread - vichan's
+  // `>>>/o/297`, written as `/o/res/111.html#297` or `/o/thread/111#297` - come
+  // out of the message unfurnished, so pick them up here and give them the same
+  // hover preview; `loadQuote` already knows how to fetch another thread's JSON.
+  processQuotes(root) {
+    root.querySelectorAll(QUOTE_LINK_SELECTOR).forEach((quote) => {
+      if (quote.classList.contains('quoteLink') || quote.classList.contains('backlink')) {
+        this.processQuote(quote);
+        return;
+      }
+      if (!isCrossboardQuote(quote)) return;
+      quote.classList.add('quoteLink');
       this.processQuote(quote);
     });
   },
@@ -184,36 +203,62 @@ const tooltips = {
     }, 150);
   },
 
+  // Measure the preview and anchor it next to the quote. Where it lands matters:
+  // a preview that covers its own anchor makes the browser re-target the cursor
+  // onto the preview, which fires mouseout on the link, which tears the preview
+  // down and lets it open again - a visible open/close loop (long target posts
+  // hit it every time). So pick a placement that keeps the preview clear of the
+  // anchor, and only fall back to the clamped "cover it" position when the
+  // preview is too big to fit anywhere else.
   fitTooltip(tooltip, anchorRect) {
-    const { margin, gap } = this;
-    const maxW = window.innerWidth - margin * 2;
-    const maxH = window.innerHeight - margin * 2;
-
+    const { margin } = this;
     tooltip.style.position = 'fixed';
-    tooltip.style.maxWidth = `${maxW}px`;
-    tooltip.style.maxHeight = `${maxH}px`;
+    tooltip.style.maxWidth = `${window.innerWidth - margin * 2}px`;
+    tooltip.style.maxHeight = `${window.innerHeight - margin * 2}px`;
     tooltip.style.visibility = 'hidden';
     tooltip.style.left = `${margin}px`;
     tooltip.style.top = `${margin}px`;
 
-    const width = tooltip.offsetWidth;
-    const height = tooltip.offsetHeight;
-
-    let left = anchorRect.right + gap;
-    if (left + width > window.innerWidth - margin) {
-      left = anchorRect.left - gap - width;
-    }
-    left = Math.max(margin, Math.min(left, window.innerWidth - margin - width));
-
-    let top = anchorRect.top;
-    if (top + height > window.innerHeight - margin) {
-      top = window.innerHeight - margin - height;
-    }
-    top = Math.max(margin, Math.min(top, window.innerHeight - margin - height));
-
+    const { left, top } = this.placeTooltip(tooltip.offsetWidth, tooltip.offsetHeight, anchorRect);
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
     tooltip.style.visibility = '';
+  },
+
+  placeTooltip(width, height, anchorRect) {
+    const { margin, gap } = this;
+    const maxLeft = window.innerWidth - margin - width;
+    const maxTop = window.innerHeight - margin - height;
+    const clampLeft = (value) => Math.max(margin, Math.min(value, maxLeft));
+    const clampTop = (value) => Math.max(margin, Math.min(value, maxTop));
+    const overlaps = (left, top) =>
+      left < anchorRect.right && left + width > anchorRect.left && top < anchorRect.bottom && top + height > anchorRect.top;
+    const fits = (left, top) =>
+      left >= margin &&
+      left + width <= window.innerWidth - margin &&
+      top >= margin &&
+      top + height <= window.innerHeight - margin;
+
+    // Beside the quote first (the familiar tooltip position), then above/below
+    // it, which is what long posts need when the preview is too wide for either
+    // side.
+    const spots = [
+      { left: anchorRect.right + gap, top: anchorRect.top },
+      { left: anchorRect.left - gap - width, top: anchorRect.top },
+      { left: clampLeft(anchorRect.left), top: anchorRect.bottom + gap },
+      { left: clampLeft(anchorRect.left), top: anchorRect.top - gap - height }
+    ];
+    for (const spot of spots) {
+      if (fits(spot.left, spot.top) && !overlaps(spot.left, spot.top)) return spot;
+    }
+
+    // Nothing fits (the preview is nearly as big as the window). Keep it on
+    // screen and accept the overlap - the CSS keeps it from stealing the hover.
+    let left = anchorRect.right + gap;
+    if (left + width > window.innerWidth - margin) left = anchorRect.left - gap - width;
+    let top = anchorRect.top;
+    if (top + height > window.innerHeight - margin) top = window.innerHeight - margin - height;
+    return { left: clampLeft(left), top: clampTop(top) };
   },
 
   renderPreview(postData, tooltip, quoteUrl) {
@@ -318,7 +363,7 @@ const tooltips = {
       this.activeQuote = null;
     };
 
-    if (document.querySelector('.thread')) {
+    if (document.querySelector('.thread') && !isCrossboardQuote(quote)) {
       const matches = quote.href.match(/#(\d+)/);
       if (matches) {
         quote.onclick = () => {
@@ -328,6 +373,25 @@ const tooltips = {
     }
   }
 };
+
+// A link to a post in a thread other than the one it was written in - vichan's
+// `>>>/o/297` crossboard quote. Same-thread quotes and backlinks are already
+// marked by the server, and their ids are the ones that are meaningful on this
+// page.
+function isCrossboardQuote(anchor) {
+  // The post (or catalog card) the link was written in. Its board/thread are
+  // what "same thread" is measured against, and they keep another board's post
+  // id from being matched against this page's ids.
+  const source = anchor.closest('[data-board][data-thread-id]');
+  if (!source) return false;
+
+  const target = tooltips.parseQuoteUrl(anchor.getAttribute('href') || anchor.href || '');
+  if (!target || !target.postId) return false;
+  return (
+    target.boardUri !== source.getAttribute('data-board') ||
+    String(target.threadId) !== String(source.getAttribute('data-thread-id'))
+  );
+}
 
 const backlinks = {
   init() {
@@ -368,6 +432,11 @@ const backlinks = {
       const fullUrl = link.getAttribute('href');
       const sourcePost = link.closest('[data-post-id]');
       if (!sourcePost || !fullUrl) return;
+
+      // `>>>/o/297`-style quotes carry another board's post id, which must not
+      // be matched against this page's ids (and can never have a backlink
+      // here).
+      if (isCrossboardQuote(link)) return;
 
       const sourceId = sourcePost.getAttribute('data-post-id');
       const quotedId = fullUrl.split('#')[1];

@@ -8,7 +8,8 @@
 <div id="loading" style="text-align: center; display: none">
   <p>Loading more threads...</p>
 </div>
-<div class="pagination" data-current-page="<%= currentPage %>" data-total-pages="<%= totalPages %>"></div>
+<% function pageHref(i) { return i === 1 ? '/all/' : '/all/?page=' + i; } %>
+<%- include('partials/pagelist', { page: currentPage, totalPages, href: pageHref }) %>
 
 <script src="/js/markdown-btn.js"></script>
 <script src="/js/expansion.js"></script>
