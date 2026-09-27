@@ -23,6 +23,10 @@ const dropZone_QR = isThreadPage ? document.getElementById('qr-drop-zone') : nul
 const previewContainer_QR = isThreadPage ? document.getElementById('qr-preview-container') : null;
 
 let currentFiles = [];
+let spoilerGroupSeq = 0;
+// Maps a preview card back to its File so the server-side index of a file can
+// be recomputed at submit time (removing a file shifts every later index).
+const previewFileOf = new WeakMap();
 
 Object.defineProperty(window, 'currentFiles', {
   get: function () {
@@ -166,20 +170,29 @@ function handleFilesUpload(files) {
 
     fileInfo.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
 
-    const spoilerLabel = document.createElement('label');
-    spoilerLabel.style.marginTop = '5px';
-    spoilerLabel.style.display = 'block';
-    spoilerLabel.style.color = 'var(--file-info-color)';
-    spoilerLabel.innerHTML = `
-      <input type="checkbox" name="spoiler" value="${currentFiles.length}">
-      Spoiler
+    // One radio group per file: the chosen value decides which placeholder image
+    // replaces the thumbnail. Each group needs its own name, otherwise a single
+    // choice would clear the others (radios with the same name form one group).
+    const spoilerGroup = document.createElement('div');
+    spoilerGroup.className = 'spoiler-options';
+    spoilerGroup.style.marginTop = '5px';
+    spoilerGroup.style.display = 'flex';
+    spoilerGroup.style.flexWrap = 'wrap';
+    spoilerGroup.style.gap = '8px';
+    spoilerGroup.style.color = 'var(--file-info-color)';
+    const groupName = `spoiler_${spoilerGroupSeq++}`;
+    spoilerGroup.innerHTML = `
+      <label style="display: inline-flex; align-items: center; gap: 2px;"><input type="radio" name="${groupName}" value="none" checked>None</label>
+      <label style="display: inline-flex; align-items: center; gap: 2px;"><input type="radio" name="${groupName}" value="spoiler">Spoiler</label>
+      <label style="display: inline-flex; align-items: center; gap: 2px;"><input type="radio" name="${groupName}" value="nsfw">NSFW</label>
     `;
 
     previewDiv.appendChild(previewImage);
     previewDiv.appendChild(fileInfo);
-    previewDiv.appendChild(spoilerLabel);
+    previewDiv.appendChild(spoilerGroup);
     previewDiv.appendChild(removeButton);
     previewContainer.appendChild(previewDiv);
+    previewFileOf.set(previewDiv, file);
 
     if (previewContainer_QR) {
       const qrAppend = document.createElement('div');
@@ -221,6 +234,34 @@ function updateFileInput() {
 
 window.updateFileInput = updateFileInput;
 
+// Recompute the index each selected file has in the upload, so a spoiler choice
+// still points at the right file after another one was removed.
+function refreshSpoilerIndexes(root) {
+  root.querySelectorAll('.preview-item').forEach((card) => {
+    const file = previewFileOf.get(card);
+    const index = file ? currentFiles.indexOf(file) : -1;
+    card.querySelectorAll('input[type="radio"][name^="spoiler_"]').forEach((radio) => {
+      if (index >= 0) radio.dataset.index = String(index);
+      else radio.removeAttribute('data-index');
+    });
+  });
+}
+
+// Spoiler/NSFW selections of the files picked in `root` (the main post form, or
+// the quick reply form when its own preview copies are used), as form fields.
+window.getSpoilerFields = function (root) {
+  const scope = root || document;
+  refreshSpoilerIndexes(scope);
+  const fields = [];
+  scope.querySelectorAll('input[type="radio"][name^="spoiler_"]:checked').forEach((radio) => {
+    const index = radio.dataset.index;
+    if (index === undefined || index === '' || index === '-1') return;
+    if (radio.value === 'nsfw') fields.push({ name: 'nsfw', value: index });
+    else if (radio.value === 'spoiler') fields.push({ name: 'spoiler', value: index });
+  });
+  return fields;
+};
+
 if (form) {
   form.addEventListener('submit', (e) => {
   // Skip validation if the clicked button has data-no-upload-check="true"
@@ -241,20 +282,16 @@ if (form) {
     return;
   }
 
-  // Get all checked spoiler checkboxes
-  const checkedSpoilers = Array.from(document.querySelectorAll('input[name="spoiler"]:checked')).map((checkbox) => checkbox.value);
-
-  // Create hidden input for spoiler information
-  if (checkedSpoilers.length > 0) {
-    let existingSpoilerInput = form.querySelector('input[name="spoilers"]');
-    if (existingSpoilerInput) {
-      existingSpoilerInput.remove();
-    }
-    const spoilerInput = document.createElement('input');
-    spoilerInput.type = 'hidden';
-    spoilerInput.name = 'spoiler';
-    spoilerInput.value = JSON.stringify(checkedSpoilers);
-    form.appendChild(spoilerInput);
-  }
+  // One hidden field per selected file so the server knows which of them is
+  // spoilered and which is tagged NSFW.
+  form.querySelectorAll('input[data-spoiler-field]').forEach((input) => input.remove());
+  window.getSpoilerFields(form).forEach(({ name, value }) => {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    input.setAttribute('data-spoiler-field', 'true');
+    form.appendChild(input);
+  });
   });
 }

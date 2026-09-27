@@ -209,16 +209,6 @@ const threadAutoRefresh = {
         const reply = temp.firstElementChild;
         if (!reply) return;
 
-        if (post.poll) {
-          const content = reply.querySelector('.reply-content, .thread-content');
-          if (content) {
-            const message = document.createElement('div');
-            message.className = 'poll-message';
-            message.textContent = 'Refresh page to see poll';
-            content.appendChild(message);
-          }
-        }
-
         threadReplies.appendChild(reply);
         document.dispatchEvent(new CustomEvent('contentAdded'));
         if (window.backlinks?.init) window.backlinks.init();
@@ -231,6 +221,16 @@ const threadAutoRefresh = {
         if (!isAtBottom && post.postId !== lastPostedId) {
           unreadCount++;
           updateTitle();
+        }
+
+        // Our own post just landed at the end of the thread: take the page down
+        // to it. Posting from the quick reply leaves you looking at the bottom
+        // already (its panel sits there), but a post from the main reply form -
+        // which lives at the top of the thread - left the page where it was, so
+        // the new post was out of sight. Posts pulled in by the auto refresh are
+        // deliberately left alone.
+        if (post.postId === lastPostedId) {
+          window.scrollTo(0, document.documentElement.scrollHeight);
         }
       })
       .catch((err) => {

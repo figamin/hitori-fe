@@ -14,8 +14,7 @@
 <% if (!modView) { %>
 <div class="reply-form-container">
   <% if (thread.locked) { %>
-  <h3 style="margin-top: 0">This Thread is locked and you cannot reply.</h3>
-  <img src="/img/lock.webp" width="330" />
+  <h3 style="margin-top: 0;text-align:center;">This thread is locked and you cannot reply.</h3>
   <% } else { %>
   <form action="/<%= boardUri %>/thread/<%= thread.threadId %>/reply" class="reply-form" id="reply-form" method="POST" enctype="multipart/form-data" data-max-files="<%= maxUploadFiles %>">
     <%- include('partials/post-form') %>
@@ -63,7 +62,6 @@
 <script src="/js/tegaki.js"></script>
 <script src="/js/tegaki.min.js"></script>
 <script src="/js/tegaki-replay.js"></script>
-<script src="/js/qr.js"></script>
 <script src="/js/thread.js"></script>
 <script src="/js/quote.js"></script>
 <script src="/js/delete-form.js"></script>

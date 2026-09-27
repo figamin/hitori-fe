@@ -11,6 +11,10 @@
   <div class="poll-options">
     <% 
     const totalVotes = poll.options.reduce((sum, opt) => sum + opt.voteCount, 0);
+    // expiresAt is a Date when the page renders the poll and an ISO string when
+    // the reply was appended live from /thread/N.json, so compare parsed values.
+    const expiresAt = new Date(poll.expiresAt).getTime();
+    const expired = Number.isFinite(expiresAt) && expiresAt <= Date.now();
     const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD', '#D4A5A5', '#9B59B6', '#3498DB', '#E67E22', '#1ABC9C'];
     poll.options.forEach((option, index) => {
       const percentage = totalVotes > 0 ? (option.voteCount / totalVotes * 100).toFixed(1) : 0;
@@ -22,7 +26,7 @@
             type="radio" 
             name="poll_vote_<%= poll._id %>" 
             value="<%= index %>"
-            <% if (new Date() > poll.expiresAt) { %>disabled<% } %>
+            <% if (expired) { %>disabled<% } %>
           >
           <span class="option-text"><%= option.text %></span>
         </label>
@@ -37,7 +41,7 @@
   </div>
   
   <div class="poll-footer">
-    <% if (new Date() <= poll.expiresAt) { %>
+    <% if (!expired) { %>
       <button class="vote-button edit-profile-btn" type="button">Vote</button>
     <% } else { %>
       <span class="poll-expired">Poll has expired</span>

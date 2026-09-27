@@ -120,6 +120,7 @@ div.post.reply{
     padding: 5px;
     margin-bottom: 10px;
     border-left: 4px solid #333;
+	display: flow-root;
 }
 
 #search-op{
@@ -149,6 +150,11 @@ hr{
     background: none;
     border: none;
 }
+
+.page-nav {
+    border-top: 1px solid #222;
+    border-bottom: 1px solid #222;
+} 
 
 .prev button{
     background: none;

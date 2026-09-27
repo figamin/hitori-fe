@@ -82,7 +82,12 @@ document.getElementById('message-qr').addEventListener('input', function () {
   document.getElementById('qr-charCount').textContent = this.value.length;
 });
 
+// Mirror one form control onto the other. The main reply form no longer carries
+// every control the quick reply has (nonoko/fortune/sage are QR-only now), so a
+// missing side must not abort the script - everything after this point (the AJAX
+// submit handler included) would never be registered.
 function syncText(a, b) {
+  if (!a || !b) return;
   a.oninput = function () {
     b.value = this.value;
   };
@@ -92,6 +97,7 @@ function syncText(a, b) {
 }
 
 function syncClick(a, b) {
+  if (!a || !b) return;
   a.onchange = function () {
     b.checked = this.checked;
   };
@@ -132,13 +138,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainForm = document.querySelector('.reply-form:not(#quick-reply-form)');
   const qrForm = document.getElementById('quick-reply-form');
 
-  function syncSpoilerCheckboxes() {
-    const qrSpoilerCheckboxes = qrFileSection.querySelectorAll('input[type="checkbox"]');
-    const mainSpoilerCheckboxes = mainForm.querySelectorAll('input[name="spoiler"]');
+  function syncSpoilerRadios() {
+    const qrSpoilerRadios = qrFileSection.querySelectorAll('input[type="radio"][name^="spoiler_"]');
+    const mainSpoilerRadios = mainForm.querySelectorAll('input[type="radio"][name^="spoiler_"]');
 
-    qrSpoilerCheckboxes.forEach((checkbox, index) => {
-      if (mainSpoilerCheckboxes[index]) {
-        checkbox.checked = mainSpoilerCheckboxes[index].checked;
+    mainSpoilerRadios.forEach((radio, index) => {
+      if (qrSpoilerRadios[index]) {
+        qrSpoilerRadios[index].checked = radio.checked;
       }
     });
   }
@@ -195,25 +201,27 @@ document.addEventListener('DOMContentLoaded', () => {
       };
     });
 
-    // Spoiler checkbox event listeners
-    const qrSpoilerCheckboxes = qrFileSection.querySelectorAll('input[name="spoiler"]');
-    const mainSpoilerCheckboxes = mainForm.querySelectorAll('input[name="spoiler"]');
+    // Spoiler / NSFW radio listeners (the QR file section is a copy of the
+    // main form's preview cards, so the two lists line up one to one).
+    const qrSpoilerRadios = qrFileSection.querySelectorAll('input[type="radio"][name^="spoiler_"]');
+    const mainSpoilerRadios = mainForm.querySelectorAll('input[type="radio"][name^="spoiler_"]');
 
-    qrSpoilerCheckboxes.forEach((checkbox, index) => {
-      checkbox.onchange = () => {
-        if (mainSpoilerCheckboxes[index]) {
-          mainSpoilerCheckboxes[index].checked = checkbox.checked;
-          mainSpoilerCheckboxes[index].dispatchEvent(new Event('change', { bubbles: true }));
+    qrSpoilerRadios.forEach((radio, index) => {
+      radio.onchange = () => {
+        const mainRadio = mainSpoilerRadios[index];
+        if (mainRadio) {
+          mainRadio.checked = true;
+          mainRadio.dispatchEvent(new Event('change', { bubbles: true }));
         }
       };
     });
 
     // Also listen to main form spoiler changes
-    mainSpoilerCheckboxes.forEach((checkbox, index) => {
-      checkbox.addEventListener('change', () => {
-        const qrCheckboxes = qrFileSection.querySelectorAll('input[name="spoiler"]');
-        if (qrCheckboxes[index]) {
-          qrCheckboxes[index].checked = checkbox.checked;
+    mainSpoilerRadios.forEach((radio, index) => {
+      radio.addEventListener('change', () => {
+        const qrRadios = qrFileSection.querySelectorAll('input[type="radio"][name^="spoiler_"]');
+        if (qrRadios[index]) {
+          qrRadios[index].checked = true;
         }
       });
     });
@@ -242,11 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Add spoiler states
-    const mainSpoilerCheckboxes = mainForm.querySelectorAll('input[name="spoiler"]:checked');
-    mainSpoilerCheckboxes.forEach((checkbox) => {
-      formData.append('spoiler', checkbox.value);
-    });
+    // Add spoiler / NSFW states (the index of each file is resolved by upload.js)
+    if (window.getSpoilerFields) {
+      window.getSpoilerFields(mainForm).forEach(({ name, value }) => formData.append(name, value));
+    }
 
     try {
       const response = await fetch(qrForm.action, {
@@ -351,7 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (mainDropZone && mainPreviewContainer) {
       qrFileSection.innerHTML = mainDropZone.outerHTML + mainPreviewContainer.outerHTML;
       reattachEventListeners();
-      syncSpoilerCheckboxes(); // Sync checkbox states after content update
+      syncSpoilerRadios(); // Sync radio states after content update
     }
   }
 

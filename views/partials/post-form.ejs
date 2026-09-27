@@ -12,28 +12,15 @@
 </script>
 
 <style>
-  #postformTable {
-    width: 100%;
-    max-width: 380px;
-    border-collapse: collapse;
-    table-layout: fixed;
+  .mode-select-group {
+    font-size: 0.95em;
   }
-  #postformTable .post-block {
-    width: 90px;
-    white-space: nowrap;
+  .mode-select-btn:hover {
+    color: var(--hover-link-color);
   }
-  #postformTable .postform-input-cell {
-    width: auto;
-  }
-  #postformTable input[type="text"],
-  #postformTable input[type="password"],
-  #postformTable select,
-  #postformTable textarea {
-    width: 100%;
-    box-sizing: border-box;
-  }
-  #postformTable .new-thread-btn {
-    margin-top: 4px;
+  .mode-select-btn {
+    color: var(--link-color);
+    cursor: pointer;
   }
 </style>
 
@@ -64,7 +51,7 @@
     <% if (!isThread) { %>
     <tr>
       <td class="post-block"><label for="subject">Subject</label></td>
-      <td class="postform-input-cell">
+      <td class="postform-input-cell subject-row-cell">
         <input type="text" id="subject" name="subject" class="input-text" />
         <button class="new-thread-btn" type="submit">New thread</button>
       </td>
@@ -81,19 +68,6 @@
         <% var pollsOk = locals.pollsAllowed !== false; %>
         <% var tegakiOk = locals.tegakiAllowed !== false; %>
         <div class="js-only comment-block-extra">
-          <% if (youtubeOk || pollsOk || tegakiOk) { %>
-          <select id="extra-select" class="form-select" autocomplete="off">
-            <option value="">+ Add...</option>
-            <% if (youtubeOk) { %><option value="youtube">YouTube</option><% } %>
-            <% if (pollsOk) { %><option value="poll">Poll</option><% } %>
-            <% if (tegakiOk) { %><option value="tegaki">Tegaki</option><% } %>
-          </select>
-          <% } %>
-          <% if (youtubeOk) { %>
-          <div id="youtube-details" style="display: none; padding: 5px 0;">
-            <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste YouTube URL here" style="width: 98%;" />
-          </div>
-          <% } %>
           <% if (pollsOk) { %>
           <div id="poll-details" class="poll-details" style="display: none; padding: 10px;">
             <input type="text" autocomplete="off" name="poll_question" placeholder="Poll question" style="width: 98%; margin-bottom: 5px;" />
@@ -125,40 +99,63 @@
       <td class="postform-input-cell">
         <details id="emo" class="emoclass">
           <summary>Show Emotes</summary>
-          <img src="/static/emotes/mikuwelcome.gif" title="mikuwelcome" class="emote" height="45">
-          <img src="/static/emotes/mikuhappy.gif" title="mikuhappy" class="emote" height="45">
-          <img src="/static/emotes/rinthumbs.gif" title="rinthumbs" class="emote" height="45">
-          <img src="/static/emotes/rinheart.gif" title="rinheart" class="emote" height="45">
-          <img src="/static/emotes/lenno.gif" title="lenno" class="emote" height="45">
-          <br>
-          <img src="/static/emotes/lensorry.gif" title="lensorry" class="emote" height="45">
-          <img src="/static/emotes/lenthumbs.gif" title="lenthumbs" class="emote" height="45">
-          <img src="/static/emotes/lenshock.gif" title="lenshock" class="emote" height="45">
-          <img src="/static/emotes/lukaclap.gif" title="lukaclap" class="emote" height="45">
-          <img src="/static/emotes/lukasparkle.gif" title="lukasparkle" class="emote" height="45">
-          <br>
-          <img src="/static/emotes/kaitocheer.gif" title="kaitocheer" class="emote" height="45">
-          <img src="/static/emotes/kaitolick.gif" title="kaitolick" class="emote" height="45">
-          <img src="/static/emotes/meikolol.gif" title="meikolol" class="emote" height="45">
-          <img src="/static/emotes/meikojoy.gif" title="meikojoy" class="emote" height="45">
-          <img src="/static/emotes/meikoangry.gif" title="meikoangry" class="emote" height="45">
-          <br>
-          <img src="/static/emotes/lukaspin.gif" title="lukaspin" class="emote" height="45">
-          <img src="/static/emotes/yukarietto.gif" title="yukarietto" class="emote" height="45">
+          <img src="/static/emotes/mikuwelcome.gif" title="mikuwelcome" alt="mikuwelcome" class="emote" height="45">
+          <img src="/static/emotes/mikuhappy.gif" title="mikuhappy" alt="mikuhappy" class="emote" height="45">
+          <img src="/static/emotes/rinthumbs.gif" title="rinthumbs" alt="rinthumbs" class="emote" height="45">
+          <img src="/static/emotes/rinheart.gif" title="rinheart" alt="rinheart" class="emote" height="45">
+          <img src="/static/emotes/lenno.gif" title="lenno" alt="lenno" class="emote" height="45">
+          <img src="/static/emotes/lensorry.gif" title="lensorry" alt="lensorry" class="emote" height="45">
+          <img src="/static/emotes/lenthumbs.gif" title="lenthumbs" alt="lenthumbs" class="emote" height="45">
+          <img src="/static/emotes/lenshock.gif" title="lenshock" alt="lenshock" class="emote" height="45">
+          <img src="/static/emotes/lukaclap.gif" title="lukaclap" alt="lukaclap" class="emote" height="45">
+          <img src="/static/emotes/lukasparkle.gif" title="lukasparkle" alt="lukasparkle" class="emote" height="45">
+          <img src="/static/emotes/kaitocheer.gif" title="kaitocheer" alt="kaitocheer" class="emote" height="45">
+          <img src="/static/emotes/kaitolick.gif" title="kaitolick" alt="kaitolick" class="emote" height="45">
+          <img src="/static/emotes/meikolol.gif" title="meikolol" alt="meikolol" class="emote" height="45">
+          <img src="/static/emotes/meikojoy.gif" title="meikojoy" alt="meikojoy" class="emote" height="45">
+          <img src="/static/emotes/meikoangry.gif" title="meikoangry" alt="meikoangry" class="emote" height="45">
+          <img src="/static/emotes/lukaspin.gif" title="lukaspin" alt="lukaspin" class="emote" height="45">
+          <img src="/static/emotes/yukarietto.gif" title="yukarietto" alt="yukarietto" class="emote" height="45">
         </details>
       </td>
     </tr>
-    <tr>
-      <td class="post-block"><label for="standard-image">File</label></td>
+    <% if (youtubeOk || pollsOk || tegakiOk) { %>
+    <%
+      var modeOptions = [{ mode: 'file', label: 'File' }];
+      if (youtubeOk) modeOptions.push({ mode: 'youtube', label: 'YouTube' });
+      if (pollsOk) modeOptions.push({ mode: 'poll', label: 'Poll' });
+      if (tegakiOk) modeOptions.push({ mode: 'tegaki', label: 'Tegaki' });
+    %>
+    <tr class="js-only">
+      <td class="post-block"><label>Select</label></td>
       <td class="postform-input-cell">
-        <div id="drop-zone">
-          Drag files here to upload or <br />click here to select them, or paste an image
-          <input type="file" id="image" name="image" accept="image/*,video/*" style="display: none;" />
+        <span class="mode-select-group" role="group" aria-label="Attachment type">
+          <% modeOptions.forEach(function (opt, idx) { %>
+            <% if (idx > 0) { %> / <% } %>
+            <span class="mode-select-btn<%= idx === 0 ? ' active' : '' %>" data-mode="<%= opt.mode %>"><%= opt.label %></span>
+          <% }); %>
+        </span>
+      </td>
+    </tr>
+    <% } %>
+    <tr>
+      <td class="post-block"><label id="file-row-label" for="standard-image">File</label></td>
+      <td class="postform-input-cell">
+        <div id="file-mode-content">
+          <div id="drop-zone">
+            Drag files here to upload or <br />click here to select them, or paste an image
+            <input type="file" id="image" name="image" accept="image/*,video/*" style="display: none;" />
+          </div>
+          <div id="standard-file-input">
+            <input type="file" id="standard-image" name="image" accept="image/*,video/*" />
+          </div>
+          <div id="preview-container" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
         </div>
-        <div id="standard-file-input">
-          <input type="file" id="standard-image" name="image" accept="image/*,video/*" />
+        <% if (youtubeOk) { %>
+        <div id="embed-mode-content" style="display: none;">
+          <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste YouTube URL here" style="width: 98%;" />
         </div>
-        <div id="preview-container" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+        <% } %>
       </td>
     </tr>
     <tr>
@@ -202,38 +199,45 @@
 <% if (youtubeOk || pollsOk || tegakiOk) { %>
 <script>
   document.addEventListener('DOMContentLoaded', function () {
-    const extraSelect = document.getElementById('extra-select');
-    const youtubeDetails = document.getElementById('youtube-details');
+    const modeButtons = document.querySelectorAll('.mode-select-btn');
     const pollDetails = document.getElementById('poll-details');
     const tegakiBtn = document.getElementById('tegaki-btn');
+    const fileModeContent = document.getElementById('file-mode-content');
+    const embedModeContent = document.getElementById('embed-mode-content');
+    const fileRowLabel = document.getElementById('file-row-label');
     const fileInput = document.getElementById('image');
-    const dropZone = document.getElementById('drop-zone');
+    const youtubeUrl = document.getElementById('youtube-url');
 
-    function setYoutubeMode(on) {
-      if (dropZone) dropZone.style.opacity = on ? '0.5' : '1';
-      if (fileInput) fileInput.disabled = on;
-      if (!on) {
-        const ytUrl = document.getElementById('youtube-url');
-        if (ytUrl) ytUrl.value = '';
-      }
-    }
-
-    if (extraSelect) {
-      extraSelect.addEventListener('change', function () {
-        const val = extraSelect.value;
-
-        if (youtubeDetails) youtubeDetails.style.display = val === 'youtube' ? 'block' : 'none';
-        if (pollDetails) pollDetails.style.display = val === 'poll' ? 'block' : 'none';
-        setYoutubeMode(val === 'youtube');
-
-        if (val === 'tegaki') {
-          // Tegaki isn't a panel here - it stays exactly what it was before: a plain button.
-          // Selecting it just fires that same button's click handler (from tegaki-post.js).
-          if (tegakiBtn) tegakiBtn.click();
-          extraSelect.value = '';
-        }
+    function setMode(mode) {
+      modeButtons.forEach(function (btn) {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
       });
+
+      const isYoutube = mode === 'youtube';
+      if (fileModeContent) fileModeContent.style.display = isYoutube ? 'none' : '';
+      if (embedModeContent) embedModeContent.style.display = isYoutube ? 'block' : 'none';
+      if (fileRowLabel) fileRowLabel.textContent = isYoutube ? 'Embed' : 'File';
+      if (fileInput) fileInput.disabled = isYoutube;
+      if (!isYoutube && youtubeUrl) youtubeUrl.value = '';
+
+      if (pollDetails) pollDetails.style.display = mode === 'poll' ? 'block' : 'none';
     }
+
+    modeButtons.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        const mode = btn.dataset.mode;
+
+        if (mode === 'tegaki') {
+          // Tegaki isn't a panel here - it stays exactly what it was before: a plain button.
+          // Clicking it just fires that same button's click handler (from tegaki-post.js),
+          // and it doesn't change which mode (File/YouTube/Poll) is active.
+          if (tegakiBtn) tegakiBtn.click();
+          return;
+        }
+
+        setMode(mode);
+      });
+    });
 
     const standardFileInput = document.getElementById('standard-file-input');
     if (standardFileInput) standardFileInput.style.display = 'none';
