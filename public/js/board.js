@@ -135,8 +135,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (typeof watchedThreads !== 'undefined') {
-              const subject = formData.get('subject') || formData.get('message') || '';
-              watchedThreads.autoWatchThread(result.threadId, boardUri, subject);
+              watchedThreads.autoWatchThread(
+                result.threadId,
+                boardUri,
+                formData.get('subject') || '',
+                formData.get('message') || ''
+              );
             }
 
             window.location.href = `/${boardUri}/thread/${result.threadId}`;

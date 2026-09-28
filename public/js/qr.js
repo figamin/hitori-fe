@@ -310,7 +310,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
 
           if (typeof watchedThreads !== 'undefined') {
-            watchedThreads.autoWatchThread(result.post.threadId, result.post.boardUri, result.post.subject || 'No subject');
+            // The reply has no subject of its own; the watcher falls back to the
+            // thread's OP (or its message) for the label.
+            watchedThreads.autoWatchThread(result.post.threadId, result.post.boardUri, result.post.subject, result.post.message);
           }
 
           // Hide quick reply after successful post

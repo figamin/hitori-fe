@@ -91,21 +91,36 @@ const watchedThreads = {
     if (heartIcon.classList.contains('watch-thread-off')) {
       const subject = threadElement.querySelector('.subject')?.textContent?.trim();
       const message = threadElement.querySelector('.thread-content, .reply-content, .message')?.textContent?.trim();
-      this.addThreadToWatch(threadId, boardUri, subject || message);
+      this.addThreadToWatch(threadId, boardUri, subject, message);
     } else {
       this.removeThreadFromWatch(threadId, boardUri);
     }
   },
 
-  threadLabel(op, subject) {
-    if (subject) return subject.substring(0, 50).trim();
-    const message = op
-      ? (op.querySelector('.thread-content, .reply-content, .message')?.textContent || op.querySelector('.divMessage')?.textContent || '')
-      : '';
-    return message.replace(/\s+/g, ' ').substring(0, 50).trim();
+  // Label for a watched thread: its subject when it has one, otherwise the
+  // start of the post text (`:name:` style markup and files are not part of it,
+  // they render outside .thread-content).
+  threadLabel(op, subject, message) {
+    const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
+
+    // `'No subject'` is the placeholder older callers stored; treat it as none.
+    for (const candidate of [subject, op ? op.querySelector('.subject')?.textContent : '']) {
+      const value = clean(candidate);
+      if (value && value !== 'No subject') return value.substring(0, 50);
+    }
+
+    const text =
+      clean(message) ||
+      clean(
+        op
+          ? op.querySelector('.thread-content, .reply-content, .message')?.textContent || op.querySelector('.divMessage')?.textContent
+          : ''
+      );
+    if (!text) return '';
+    return text.length > 20 ? `${text.substring(0, 20)}...` : text;
   },
 
-  addThreadToWatch(threadId, boardUri, subject) {
+  addThreadToWatch(threadId, boardUri, subject, message) {
     threadId = String(threadId);
     const stored = this.getStoredWatchedData();
     const boardThreads = stored[boardUri] || {};
@@ -116,7 +131,7 @@ const watchedThreads = {
     boardThreads[threadId] = {
       lastSeen: now,
       lastReplied: now,
-      label: this.threadLabel(op, subject) || null,
+      label: this.threadLabel(op, subject, message) || null,
       unreadCount: 0
     };
     stored[boardUri] = boardThreads;
@@ -307,7 +322,15 @@ const watchedThreads = {
     const watchListBody = document.querySelector('.watch-list-body');
     if (!watchListBody) return;
 
-    const entries = this.watchListEntries();
+    // Re-read the store so a label derived below can be written back.
+    const stored = this.getStoredWatchedData();
+    const entries = [];
+    Object.keys(stored).forEach((board) => {
+      Object.keys(stored[board]).forEach((thread) => {
+        entries.push({ board, thread, data: stored[board][thread] });
+      });
+    });
+
     watchListBody.textContent = '';
     if (!entries.length) {
       const empty = document.createElement('div');
@@ -317,8 +340,21 @@ const watchedThreads = {
       return;
     }
 
+    let labelAdded = false;
     entries.forEach(({ board, thread, data }) => {
-      const label = data.label || `${board}/${thread}`;
+      // Threads watched before labels carried the post text (or without a
+      // subject) get their label from the OP when that thread is on screen.
+      let label = data.label && data.label !== 'No subject' ? data.label : null;
+      if (!label) {
+        const op = document.querySelector(`.op[data-post-id="${thread}"], .op[data-thread-id="${thread}"]`);
+        const derived = this.threadLabel(op);
+        if (derived) {
+          label = derived;
+          data.label = derived;
+          labelAdded = true;
+        }
+      }
+      label = label || `${board}/${thread}`;
       const unread = data.unreadCount > 0 || data.lastSeen < data.lastReplied;
       const item = document.createElement('div');
       item.className = 'watch-list-item';
@@ -344,11 +380,13 @@ const watchedThreads = {
       item.appendChild(btn);
       watchListBody.appendChild(item);
     });
+
+    if (labelAdded) this.saveWatchedData(stored);
   },
 
-  autoWatchThread(threadId, boardUri, subject) {
+  autoWatchThread(threadId, boardUri, subject, message) {
     if (localStorage.getItem('disableAutoWatch') === 'true') return;
-    this.addThreadToWatch(threadId, boardUri, subject);
+    this.addThreadToWatch(threadId, boardUri, subject, message);
   },
 
   scheduleWatchedThreadsCheck() {
