@@ -46,7 +46,7 @@ const onLast = current >= lastPage;
 %>
 <div class="pagelist" data-current-page="<%= current %>" data-total-pages="<%= lastPage %>">
   <div class="page-button"><a href="<%= locals.href(1) %>"><button type="button" <%= onFirst ? 'disabled' : '' %>>First</button></a></div>
-  <div class="page-button"><a href="<%= locals.href(Math.max(1, current - 1)) %>"><button type="button" <%= onFirst ? 'disabled' : '' %>>Prev</button></a></div>
+  <div class="page-button"><a href="<%= locals.href(Math.max(1, current - 1)) %>"><button type="button" <%= onFirst ? 'disabled' : '' %>>Previous</button></a></div>
   <div class="pages">
     <% for (let i = first; i <= last; i++) { %><% if (i === current) { %><span class="current"><%= i %></span> <% } else { %>[<a href="<%= locals.href(i) %>"><%= i %></a>] <% } %><% } %>
   </div>

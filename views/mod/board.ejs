@@ -20,6 +20,7 @@
 <p>Thread Limit (Hourly): <input name="hourlyThreadLimit" type="number" min="0" value="<%= board.hourlyThreadLimit || 0 %>"> threads</p>
 <p>Preferred Language: <input name="preferredLanguage" value="<%= board.preferredLanguage || 'en-us' %>"></p>
 <p><label><input type="checkbox" name="textBoard" value="1" <%= s.includes('textBoard') ? 'checked' : '' %>> Textboard</label></p>
+<p><label><input type="checkbox" name="unindex" value="1" <%= s.includes('unindex') ? 'checked' : '' %>> Hide board</label></p>
 
 <h2>Posting</h2>
 <p>Anonymous Name: <input name="anonymousName" value="<%= board.anonymousName || '' %>" maxlength="32" placeholder="<%= siteDefaultName || '' %>"> (blank uses site default)</p>

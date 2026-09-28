@@ -30,6 +30,12 @@ const watchedThreads = {
     this.updateWatchListDisplay();
     this.updateWatcherCounter();
     this.scheduleWatchedThreadsCheck();
+
+    try {
+      if (localStorage.getItem('watchListOpen') === 'true') {
+        this.showWatchList();
+      }
+    } catch (e) {}
   },
 
   bindEvents() {
@@ -42,7 +48,11 @@ const watchedThreads = {
     document.addEventListener('click', (e) => {
       if (e.target.closest('.watch-list-btn')) {
         e.preventDefault();
-        this.showWatchList();
+        if (this.showingWatched) {
+          this.closeWatchList();
+        } else {
+          this.showWatchList();
+        }
       }
     });
   },
@@ -216,6 +226,12 @@ const watchedThreads = {
       modal.style.transform = `translate(${xPos}px, ${yPos}px)`;
     };
 
+    const savePosition = (xPos, yPos) => {
+      try {
+        localStorage.setItem('watchListPosition', JSON.stringify({ x: xPos, y: yPos }));
+      } catch (e) {}
+    };
+
     titleBar.addEventListener('mousedown', (e) => {
       if (e.target.classList.contains('close-watch-list')) return;
       initialX = e.clientX - xOffset;
@@ -238,10 +254,11 @@ const watchedThreads = {
       initialX = currentX;
       initialY = currentY;
       isDragging = false;
+      savePosition(xOffset, yOffset);
     });
 
     modal.querySelector('.close-watch-list').addEventListener('click', () => {
-      localStorage.setItem('watchListPosition', JSON.stringify({ x: xOffset, y: yOffset }));
+      savePosition(xOffset, yOffset);
       this.closeWatchList();
     });
 
@@ -259,12 +276,20 @@ const watchedThreads = {
     this.showingWatched = true;
     this.updateWatchListDisplay();
     modal.style.display = 'block';
+
+    try {
+      localStorage.setItem('watchListOpen', 'true');
+    } catch (e) {}
   },
 
   closeWatchList() {
     const modal = document.querySelector('.watch-list-modal');
     if (modal) modal.style.display = 'none';
     this.showingWatched = false;
+
+    try {
+      localStorage.setItem('watchListOpen', 'false');
+    } catch (e) {}
   },
 
   watchListEntries() {

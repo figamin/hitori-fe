@@ -142,6 +142,11 @@ const thumbs = {
     iframe.height = '360';
     iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
     iframe.allowFullscreen = true;
+    // The site sends `Referrer-Policy: no-referrer` on every page, and an iframe
+    // with no policy of its own inherits that. YouTube refuses to play without a
+    // referrer ("Video player configuration error 153"), so ask for the origin
+    // here - the same thing the server-rendered [Embed] iframes set.
+    iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     iframe.style.maxWidth = '100%';
     iframe.style.display = 'none';
 

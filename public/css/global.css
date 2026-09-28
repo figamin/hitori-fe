@@ -315,7 +315,7 @@ input[type="text"] {
   color: var(--link-color);
   font-size: 20px;
   cursor: pointer;
-  padding: 0;
+  padding: 0;	
 }
 
 .close-watch-list:hover,
@@ -335,7 +335,8 @@ input[type="text"] {
   max-height: 500px;
   overflow: auto;
   position: fixed;
-  top: 100px;
+  top: 25px;
+  right: 10px;
   width: 292px;
   z-index: 1000;
   border: 1px solid var(--border-color);
@@ -350,17 +351,21 @@ input[type="text"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0;
+  padding-left: 3px;
   font-size: 13px;
   font-weight: 500;
   border-bottom: 1px solid var(--border-color);
   color: var(--text-color);
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: move;
 }
 
 .watch-list-body {
   overflow-y: auto;
   display: flex;
   flex-direction: column;
+  padding:3px;
 }
 
 .watch-list-item {
@@ -391,14 +396,16 @@ input[type="text"] {
   padding: 0 4px 0 0;
   color: var(--link-color);
   font-size: 20px;
-  line-height: 1;
   height: auto;
   display: inline-flex;
   align-items: center;
+  line-height: 0;
+  height: 13px;
 }
 
 .remove-watch:hover {
   color: var(--hover-link-color);
+  background: none;
 }
 
 .no-watched-threads,
@@ -717,12 +724,9 @@ input[type="text"] {
   padding: 4px 0 4px 4px;
 }
 
-/* The page you are looking at. */
 .pagelist .current {
-  background: #00f;
-  color: #fff;
+  text-decoration: underline;
   font-weight: bold;
-  padding: 0 3px;
 }
 
 .pagelist .pages,
