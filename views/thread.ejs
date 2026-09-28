@@ -6,11 +6,6 @@
 <% if (modView) { %>
 <%- include('/mod/partials/thread-toolbar', { user, roleLabel, boardUri, thread }) %>
 <% } %>
-<%- include('partials/announcement') %>
-<% if (boardMessage) { %>
-<hr>
-<div style="text-align: center"><%- boardMessage %></div>
-<% } %>
 <% if (!modView) { %>
 <div class="reply-form-container">
   <% if (thread.locked) { %>
@@ -22,6 +17,11 @@
   <noscript><a href="/styling">Styling</a></noscript>
   <% } %>
 </div>
+<% } %>
+<%- include('partials/announcement') %>
+<% if (boardMessage) { %>
+<hr>
+<div style="text-align: center"><%- boardMessage %></div>
 <% } %>
 <hr>
 <% if (!modView) { %>[<a href="#" id="gallery-btn">Gallery</a>] <% } %>[<a href="/<%= boardUri %>/">Return</a>] [<a href="/<%= boardUri %>/catalog">Catalog</a>] [<a href="#bottom">Bottom</a>] [<a href="#">Top</a>]

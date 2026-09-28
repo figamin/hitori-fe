@@ -25,7 +25,10 @@
 <script src="/js/thumb.js"></script>
 <script src="/js/thread-watcher.js"></script>
 <script src="/js/settings.js"></script>
-<%# window.reportCategories = JSON.stringify(reportCategories || []); %>
+<script>
+// Options for the report dialog's category dropdown (post-menu.js reads this).
+window.reportCategories = <%- JSON.stringify(locals.reportCategories || []).replace(/</g, '\\u003c') %>;
+</script>
 <% if (modUser) { %>
 <script>
 window.modUser = true;
