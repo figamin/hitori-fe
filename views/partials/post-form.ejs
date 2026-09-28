@@ -122,7 +122,7 @@
     <% if (youtubeOk || pollsOk || tegakiOk) { %>
     <%
       var modeOptions = [{ mode: 'file', label: 'File' }];
-      if (youtubeOk) modeOptions.push({ mode: 'youtube', label: 'YouTube' });
+      if (youtubeOk) modeOptions.push({ mode: 'youtube', label: 'Embed' });
       if (pollsOk) modeOptions.push({ mode: 'poll', label: 'Poll' });
       if (tegakiOk) modeOptions.push({ mode: 'tegaki', label: 'Tegaki' });
     %>
@@ -153,7 +153,7 @@
         </div>
         <% if (youtubeOk) { %>
         <div id="embed-mode-content" style="display: none;">
-          <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste YouTube URL here" style="width: 98%;" />
+          <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste a YouTube or Nicovideo URL here" style="width: 98%;" />
         </div>
         <% } %>
       </td>

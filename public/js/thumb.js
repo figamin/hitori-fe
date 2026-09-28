@@ -11,6 +11,18 @@ const PLAYABLE_TYPES = new Set([
 ]);
 const VIDEO_TYPES = new Set(['video/webm', 'video/mp4', 'video/ogg']);
 const YT_RE = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
+const NICO_RE = /(?:nicovideo\.jp\/watch\/|nico\.ms\/)((?:sm|nm|so|lv)\d+)/i;
+
+// A posted embed is stored as a file whose `path` is the watch URL; the player
+// URL is derived from it here, so YouTube and nicovideo share one code path.
+function embedUrlFor(href) {
+  const url = String(href || '');
+  const youtube = url.match(YT_RE);
+  if (youtube) return 'https://www.youtube.com/embed/' + youtube[1];
+  const nicovideo = url.match(NICO_RE);
+  if (nicovideo) return 'https://embed.nicovideo.jp/watch/' + nicovideo[1].toLowerCase();
+  return null;
+}
 
 function isModifiedClick(e) {
   return e.which === 2 || e.ctrlKey;
@@ -127,16 +139,14 @@ const thumbs = {
     if (autoExpand) thumbLink.onclick({ which: 1 });
   },
 
-  setYoutube(link, autoExpand) {
-    const match = link.href.match(YT_RE);
-    if (!match) return;
+  setEmbedVideo(link, mime, autoExpand) {
+    const embedUrl = embedUrlFor(link.href);
+    if (!embedUrl) return;
 
     const parent = link.parentNode;
-    const embedUrl = 'https://www.youtube.com/embed/' + match[1];
     const container = document.createElement('span');
     const hideLink = makeHideLink();
-    const thumbLink = cloneThumbLink(link, 'youtube/video');
-
+    const thumbLink = cloneThumbLink(link, mime);
     const iframe = document.createElement('iframe');
     iframe.width = '640';
     iframe.height = '360';
@@ -186,13 +196,13 @@ const thumbs = {
         },
         { once: true }
       );
-    } else if (mime === 'youtube/video') {
+    } else if (mime === 'youtube/video' || mime === 'nicovideo/video') {
       link.addEventListener(
         'click',
         (e) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          this.setYoutube(link, true);
+          this.setEmbedVideo(link, mime, true);
         },
         { once: true }
       );

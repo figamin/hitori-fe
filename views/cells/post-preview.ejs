@@ -16,12 +16,13 @@
     <span>No.<%= post.postId || post.threadId %></span>
   </div>
   <% if (post.files && post.files.length > 0) { %>
+  <% var isEmbed = (mime) => mime === 'youtube/video' || mime === 'nicovideo/video'; %>
   <% if (post.files.length === 1) { %>
   <span class="file-info">
     <details open>
       <summary>
         <span class="hide-file-button"></span>
-        <% if (post.files[0].mime !== 'youtube/video') { %>
+        <% if (!isEmbed(post.files[0].mime)) { %>
         <a target="_blank" href="<%= post.files[0].path %>" class="file-link"><%= post.files[0].originalName %></a>
         - <%= post.files[0].size ? (post.files[0].size / 1024).toFixed(2) : '0.00' %> KB
         <% if (post.files[0].width && post.files[0].height) { %>(<%= post.files[0].width %>x<%= post.files[0].height %>)<% } %>
@@ -44,7 +45,7 @@
       <details open>
         <summary>
           <span class="hide-file-button"></span>
-          <% if (file.mime !== 'youtube/video') { %>
+          <% if (!isEmbed(file.mime)) { %>
           <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.originalName %></a>
           - <%= file.size ? (file.size / 1024).toFixed(2) : '0.00' %> KB
           <% if (file.width && file.height) { %>(<%= file.width %>x<%= file.height %>)<% } %>

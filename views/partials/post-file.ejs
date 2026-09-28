@@ -5,10 +5,11 @@
 <% var dw = file.width; var dh = file.height; var placeholderThumbs = ['/spoiler.png', '/spoiler.webp', '/spoiler-nsfw.png', '/spoiler-nsfw.webp', '/genericThumb.webp', '/audioGenericThumb.webp', '/imageNotFound.webp']; if (dw && dh && placeholderThumbs.indexOf(file.thumb) === -1) { if (dw > maxW || dh > maxH) { var r = Math.min(maxW / dw, maxH / dh); dw = Math.round(dw * r); dh = Math.round(dh * r); } } else { dw = null; dh = null; } %>
 <% var fileUrl = site + file.path; %>
 <% var matchingReplay = null; if (file.originalName && file.originalName.endsWith('-tegaki.png') && locals.files) { matchingReplay = files.find(function(f) { return f.mime === 'tegaki/replay' && f.originalName && f.originalName.slice(0, -4) === file.originalName.slice(0, -3); }); } %>
+<% var isEmbed = file.mime === 'youtube/video' || file.mime === 'nicovideo/video'; %>
 <details open>
   <summary>
     <span class="hide-file-button"></span>
-    <% if (file.mime !== 'youtube/video') { %>
+    <% if (!isEmbed) { %>
     <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.originalName %></a>
     - <%= (file.size / 1024).toFixed(2) %> KB
     <% if (file.width && file.height) { %>(<%= file.width %>x<%= file.height %>)<% } %>
@@ -26,14 +27,18 @@
     <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } else { %>
     <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.path %></a>
+    <% if (file.mime === 'youtube/video') { %>
     <a target="_blank" style="text-decoration: underline;" title="YouTube" href="<%= file.path %>"><img src="/img/youtube.png" width="16" alt="YouTube"></a>
+    <% } else { %>
+    <a target="_blank" style="text-decoration: underline;" title="Nicovideo" href="<%= file.path %>"><img src="/img/Play.webp" width="16" alt="Nicovideo"></a>
+    <% } %>
     <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } %>
   </summary>
   <% if (file.mime !== 'tegaki/replay') { %>
   <div class="image-container">
     <a href="<%= file.path %>" class="media-toggle" data-mime="<%= file.mime %>"<% if (file.width && file.height) { %> data-file-width="<%= file.width %>" data-file-height="<%= file.height %>"<% } %>>
-      <img loading="lazy" src="<%= file.thumb %>" alt="<%= file.originalName %>" class="<%= imgClass %>" data-full="<%= file.path %>" data-thumb="<%= file.thumb %>"<% if (dw && dh) { %> width="<%= dw %>" height="<%= dh %>"<% } else if (file.mime === 'youtube/video') { %> width="<%= maxW %>"<% } %>>
+      <img loading="lazy" src="<%= file.thumb %>" alt="<%= file.originalName %>" class="<%= imgClass %>" data-full="<%= file.path %>" data-thumb="<%= file.thumb %>"<% if (dw && dh) { %> width="<%= dw %>" height="<%= dh %>"<% } else if (isEmbed) { %> width="<%= maxW %>"<% } %>>
     </a>
   </div>
   <% } %>
