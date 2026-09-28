@@ -13,6 +13,7 @@ const VIDEO_TYPES = new Set(['video/webm', 'video/mp4', 'video/ogg']);
 const YT_RE = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
 const NICO_RE = /(?:nicovideo\.jp\/watch\/|nico\.ms\/)((?:sm|nm|so|lv)\d+)/i;
 const TWEET_RE = /(?:twitter|x|fxtwitter|fixupx|twittpr|fixvx)\.com\/(?:i\/(?:web\/)?|[\w.]+\/)?status(?:es)?\/(\d+)/i;
+const BSKY_RE = /(?:bsky\.app|fxbsky\.app|bsky\.social)\/profile\/([\w.:%-]+)\/post\/([a-z0-9]+)/i;
 
 // A posted embed is stored as a file whose `path` is the watch URL; the player
 // URL is derived from it here, so YouTube and nicovideo share one code path.
@@ -25,24 +26,21 @@ function embedUrlFor(href) {
   return null;
 }
 
-// A Twitter/X embed stores the post's URL rather than a media URL, so the raw
-// mp4 is asked of FxTwitter (the service that resolves it in the first place)
-// when the player opens. The pending lookup is what gets cached, so a page
-// showing the same post twice only asks once.
-const tweetVideoUrls = new Map();
+// Twitter/X and Bluesky embeds store the *post's* URL rather than a media URL,
+// so the raw mp4 is asked of FxEmbed (the service that resolves it in the first
+// place) when the player opens. The pending lookup is what gets cached, so a
+// page showing the same post twice only asks once.
+const postVideos = new Map();
 
-function tweetVideoUrl(href) {
-  const match = String(href || '').match(TWEET_RE);
-  if (!match) return Promise.resolve(null);
-
-  const id = match[1];
-  const cached = tweetVideoUrls.get(id);
+function resolvePostVideo(key, apiUrl) {
+  const cached = postVideos.get(key);
   if (cached) return cached;
 
-  const pending = fetch('https://api.fxtwitter.com/i/status/' + id)
+  const pending = fetch(apiUrl)
     .then((res) => (res.ok ? res.json() : null))
     .then((data) => {
-      const media = (data && data.tweet && data.tweet.media) || {};
+      const post = data && (data.tweet || data.status);
+      const media = (post && post.media) || {};
       const videos =
         Array.isArray(media.videos) && media.videos.length
           ? media.videos
@@ -52,12 +50,25 @@ function tweetVideoUrl(href) {
     .catch(() => null)
     .then((url) => {
       // A lookup that failed is not remembered, so the next click retries.
-      if (!url) tweetVideoUrls.delete(id);
+      if (!url) postVideos.delete(key);
       return url;
     });
 
-  tweetVideoUrls.set(id, pending);
+  postVideos.set(key, pending);
   return pending;
+}
+
+function tweetVideoUrl(href) {
+  const match = String(href || '').match(TWEET_RE);
+  if (!match) return Promise.resolve(null);
+  return resolvePostVideo('twitter:' + match[1], 'https://api.fxtwitter.com/i/status/' + match[1]);
+}
+
+function blueskyVideoUrl(href) {
+  const match = String(href || '').match(BSKY_RE);
+  if (!match) return Promise.resolve(null);
+  const [handle, rkey] = [match[1], match[2]];
+  return resolvePostVideo('bluesky:' + handle + '/' + rkey, 'https://api.fxbsky.app/2/status/' + handle + '/' + rkey);
 }
 
 function isModifiedClick(e) {
@@ -214,11 +225,12 @@ const thumbs = {
     if (autoExpand) thumbLink.onclick({ which: 1 });
   },
 
-  // Twitter/X embeds play the raw mp4 FxTwitter resolves, not an iframe of the
-  // post: video.twimg.com answers 403 when a request carries a referrer, so the
-  // global `Referrer-Policy: no-referrer` header is what lets these load - do
-  // not give this element a referrer policy of its own.
-  setTwitterVideo(link, mime, autoExpand) {
+  // Twitter/X and Bluesky embeds play the raw mp4 FxEmbed resolves, not an
+  // iframe of the post. (video.twimg.com answers 403 when a request carries a
+  // referrer, so the global `Referrer-Policy: no-referrer` header is what lets
+  // those load - do not give this element a referrer policy of its own.)
+  setPostVideo(link, mime, autoExpand) {
+    const resolve = mime === 'bluesky/video' ? blueskyVideoUrl : tweetVideoUrl;
     const parent = link.parentNode;
     const media = document.createElement('video');
     media.controls = true;
@@ -236,7 +248,7 @@ const thumbs = {
       media,
       hideLink,
       () => {
-        tweetVideoUrl(link.href).then((url) => {
+        resolve(link.href).then((url) => {
           // Nothing to play: send the reader to the post itself.
           if (!url) {
             if (!loaded) window.location.href = link.href;
@@ -278,13 +290,13 @@ const thumbs = {
         },
         { once: true }
       );
-    } else if (mime === 'twitter/video') {
+    } else if (mime === 'twitter/video' || mime === 'bluesky/video') {
       link.addEventListener(
         'click',
         (e) => {
           if (isModifiedClick(e)) return;
           e.preventDefault();
-          this.setTwitterVideo(link, mime, true);
+          this.setPostVideo(link, mime, true);
         },
         { once: true }
       );

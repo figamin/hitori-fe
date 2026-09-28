@@ -5,7 +5,8 @@
 <% var dw = file.width; var dh = file.height; var placeholderThumbs = ['/spoiler.png', '/spoiler.webp', '/spoiler-nsfw.png', '/spoiler-nsfw.webp', '/genericThumb.webp', '/audioGenericThumb.webp', '/imageNotFound.webp']; if (dw && dh && placeholderThumbs.indexOf(file.thumb) === -1) { if (dw > maxW || dh > maxH) { var r = Math.min(maxW / dw, maxH / dh); dw = Math.round(dw * r); dh = Math.round(dh * r); } } else { dw = null; dh = null; } %>
 <% var fileUrl = site + file.path; %>
 <% var matchingReplay = null; if (file.originalName && file.originalName.endsWith('-tegaki.png') && locals.files) { matchingReplay = files.find(function(f) { return f.mime === 'tegaki/replay' && f.originalName && f.originalName.slice(0, -4) === file.originalName.slice(0, -3); }); } %>
-<% var isEmbed = file.mime === 'youtube/video' || file.mime === 'nicovideo/video' || file.mime === 'twitter/video'; %>
+<% var EMBED_ICONS = { 'youtube/video': { icon: '/img/youtube.png', label: 'YouTube' }, 'nicovideo/video': { icon: '/img/niconico.png', label: 'Nicovideo' }, 'twitter/video': { icon: '/img/twitter.png', label: 'Twitter/X' }, 'bluesky/video': { icon: '/img/bsky.png', label: 'Bluesky' } }; %>
+<% var isEmbed = Boolean(EMBED_ICONS[file.mime]); %>
 <details open>
   <summary>
     <span class="hide-file-button"></span>
@@ -27,12 +28,9 @@
     <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } else { %>
     <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.path %></a>
-    <% if (file.mime === 'youtube/video') { %>
-    <a target="_blank" style="text-decoration: underline;" title="YouTube" href="<%= file.path %>"><img src="/img/youtube.png" width="16" alt="YouTube"></a>
-    <% } else if (file.mime === 'nicovideo/video') { %>
-    <a target="_blank" style="text-decoration: underline;" title="Nicovideo" href="<%= file.path %>"><img src="/img/niconico.png" width="16" alt="Nicovideo"></a>
-    <% } else { %>
-    <a target="_blank" style="text-decoration: underline;" title="Twitter/X" href="<%= file.path %>"><img src="/img/twitter.svg" width="16" height="16" alt="Twitter/X"></a>
+    <% var embedIcon = EMBED_ICONS[file.mime]; %>
+    <% if (embedIcon) { %>
+    <a target="_blank" style="text-decoration: underline;" title="<%= embedIcon.label %>" href="<%= file.path %>"><img src="<%= embedIcon.icon %>" width="16" alt="<%= embedIcon.label %>"></a>
     <% } %>
     <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } %>

@@ -26,7 +26,7 @@ data-board="<%= boardUri %>"
     <% } %>
   </div>
   <div class="reply-content"><%
-    // YouTube / nicovideo links get an inline player and Twitter/X links are pointed at FxTwitter (be/lib/embeds.js).
+    // YouTube / nicovideo links get an inline player and Twitter/X + Bluesky links are pointed at FxEmbed (be/lib/embeds.js).
     let parsedMSG = locals.expandMediaEmbeds(reply.markdown);
     // vichan links to its own shape, relative or absolute (its `root` config),
     // e.g. /mmd/res/45.html#48 or https://39chan.moe/mmd/res/45.html#48.

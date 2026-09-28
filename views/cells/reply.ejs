@@ -27,7 +27,7 @@
 <% if (reply.files && reply.files.length > 0) { %>
 <%- include('../partials/post-files', { files: reply.files, imageClass: 'reply-image', maxWidth: 150, maxHeight: 170, boardUri, threadId: thread.threadId, postId: reply.postId, modView }) %>
 <% } %>
-<% // YouTube / nicovideo links get an inline player and Twitter/X links are pointed at FxTwitter (be/lib/embeds.js).
+<% // YouTube / nicovideo links get an inline player and Twitter/X + Bluesky links are pointed at FxEmbed (be/lib/embeds.js).
    let parsedMSG = locals.expandMediaEmbeds(reply.markdown); const boardLinkRegex = /href=["'](?:[^"']*?\/)?([\w-]+)\/res\/(\d+)\.html(?:#(\d+))?["']/gi; parsedMSG = parsedMSG.replace(boardLinkRegex, function(match, board, threadId, post) { const archivePrefix = locals.isArchive ? 'archive/' : ''; return 'href="/' + board + '/' + archivePrefix + 'thread/' + threadId + (post ? '#'+post : '') + '"'; }); if (locals.isArchive) { parsedMSG = parsedMSG.replace(/href=["']\/([\w-]+)\/thread\/(\d+)(?:#(\d+))?["']/gi, function(match, board, threadId, postId) { return 'href="/' + board + '/archive/thread/' + threadId + (postId ? '#'+postId : '') + '"'; }); } %>
 <blockquote class="reply-content" id="m<%= reply.postId %>"><%- parsedMSG %></blockquote>
 <% if (reply.warningMessage) { %>

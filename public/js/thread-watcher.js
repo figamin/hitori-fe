@@ -365,7 +365,7 @@ const watchedThreads = {
       if (unread) {
         const span = document.createElement('span');
         span.className = 'unread-count';
-        span.textContent = `(${data.unreadCount > 0 ? data.unreadCount + ' new' : 'new'})`;
+        span.textContent = `[${data.unreadCount}]`;
         link.appendChild(document.createTextNode(' '));
         link.appendChild(span);
       }

@@ -87,6 +87,11 @@ body::before {
     text-decoration: underline;
 }
 
+.unread-count{
+    color: #ff009c;
+    font-weight: bold;
+}
+
 .board-title,
 .board-description{
     font-weight: 500;
