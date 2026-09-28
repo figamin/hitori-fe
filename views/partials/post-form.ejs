@@ -1,196 +1,212 @@
 <script>
-  function updateTextareaValueFromURL() {
-    const textarea = document.getElementById('message');
-    const hash = window.location.hash;
-    if (hash && hash.startsWith('#q')) {
-      const id = hash.substring(2);
-      textarea.value = `>>${id}\n`;
+    function updateTextareaValueFromURL() {
+        const textarea = document.getElementById('message');
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#q')) {
+            const id = hash.substring(2);
+            textarea.value = `>>${id}\n`;
+        }
     }
-  }
-  window.onload = updateTextareaValueFromURL;
-  window.onhashchange = updateTextareaValueFromURL;
+    window.onload = updateTextareaValueFromURL;
+    window.onhashchange = updateTextareaValueFromURL;
+
 </script>
 
 <style>
-  .mode-select-group {
-    font-size: 0.95em;
-  }
-  .mode-select-btn:hover {
-    color: var(--hover-link-color);
-  }
-  .mode-select-btn {
-    color: var(--link-color);
-    cursor: pointer;
-  }
+    .mode-select-group {
+        font-size: 0.95em;
+    }
+
+    .mode-select-btn:hover {
+        color: var(--hover-link-color);
+    }
+
+    .mode-select-btn {
+        color: var(--link-color);
+        cursor: pointer;
+    }
+
 </style>
 
 <table id="postformTable">
-  <tbody>
-    <tr>
-      <td class="post-block"><label for="name">Name</label></td>
-      <td class="postform-input-cell">
-        <input type="text" id="name" name="name" class="input-text" placeholder="<%= anonymousName %>" />
-      </td>
-    </tr>
-    <tr>
-      <td class="post-block"><label for="option_selectbox">Options</label></td>
-      <td class="postform-input-cell">
-        <select name="option" id="option_selectbox" autocomplete="off">
-          <option value=""></option>
-          <option value="fortune">Fortune</option>
-          <% if (isThread) { %>
-          <option value="sage">Sage (Do not bump)</option>
-          <option value="nonoko">Nonoko</option>
-          <% } %>
-        </select>
-        <% if (isThread) { %>
-        <button class="new-thread-btn" type="submit">New reply</button>
-        <% } %>
-      </td>
-    </tr>
-    <% if (!isThread) { %>
-    <tr>
-      <td class="post-block"><label for="subject">Subject</label></td>
-      <td class="postform-input-cell subject-row-cell">
-        <input type="text" id="subject" name="subject" class="input-text" />
-        <button class="new-thread-btn" type="submit">New thread</button>
-      </td>
-    </tr>
-    <% } %>
-    <tr>
-      <td class="post-block">
-        <label for="message">Comment</label>
-      </td>
-      <td class="postform-input-cell">
-        <textarea id="message" name="message" class="input-text" rows="5"></textarea>
-        <p class="file-info no-js" style="margin: 0;font-size: 10px;">Max comment length: <span id="charCount">0</span>/4096</p>
-        <% var youtubeOk = locals.youtubeAllowed !== false; %>
-        <% var pollsOk = locals.pollsAllowed !== false; %>
-        <% var tegakiOk = locals.tegakiAllowed !== false; %>
-        <div class="js-only comment-block-extra">
-          <% if (pollsOk) { %>
-          <div id="poll-details" class="poll-details" style="display: none; padding: 10px;">
-            <input type="text" autocomplete="off" name="poll_question" placeholder="Poll question" style="width: 98%; margin-bottom: 5px;" />
-            <div id="poll-options" data-max-options="<%= locals.maxPollOptions || 10 %>">
-              <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 1" style="width: 90%; margin-bottom: 5px;" />
-              <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 2" style="width: 90%; margin-bottom: 5px;" />
-            </div>
-            <button type="button" id="add-option" style="margin-bottom: 5px;">+ Add Option</button>
-            <div style="margin-top: 5px;">
-              <label>Poll duration:
-                <select name="poll_duration">
-                  <option value="1">1 day</option>
-                  <option value="3">3 days</option>
-                  <option value="7">1 week</option>
-                  <option value="30">1 month</option>
+    <tbody>
+        <tr>
+            <td class="post-block"><label for="name">Name</label></td>
+            <td class="postform-input-cell">
+                <input type="text" id="name" name="name" class="input-text" placeholder="<%= anonymousName %>" />
+            </td>
+        </tr>
+        <tr>
+            <td class="post-block"><label for="option_selectbox">Options</label></td>
+            <td class="postform-input-cell">
+                <select name="option" id="option_selectbox" autocomplete="off">
+                    <option value=""></option>
+                    <option value="fortune">Fortune</option>
+                    <% if (isThread) { %>
+                    <option value="sage">Sage (Do not bump)</option>
+                    <option value="nonoko">Nonoko</option>
+                    <% } %>
                 </select>
-              </label>
-            </div>
-          </div>
-          <% } %>
-          <% if (tegakiOk) { %>
-          <button type="button" id="tegaki-btn" title="Tegaki" class="form-button" style="display: none;">Tegaki</button>
-          <% } %>
-        </div>
-      </td>
-    </tr>
-    <tr>
-      <td class="post-block"><label>Emotes</label></td>
-      <td class="postform-input-cell">
-        <details id="emo" class="emoclass">
-          <summary>Show Emotes</summary>
-          <img src="/static/emotes/mikuwelcome.gif" title="mikuwelcome" alt="mikuwelcome" class="emote" height="45">
-          <img src="/static/emotes/mikuhappy.gif" title="mikuhappy" alt="mikuhappy" class="emote" height="45">
-          <img src="/static/emotes/rinthumbs.gif" title="rinthumbs" alt="rinthumbs" class="emote" height="45">
-          <img src="/static/emotes/rinheart.gif" title="rinheart" alt="rinheart" class="emote" height="45">
-          <img src="/static/emotes/lenno.gif" title="lenno" alt="lenno" class="emote" height="45">
-          <img src="/static/emotes/lensorry.gif" title="lensorry" alt="lensorry" class="emote" height="45">
-          <img src="/static/emotes/lenthumbs.gif" title="lenthumbs" alt="lenthumbs" class="emote" height="45">
-          <img src="/static/emotes/lenshock.gif" title="lenshock" alt="lenshock" class="emote" height="45">
-          <img src="/static/emotes/lukaclap.gif" title="lukaclap" alt="lukaclap" class="emote" height="45">
-          <img src="/static/emotes/lukasparkle.gif" title="lukasparkle" alt="lukasparkle" class="emote" height="45">
-          <img src="/static/emotes/kaitocheer.gif" title="kaitocheer" alt="kaitocheer" class="emote" height="45">
-          <img src="/static/emotes/kaitolick.gif" title="kaitolick" alt="kaitolick" class="emote" height="45">
-          <img src="/static/emotes/meikolol.gif" title="meikolol" alt="meikolol" class="emote" height="45">
-          <img src="/static/emotes/meikojoy.gif" title="meikojoy" alt="meikojoy" class="emote" height="45">
-          <img src="/static/emotes/meikoangry.gif" title="meikoangry" alt="meikoangry" class="emote" height="45">
-          <img src="/static/emotes/lukaspin.gif" title="lukaspin" alt="lukaspin" class="emote" height="45">
-          <img src="/static/emotes/yukarietto.gif" title="yukarietto" alt="yukarietto" class="emote" height="45">
-        </details>
-      </td>
-    </tr>
-    <% if (youtubeOk || pollsOk || tegakiOk) { %>
-    <%
+                <% if (isThread) { %>
+                <button class="new-thread-btn" type="submit">New reply</button>
+                <% } %>
+            </td>
+        </tr>
+        <% if (!isThread) { %>
+        <tr>
+            <td class="post-block"><label for="subject">Subject</label></td>
+            <td class="postform-input-cell subject-row-cell">
+                <input type="text" id="subject" name="subject" class="input-text" />
+                <button class="new-thread-btn" type="submit">New thread</button>
+            </td>
+        </tr>
+        <% } %>
+        <tr>
+            <td class="post-block">
+                <label for="message">Comment</label>
+            </td>
+            <td class="postform-input-cell">
+                <textarea id="message" name="message" class="input-text" rows="5"></textarea>
+                <p class="file-info no-js" style="margin: 0;font-size: 10px;">Max comment length: <span id="charCount">0</span>/4096</p>
+                <% var youtubeOk = locals.youtubeAllowed !== false; %>
+                <% var pollsOk = locals.pollsAllowed !== false; %>
+                <% var tegakiOk = locals.tegakiAllowed !== false; %>
+                <div class="js-only comment-block-extra">
+                    <% if (pollsOk) { %>
+                    <div id="poll-details" class="poll-details" style="display: none; padding: 10px;">
+                        <input type="text" autocomplete="off" name="poll_question" placeholder="Poll question" style="width: 98%; margin-bottom: 5px;" />
+                        <div id="poll-options" data-max-options="<%= locals.maxPollOptions || 10 %>">
+                            <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 1" style="width: 90%; margin-bottom: 5px;" />
+                            <input type="text" autocomplete="off" name="poll_options[]" placeholder="Option 2" style="width: 90%; margin-bottom: 5px;" />
+                        </div>
+                        <button type="button" id="add-option" style="margin-bottom: 5px;">+ Add Option</button>
+                        <div style="margin-top: 5px;">
+                            <label>Poll duration:
+                                <select name="poll_duration">
+                                    <option value="1">1 day</option>
+                                    <option value="3">3 days</option>
+                                    <option value="7">1 week</option>
+                                    <option value="30">1 month</option>
+                                </select>
+                            </label>
+                        </div>
+                    </div>
+                    <% } %>
+                    <% if (tegakiOk) { %>
+                    <button type="button" id="tegaki-btn" title="Tegaki" class="form-button" style="display: none;">Tegaki</button>
+                    <% } %>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="post-block"><label>Emotes</label></td>
+            <td class="postform-input-cell">
+                <details id="emo" class="emoclass">
+                    <summary>Show Emotes</summary>
+                    <img src="/static/emotes/mikuwelcome.gif" title="mikuwelcome" alt="mikuwelcome" class="emote" height="45">
+                    <img src="/static/emotes/mikuhappy.gif" title="mikuhappy" alt="mikuhappy" class="emote" height="45">
+                    <img src="/static/emotes/rinthumbs.gif" title="rinthumbs" alt="rinthumbs" class="emote" height="45">
+                    <img src="/static/emotes/rinheart.gif" title="rinheart" alt="rinheart" class="emote" height="45">
+                    <img src="/static/emotes/lenno.gif" title="lenno" alt="lenno" class="emote" height="45">
+                    <img src="/static/emotes/lensorry.gif" title="lensorry" alt="lensorry" class="emote" height="45">
+                    <img src="/static/emotes/lenthumbs.gif" title="lenthumbs" alt="lenthumbs" class="emote" height="45">
+                    <img src="/static/emotes/lenshock.gif" title="lenshock" alt="lenshock" class="emote" height="45">
+                    <img src="/static/emotes/lukaclap.gif" title="lukaclap" alt="lukaclap" class="emote" height="45">
+                    <img src="/static/emotes/lukasparkle.gif" title="lukasparkle" alt="lukasparkle" class="emote" height="45">
+                    <img src="/static/emotes/kaitocheer.gif" title="kaitocheer" alt="kaitocheer" class="emote" height="45">
+                    <img src="/static/emotes/kaitolick.gif" title="kaitolick" alt="kaitolick" class="emote" height="45">
+                    <img src="/static/emotes/meikolol.gif" title="meikolol" alt="meikolol" class="emote" height="45">
+                    <img src="/static/emotes/meikojoy.gif" title="meikojoy" alt="meikojoy" class="emote" height="45">
+                    <img src="/static/emotes/meikoangry.gif" title="meikoangry" alt="meikoangry" class="emote" height="45">
+                    <img src="/static/emotes/lukaspin.gif" title="lukaspin" alt="lukaspin" class="emote" height="45">
+                    <img src="/static/emotes/yukarietto.gif" title="yukarietto" alt="yukarietto" class="emote" height="45">
+                </details>
+            </td>
+        </tr>
+        <% if (youtubeOk || pollsOk || tegakiOk) { %>
+        <%
       var modeOptions = [{ mode: 'file', label: 'File' }];
       if (youtubeOk) modeOptions.push({ mode: 'youtube', label: 'Embed' });
       if (pollsOk) modeOptions.push({ mode: 'poll', label: 'Poll' });
       if (tegakiOk) modeOptions.push({ mode: 'tegaki', label: 'Tegaki' });
     %>
-    <tr class="js-only">
-      <td class="post-block"><label>Select</label></td>
-      <td class="postform-input-cell">
-        <span class="mode-select-group" role="group" aria-label="Attachment type">
-          <% modeOptions.forEach(function (opt, idx) { %>
-            <% if (idx > 0) { %> / <% } %>
-            <span class="mode-select-btn<%= idx === 0 ? ' active' : '' %>" data-mode="<%= opt.mode %>"><%= opt.label %></span>
-          <% }); %>
-        </span>
-      </td>
-    </tr>
-    <% } %>
-    <tr>
-      <td class="post-block"><label id="file-row-label" for="standard-image">File</label></td>
-      <td class="postform-input-cell">
-        <div id="file-mode-content">
-          <div id="drop-zone">
-            Drag files here to upload or <br />click here to select them, or paste an image
-            <input type="file" id="image" name="image" accept="image/*,video/*" style="display: none;" />
-          </div>
-          <div id="standard-file-input">
-            <input type="file" id="standard-image" name="image" accept="image/*,video/*" />
-          </div>
-          <div id="preview-container" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
-        </div>
-        <% if (youtubeOk) { %>
-        <div id="embed-mode-content" style="display: none;">
-          <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste a YouTube or Nicovideo URL here" style="width: 98%;" />
-        </div>
+        <tr class="js-only">
+            <td class="post-block"><label>Select</label></td>
+            <td class="postform-input-cell">
+                <span class="mode-select-group" role="group" aria-label="Attachment type">
+                    <% modeOptions.forEach(function (opt, idx) { %>
+                    <% if (idx > 0) { %> / <% } %>
+                    <span class="mode-select-btn<%= idx === 0 ? ' active' : '' %>" data-mode="<%= opt.mode %>"><%= opt.label %></span>
+                    <% }); %>
+                </span>
+            </td>
+        </tr>
         <% } %>
-      </td>
-    </tr>
-    <tr>
-      <td class="post-block"><label for="post-password">Password</label></td>
-      <td class="postform-input-cell">
-        <input type="password" id="post-password" name="post-password" class="input-text" /><span id="delPasswordInfo"> (for deletion)</span>
-      </td>
-    </tr>
-  </tbody>
+        <tr>
+            <td class="post-block"><label id="file-row-label" for="standard-image">File</label></td>
+            <td class="postform-input-cell">
+                <div id="file-mode-content">
+                    <div id="drop-zone">
+                        Drag files here to upload or <br />click here to select them, or paste an image
+                        <input type="file" id="image" name="image" accept="image/*,video/*" style="display: none;" />
+                    </div>
+                    <div id="standard-file-input">
+                        <input type="file" id="standard-image" name="image" accept="image/*,video/*" />
+                    </div>
+                    <div id="preview-container" style="margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap;"></div>
+                </div>
+                <% if (youtubeOk) { %>
+                <div id="embed-mode-content" style="display: none;">
+                    <input type="text" id="youtube-url" name="youtube-url" placeholder="Paste a YouTube, Nicovideo or Twitter/X URL here" style="width: 98%;" />
+                </div>
+                <% } %>
+            </td>
+        </tr>
+        <tr>
+            <td class="post-block"><label for="post-password">Password</label></td>
+            <td class="postform-input-cell">
+                <input type="password" id="post-password" name="post-password" class="input-text" /><span id="delPasswordInfo"> (for deletion)</span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="rules">
+                <ul style="margin-left: 0; margin-top: 0; margin-bottom: 0;">
+                    <li>Please read the <a href="/rules">Rules</a> and <a href="/faq">FAQ</a> before posting.</li>
+                    <li>Supported file types are: GIF, JPG, OGG, MP3, MP4, PNG, SWF, WEBM, WEBP.</li>
+                    <li>Supported embeds are: YouTube, Nicovideo, Twitter/X, BiliBili, Vocaroo.</li>
+                    <li>Maximum file size allowed is (idk, syrno please tell me).</li>
+                    <li>Images greater than 250x250 pixels will be thumbnailed.</li>
+                </ul>
+
+            </td>
+        </tr>
+    </tbody>
 </table>
 
 <script>
-  document.getElementById('message').addEventListener('input', function () {
-    document.getElementById('charCount').textContent = this.value.length;
-  });
+    document.getElementById('message').addEventListener('input', function() {
+        document.getElementById('charCount').textContent = this.value.length;
+    });
+
 </script>
 
 <script>
-  // Emote picker: click an emote to insert its code (:name:) at the cursor in
-  // the comment box. markdown.js turns that into the image when the post renders.
-  document.addEventListener('DOMContentLoaded', function () {
-    const message = document.getElementById('message');
-    document.querySelectorAll('#emo .emote').forEach(function (img) {
-      img.style.cursor = 'pointer';
-      img.addEventListener('click', function () {
-        if (!message) return;
-        const tag = ':' + img.title + ':';
-        const start = message.selectionStart != null ? message.selectionStart : message.value.length;
-        const end = message.selectionEnd != null ? message.selectionEnd : message.value.length;
-        message.value = message.value.slice(0, start) + tag + message.value.slice(end);
-        message.focus();
-        message.selectionStart = message.selectionEnd = start + tag.length;
-      });
+    document.addEventListener('DOMContentLoaded', function() {
+        const message = document.getElementById('message');
+        document.querySelectorAll('#emo .emote').forEach(function(img) {
+            img.style.cursor = 'pointer';
+            img.addEventListener('click', function() {
+                if (!message) return;
+                const tag = ':' + img.title + ':';
+                const start = message.selectionStart != null ? message.selectionStart : message.value.length;
+                const end = message.selectionEnd != null ? message.selectionEnd : message.value.length;
+                message.value = message.value.slice(0, start) + tag + message.value.slice(end);
+                message.focus();
+                message.selectionStart = message.selectionEnd = start + tag.length;
+            });
+        });
     });
-  });
+
 </script>
 
 <% if (tegakiOk) { %>
@@ -199,49 +215,47 @@
 
 <% if (youtubeOk || pollsOk || tegakiOk) { %>
 <script>
-  document.addEventListener('DOMContentLoaded', function () {
-    const modeButtons = document.querySelectorAll('.mode-select-btn');
-    const pollDetails = document.getElementById('poll-details');
-    const tegakiBtn = document.getElementById('tegaki-btn');
-    const fileModeContent = document.getElementById('file-mode-content');
-    const embedModeContent = document.getElementById('embed-mode-content');
-    const fileRowLabel = document.getElementById('file-row-label');
-    const fileInput = document.getElementById('image');
-    const youtubeUrl = document.getElementById('youtube-url');
+    document.addEventListener('DOMContentLoaded', function() {
+        const modeButtons = document.querySelectorAll('.mode-select-btn');
+        const pollDetails = document.getElementById('poll-details');
+        const tegakiBtn = document.getElementById('tegaki-btn');
+        const fileModeContent = document.getElementById('file-mode-content');
+        const embedModeContent = document.getElementById('embed-mode-content');
+        const fileRowLabel = document.getElementById('file-row-label');
+        const fileInput = document.getElementById('image');
+        const youtubeUrl = document.getElementById('youtube-url');
 
-    function setMode(mode) {
-      modeButtons.forEach(function (btn) {
-        btn.classList.toggle('active', btn.dataset.mode === mode);
-      });
+        function setMode(mode) {
+            modeButtons.forEach(function(btn) {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
 
-      const isYoutube = mode === 'youtube';
-      if (fileModeContent) fileModeContent.style.display = isYoutube ? 'none' : '';
-      if (embedModeContent) embedModeContent.style.display = isYoutube ? 'block' : 'none';
-      if (fileRowLabel) fileRowLabel.textContent = isYoutube ? 'Embed' : 'File';
-      if (fileInput) fileInput.disabled = isYoutube;
-      if (!isYoutube && youtubeUrl) youtubeUrl.value = '';
+            const isYoutube = mode === 'youtube';
+            if (fileModeContent) fileModeContent.style.display = isYoutube ? 'none' : '';
+            if (embedModeContent) embedModeContent.style.display = isYoutube ? 'block' : 'none';
+            if (fileRowLabel) fileRowLabel.textContent = isYoutube ? 'Embed' : 'File';
+            if (fileInput) fileInput.disabled = isYoutube;
+            if (!isYoutube && youtubeUrl) youtubeUrl.value = '';
 
-      if (pollDetails) pollDetails.style.display = mode === 'poll' ? 'block' : 'none';
-    }
-
-    modeButtons.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        const mode = btn.dataset.mode;
-
-        if (mode === 'tegaki') {
-          // Tegaki isn't a panel here - it stays exactly what it was before: a plain button.
-          // Clicking it just fires that same button's click handler (from tegaki-post.js),
-          // and it doesn't change which mode (File/YouTube/Poll) is active.
-          if (tegakiBtn) tegakiBtn.click();
-          return;
+            if (pollDetails) pollDetails.style.display = mode === 'poll' ? 'block' : 'none';
         }
 
-        setMode(mode);
-      });
+        modeButtons.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const mode = btn.dataset.mode;
+
+                if (mode === 'tegaki') {
+                    if (tegakiBtn) tegakiBtn.click();
+                    return;
+                }
+
+                setMode(mode);
+            });
+        });
+
+        const standardFileInput = document.getElementById('standard-file-input');
+        if (standardFileInput) standardFileInput.style.display = 'none';
     });
 
-    const standardFileInput = document.getElementById('standard-file-input');
-    if (standardFileInput) standardFileInput.style.display = 'none';
-  });
 </script>
 <% } %>

@@ -75,6 +75,18 @@ body::before {
     z-index: -1;
 }
 
+.announcement{
+    color: #fff;
+}
+
+.announcement a{
+    color: #00ffe5;
+}
+
+.announcement a:hover{
+    text-decoration: underline;
+}
+
 .board-title,
 .board-description{
     font-weight: 500;

@@ -29,6 +29,10 @@ body {
     font-family: Verdana;
 }
 
+.announcement{
+	color: #000;
+}
+
 .board-title{
     font-size: 10pt;
     font-weight: 500;

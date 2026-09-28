@@ -12,6 +12,7 @@ const PLAYABLE_TYPES = new Set([
 const VIDEO_TYPES = new Set(['video/webm', 'video/mp4', 'video/ogg']);
 const YT_RE = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/i;
 const NICO_RE = /(?:nicovideo\.jp\/watch\/|nico\.ms\/)((?:sm|nm|so|lv)\d+)/i;
+const TWEET_RE = /(?:twitter|x|fxtwitter|fixupx|twittpr|fixvx)\.com\/(?:i\/(?:web\/)?|[\w.]+\/)?status(?:es)?\/(\d+)/i;
 
 // A posted embed is stored as a file whose `path` is the watch URL; the player
 // URL is derived from it here, so YouTube and nicovideo share one code path.
@@ -22,6 +23,41 @@ function embedUrlFor(href) {
   const nicovideo = url.match(NICO_RE);
   if (nicovideo) return 'https://embed.nicovideo.jp/watch/' + nicovideo[1].toLowerCase();
   return null;
+}
+
+// A Twitter/X embed stores the post's URL rather than a media URL, so the raw
+// mp4 is asked of FxTwitter (the service that resolves it in the first place)
+// when the player opens. The pending lookup is what gets cached, so a page
+// showing the same post twice only asks once.
+const tweetVideoUrls = new Map();
+
+function tweetVideoUrl(href) {
+  const match = String(href || '').match(TWEET_RE);
+  if (!match) return Promise.resolve(null);
+
+  const id = match[1];
+  const cached = tweetVideoUrls.get(id);
+  if (cached) return cached;
+
+  const pending = fetch('https://api.fxtwitter.com/i/status/' + id)
+    .then((res) => (res.ok ? res.json() : null))
+    .then((data) => {
+      const media = (data && data.tweet && data.tweet.media) || {};
+      const videos =
+        Array.isArray(media.videos) && media.videos.length
+          ? media.videos
+          : (media.all || []).filter((item) => item && item.type === 'video');
+      return (videos[0] && videos[0].url) || null;
+    })
+    .catch(() => null)
+    .then((url) => {
+      // A lookup that failed is not remembered, so the next click retries.
+      if (!url) tweetVideoUrls.delete(id);
+      return url;
+    });
+
+  tweetVideoUrls.set(id, pending);
+  return pending;
 }
 
 function isModifiedClick(e) {
@@ -178,6 +214,52 @@ const thumbs = {
     if (autoExpand) thumbLink.onclick({ which: 1 });
   },
 
+  // Twitter/X embeds play the raw mp4 FxTwitter resolves, not an iframe of the
+  // post: video.twimg.com answers 403 when a request carries a referrer, so the
+  // global `Referrer-Policy: no-referrer` header is what lets these load - do
+  // not give this element a referrer policy of its own.
+  setTwitterVideo(link, mime, autoExpand) {
+    const parent = link.parentNode;
+    const media = document.createElement('video');
+    media.controls = true;
+    media.loop = localStorage.noAutoLoop !== 'true';
+    media.style.display = 'none';
+
+    const container = document.createElement('span');
+    const hideLink = makeHideLink();
+    const thumbLink = cloneThumbLink(link, mime);
+    let loaded = false;
+
+    wireToggle(
+      parent,
+      thumbLink,
+      media,
+      hideLink,
+      () => {
+        tweetVideoUrl(link.href).then((url) => {
+          // Nothing to play: send the reader to the post itself.
+          if (!url) {
+            if (!loaded) window.location.href = link.href;
+            return;
+          }
+          if (!loaded) {
+            const src = document.createElement('source');
+            src.src = url;
+            src.type = 'video/mp4';
+            media.appendChild(src);
+            loaded = true;
+          }
+          media.play();
+        });
+      },
+      () => media.pause()
+    );
+
+    container.append(hideLink, media, thumbLink);
+    parent.replaceChild(container, link);
+    if (autoExpand) thumbLink.onclick({ which: 1 });
+  },
+
   processImageLink(link) {
     const mime = link.getAttribute('data-mime') || '';
     if (mime.startsWith('image/')) {
@@ -193,6 +275,16 @@ const thumbs = {
           if (isModifiedClick(e)) return;
           e.preventDefault();
           this.setPlayer(link, mime, true);
+        },
+        { once: true }
+      );
+    } else if (mime === 'twitter/video') {
+      link.addEventListener(
+        'click',
+        (e) => {
+          if (isModifiedClick(e)) return;
+          e.preventDefault();
+          this.setTwitterVideo(link, mime, true);
         },
         { once: true }
       );
