@@ -309,54 +309,104 @@ input[type="text"] {
   top: 3px;
 }
 
+.close-watch-list {
+  background: transparent;
+  border: none;
+  color: var(--link-color);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.close-watch-list:hover,
+.close-watch-list:focus,
+.close-watch-list:active {
+  background: transparent;
+  box-shadow: none;
+  outline: none;
+  color: var(--hover-link-color);
+}
+
 .watch-list-modal {
-  background: var(--post-color);
-  left: 100px;
+  background-color: var(--post-color);
+  color: var(--text-color);
+  font-family: sans-serif;
+  font-size: 11px;
   max-height: 500px;
   overflow: auto;
   position: fixed;
-  resize: both;
   top: 100px;
   width: 292px;
   z-index: 1000;
-  border-right: 1px solid var(--border-alt);
-  border-bottom: 1px solid var(--border-alt);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  box-shadow: -1px 2px 2px rgba(0, 0, 0, 0.25);
+  padding-left: 2px;
+  padding-right: 2px;
+  box-sizing: border-box;
 }
 
 .watch-list-header {
-  border-bottom: 1px solid var(--border-alt);
-  cursor: move;
-  padding: 3px;
-  font-weight: bold;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 500;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
 .watch-list-body {
   overflow-y: auto;
-  padding: 5px;
+  display: flex;
+  flex-direction: column;
 }
 
 .watch-list-item {
-  align-items: center;
   display: flex;
-  height: 10px;
-  justify-content: space-between;
+  align-items: center;
+  white-space: nowrap;
   overflow: hidden;
-  padding: 5px 0;
+  text-overflow: ellipsis;
+  color: var(--text-color);
+  padding: 1px 2px;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.watch-list-item a:hover {
+  color: var(--hover-link-color);
+}
+
+.unread-count{
+	color: var(--subject-color);
 }
 
 .remove-watch {
+  order: -1;
   background: none;
   border: none;
-  color: #666;
   cursor: pointer;
-  padding: 0 5px;
+  padding: 0 4px 0 0;
+  color: var(--link-color);
+  font-size: 20px;
+  line-height: 1;
+  height: auto;
+  display: inline-flex;
+  align-items: center;
+}
+
+.remove-watch:hover {
+  color: var(--hover-link-color);
 }
 
 .no-watched-threads,
 .no-results {
-  color: #666;
-  padding: 20px;
   text-align: center;
+  color: var(--hover-link-color);
+  font-style: italic;
+  padding: 4px 0;
 }
 
 .image-container,
@@ -1242,12 +1292,12 @@ details:not([open]) .hide-file-button::before {
     overflow: auto;
 }
 
-.emote{
+#emo .emote{
     border: 1px dashed currentColor;
 	margin: 4px;
 }
 
-.emote:hover{
+#emo .emote:hover{
     cursor:pointer;
     filter: grayscale(1);
     opacity: 0.5;

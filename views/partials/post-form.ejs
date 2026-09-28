@@ -174,14 +174,15 @@
 </script>
 
 <script>
-  // Emote picker: click an emote to insert a tag for it at the cursor in the comment box
+  // Emote picker: click an emote to insert its code (:name:) at the cursor in
+  // the comment box. markdown.js turns that into the image when the post renders.
   document.addEventListener('DOMContentLoaded', function () {
     const message = document.getElementById('message');
     document.querySelectorAll('#emo .emote').forEach(function (img) {
       img.style.cursor = 'pointer';
       img.addEventListener('click', function () {
         if (!message) return;
-        const tag = '[emote:' + img.title + ']';
+        const tag = ':' + img.title + ':';
         const start = message.selectionStart != null ? message.selectionStart : message.value.length;
         const end = message.selectionEnd != null ? message.selectionEnd : message.value.length;
         message.value = message.value.slice(0, start) + tag + message.value.slice(end);
