@@ -13,9 +13,6 @@ function boardLatest(uri) {
   return b && b.recentThreads && b.recentThreads.length ? b.recentThreads[0] : null;
 }
 
-/* Timestamp (ms) of the newest activity on a board: the bump time of the thread
-   shown in the card, falling back to the site-wide active threads list (which
-   only covers the busiest boards) and finally to 0 when the board is empty. */
 function boardBump(uri) {
   var lt = boardLatest(uri);
   if (lt && lt.lastBump) {
@@ -29,8 +26,6 @@ function boardLabel(uri) {
   return boardMap[uri] && boardMap[uri].boardName ? boardMap[uri].boardName : uri;
 }
 
-/* First characters of a post's text, with formatting and HTML removed, used as
-   the board-card topic when an OP has no subject. */
 function postSnippet(text, len) {
   var s = String(text == null ? '' : text)
     .replace(/<br\s*\/?>/gi, ' ')
@@ -59,9 +54,6 @@ function boardTimeLabel(ts) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ', ' + timeStr;
 }
 
-/* Active threads: granular "X minutes ago" / "X hour(s), Y minutes ago",
-   scaling up through days/months/years. Mirrored client-side in
-   frontpage.js so the ".relative-time" spans keep ticking after load. */
 function activeTimeLabel(ts) {
   if (!ts) return '';
   var diffMin = Math.floor((Date.now() - ts) / 60000);
@@ -259,7 +251,6 @@ var boardSections = [
                     <div class="stat"><span>Most Users Online:</span> <span><%= Number(siteStats.mostUsersOnline || 0).toLocaleString() %></span></div>
                     <div class="stat"><span>Storage:</span> <span><%= siteStats.totalMediaSize %> GB</span></div>
                     <div class="sep"></div>
-                    <a href="/all/" class="center dim" style="margin-bottom: 3px; display: block;">View All Boards</a>
                     <span class="center dim" style="display: block;"><small>Users online now: <%= Number(siteStats.usersOnline || 0).toLocaleString() %></small></span>
                 </div>
             </div>

@@ -1,102 +1,321 @@
-<% title = 'Rules - ' + siteName; %>
-<% styles = ['/css/rules.css']; %>
-<% head = '<meta name="description" content="Global and board-specific rules for posting on 39chan.">'; %>
-<div class="box-layout rules-page">
-<%- include('../partials/banner', { title: 'Rules', boardUri: false }) %>
-<div class="box-outer top-box">
-  <div class="boxbar"><h2>Rules</h2></div>
-  <div class="boxcontent">
-    <div class="global-rules-wrapper">
-      <div class="section-heading">DISCLAIMER</div>
-      <p class="rules-intro">By using this website, you acknowledge that all user-submitted content is the sole responsibility of the individual who posted it. <b>Team 39</b> will comply with valid legal requests, court orders, subpoenas, and other applicable legal obligations where required by law. Users are solely responsible for ensuring that the content they post complies with all applicable laws and regulations.</p>
-      <p class="rules-intro"><b>Team 39</b> and 39chan do not endorse, verify, or assume liability for any user-generated content, opinions, or statements appearing on this website.</p>
+<%
+    // Pass these from your route to override, e.g. res.render('rules', { activePage: 'rules' })
+    const activePage = locals.activePage || 'rules';
 
-      <div class="section-heading">GLOBAL RULES</div>
-      <ol class="rules-list">
-        <li>Do not upload, post, discuss, request, or link to anything that violates local laws or the laws of the United States.</li>
-        <li>If you are under the age of 18, you must immediately leave this website and not continue accessing it.</li>
-        <li>Do not create low-quality troll threads or posts, or intentionally disrupt discussions (e.g. starting flame wars or provoking users).</li>
-        <li>Do not post, request, or distribute personal information ("doxxing"), nor organize or encourage raids against individuals or communities.</li>
-        <li>Do not spam or flood the boards. If you accidentally double-post, please delete the duplicate or we will delete it instead. If you continue double-posting even after deletion you will be banned.</li>
-        <li>Do not encourage self-harm, suicide, or any behavior that could reasonably put others at risk.</li>
-        <li>Avoid starting or participating in discussions centered around morality-related discourse or past controversies which are likely to divide users. (e.g. Rabbit Hole, Zaako, etc.).</li>
-        <li>Do not post gore, real-life pornography, or any graphic, grotesque, or sexually suggestive content involving real people.</li>
-        <li>Do not sign your posts with a name, avatar, or signature as you would on a traditional forum.</li>
-        <li>Advertising of any kind is prohibited, including Discord servers, social media accounts, and commercial services. Similarly, you may not promote or advertise 39chan on other websites without prior permission from both Team 39 and the owner of the website in question.</li>
-        <li>Hate speech and divisive topics (including politics, religion, racism, and similar subjects) are not permitted. This is a hobby discussion website, not /pol/.</li>
-        <li>Do not post low-effort imageboard spam (e.g. overused slang, pepes, jaks, etc.). Violations of this rule may result in a permanent, non-appealable ban and you risk having your entire device restricted from ever accessing this site again.</li>
-        <li>Do not harass, target, or organize attacks against members of the Vocaloid community, including producers, artists, developers, or fans. Constructive criticism is welcome; personal attacks are not.</li>
-        <li>This website is not centered around gossip or drama, so we ask that you refrain from creating threads or posts encouraging these types of discussions. <a href="/items/leave.png">What happens on Twitter stays on Twitter</a>, unless it's news.</li>
-      </ol>
+    const navLinks = locals.navLinks || [
+        { id: 'home',   href: '/',                             icon: 'fa-home',            label: 'Home',       desktopOnly: false },
+        { id: 'blog',   href: 'blog.html',                     icon: 'fa-newspaper',       label: 'Blog',       desktopOnly: false },
+        { id: 'faq',    href: 'faq.html',                      icon: 'fa-question-circle', label: 'FAQ',        desktopOnly: false },
+        { id: 'rules',  href: 'rules.html',                    icon: 'fa-gavel',           label: 'Rules',      desktopOnly: false },
+        { id: 'linkus', href: 'linkus.html',                   icon: 'fa-link',            label: 'Link Us',    desktopOnly: false },
+        { id: 'frames', href: '#',                             icon: 'fa-window-restore',  label: 'Frames',     desktopOnly: true  },
+        { id: 'radio',  href: 'https://radio.39chan.moe/',     icon: 'fa-broadcast-tower', label: 'Live Radio', desktopOnly: false },
+        { id: 'dl',     href: 'https://downloads.39chan.moe/', icon: 'fa-download',        label: 'Downloads',  desktopOnly: false }
+    ];
+
+    // Rule text is rendered unescaped (with the "dash" output tag) so inline HTML like links/entities works.
+    const globalRules = locals.globalRules || [
+        `Do not upload, post, discuss, request, or link to anything that violates local laws or the laws of the United States.`,
+        `If you are under the age of 18, you must immediately leave this website and not continue accessing it.`,
+        `Do not create low-quality troll threads or posts, or intentionally disrupt discussions (e.g. starting flame wars or provoking users).`,
+        `Do not post, request, or distribute personal information ("doxxing"), nor organize or encourage raids against individuals or communities.`,
+        `Do not spam or flood the boards. If you accidentally double-post, please delete the duplicate or we will delete it instead. If you continue double-posting even after deletion you will be banned.`,
+        `Do not encourage self-harm, suicide, or any behavior that could reasonably put others at risk.`,
+        `Avoid starting or participating in discussions centered around morality-related discourse or past controversies which are likely to divide users. (e.g. Rabbit Hole, Zaako, etc.).`,
+        `Do not post gore, real-life pornography, or any graphic, grotesque, or sexually suggestive content involving real people.`,
+        `Do not sign your posts with a name, avatar, or signature as you would on a traditional forum.`,
+        `Advertising of any kind is prohibited, including Discord servers, social media accounts, and commercial services. Similarly, you may not promote or advertise 39chan on other websites without prior permission from both Team 39 and the owner of the website in question.`,
+        `Hate speech and divisive topics (including politics, religion, racism, and similar subjects) are not permitted. This is a hobby discussion website, not /pol/.`,
+        `Do not post low-effort imageboard spam (e.g. overused slang, pepes, jaks, etc.). Violations of this rule may result in a permanent, non-appealable ban and you risk having your entire device restricted from ever accessing this site again.`,
+        `Do not harass, target, or organize attacks against members of the Vocaloid community, including producers, artists, developers, or fans. Constructive criticism is welcome; personal attacks are not.`,
+        `This website is not centered around gossip or drama, so we ask that you refrain from creating threads or posts encouraging these types of discussions. <a href="items/leave.png">What happens on Twitter stays on Twitter</a>, unless it's news.`
+    ];
+
+    const boardRules = locals.boardRules || [
+        {
+            id: '/leek/', name: 'Vocaloid Lounge',
+            rules: [
+                `All threads and posts must relate to Vocaloid, Synthesizer V, UTAU, or other vocal synthesizer software.`,
+                `Character threads must contain meaningful discussion or content (music, news, artwork, original creations, etc.). Image dump threads should remain on /c/.`,
+                `Global Rules 3, 7, 13 and 14 will be strictly enforced.`,
+                `Pornographic content (including illustrations) is strictly prohibited under this board. Discussion of sexual topics and the posting of non-explicit ''ecchi'' images is permitted (so long as it is tagged as NSFW).`
+            ]
+        },
+        {
+            id: '/negi/', name: 'Vocaloid Lounge (JP)',
+            rules: [
+                `The same rules that apply on /leek/ apply here.`
+            ]
+        },
+        {
+            id: '/mmd/', name: 'MikuMikuDance',
+            rules: [
+                `This board is dedicated to MikuMikuDance and related 3D creation software, including Blender, Maya, Source Filmmaker, Koikatsu, and similar tools. Keep all threads and posts on topic.`,
+                `Any posts related to MikuMikuOnline should be kept within its respective discussion thread.`
+            ]
+        },
+        {
+            id: '/live/', name: 'Vocaloid Live Events',
+            rules: [
+                `Global Rules 1, 4 and 8 will be strictly enforced.`,
+                `Do not harass or make any type of sexual, violent or discrminative comments towards any users posting self photographs (selfies) on this board.`
+            ]
+        },
+        {
+            id: '/o/', name: 'Art / Oekaki',
+            rules: [
+                `AI-generated artwork is not permitted on this board, unless it is provided exclusively as a reference for artists in request threads.`,
+                `NSFW/R-18 artwork must be tagged properly. Unlike on other boards, this rule does not apply to suggestive ''ecchi'' works.`
+            ]
+        },
+        {
+            id: '/c/', name: 'Vocaloid/Cute',
+            rules: [
+                `Images should be cute ("moe") in nature.`,
+                `Hentai artwork is strictly prohibited on this board. Ecchi is allowed, but we suggest that you tag it as NSFW.`,
+                `Do not upload low quality AI-generated artwork.`,
+                `Do not dump real-life images. This includes cosplay photos.`
+            ]
+        },
+        {
+            id: '/j/', name: 'Japanese Culture',
+            rules: [
+                `Global rule 11 will be strictly enforced. You shall not discuss politics even in a historical context.`
+            ]
+        },
+        {
+            id: '/meta/', name: 'Site Discussion',
+            rules: [
+                `You may only discuss issues related to the 39chan website &amp; software on this board.`
+            ]
+        }
+    ];
+%><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>39chan - Rules</title>
+    <meta name="description" content="A community-driven imageboard for casual Vocaloid discussion, creativity, and fandom. Join us and start the conversation.">
+    <meta name="robots" content="index, follow">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/frontpage.css">
+    <style>
+        .wrap {
+            grid-template-columns: 1fr !important;
+            max-width: 750px !important;
+            margin: 20px auto !important;
+        }
+
+        .global-rules-wrapper, .board-rules-container {
+            width: 100%;
+        }
+        .section-heading {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--chan-pink);
+            margin-bottom: 6px;
+        }
+
+        .rules-intro {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--chan-text-dim);
+            font-size: 11px;
+        }
+        .rules-list {
+            list-style-type: decimal;
+            margin-left: 25px;
+            margin-right: 0;
+            color: var(--chan-text);
+            font-size: 11px;
+        }
+        .rules-list li {
+            margin-bottom: 8px;
+        }
+        .rules-list li:last-child {
+            margin-bottom: 0;
+        }
+
+        .board-rules-container {
+            margin-top: 30px;
+        }
+        .board-rule-block {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--chan-border, #444);
+        }
+        .board-rule-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .board-rule-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--chan-text);
+            margin-bottom: 4px;
+        }
+        .board-rule-title .board-id {
+            color: var(--chan-pink);
+        }
+        .board-rules-list {
+            list-style-type: decimal;
+            margin-left: 25px;
+            margin-right: 0;
+            font-size: 11px;
+            color: var(--chan-text);
+            line-height: 1.6;
+        }
+        .board-rules-list li {
+            margin-bottom: 4px;
+        }
+        .board-rules-list li:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar theme-surface" id="topbar" role="banner">
+        <div class="topbar-main">
+            <button class="btn-icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+            <div class="brand">
+                <img src="/items/39logo2.png" alt="39chan Logo">
+            </div>
+            <button class="btn-icon" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button class="chan-app-btn-text" id="searchCancel">Cancel</button>
+        </div>
     </div>
 
-    <div class="section-heading spaced">BOARD-SPECIFIC RULES</div>
-    <div class="board-rules-container">
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/leek/</span> - Vocaloid Lounge</div>
-        <ol class="board-rules-list">
-          <li>All threads and posts must relate to Vocaloid, Synthesizer V, UTAU, or other vocal synthesizer software.</li>
-          <li>Character threads must contain meaningful discussion or content (music, news, artwork, original creations, etc.). Image dump threads should remain on /c/.</li>
-          <li>Global Rules 3, 7, 13 and 14 will be strictly enforced.</li>
-          <li>Pornographic content (including illustrations) is strictly prohibited under this board. Discussion of sexual topics and the posting of non-explicit ''ecchi'' images is permitted (so long as it is tagged as NSFW).</li>
-        </ol>
-      </div>
+    <header class="site-header theme-surface">
+        <div class="logo">
+            <a href="/"><img src="/items/39logo.png" alt="Logo"></a>
+        </div>
+        <div class="header-actions">
+            <form class="header-search" action="/search" method="GET">
+                <input type="text" name="general" placeholder="Search..." autocomplete="off">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+    </header>
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/negi/</span> - Vocaloid Lounge (JP)</div>
-        <ol class="board-rules-list">
-          <li>The same rules that apply on /leek/ apply here.</li>
-        </ol>
-      </div>
+    <nav class="forumnav">
+        <div class="tabs">
+            <% navLinks.forEach(link => { %>
+            <a href="<%= link.href %>" class="tab<%= link.id === activePage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+            <% }) %>
+        </div>
+    </nav>
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/mmd/</span> - MikuMikuDance</div>
-        <ol class="board-rules-list">
-          <li>This board is dedicated to MikuMikuDance and related 3D creation software, including Blender, Maya, Source Filmmaker, Koikatsu, and similar tools. Keep all threads and posts on topic.</li>
-          <li>Any posts related to MikuMikuOnline should be kept within its respective discussion thread.</li>
-        </ol>
-      </div>
+    <div class="wrap">
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/live/</span> - Vocaloid Live Events</div>
-        <ol class="board-rules-list">
-          <li>Global Rules 1, 4 and 8 will be strictly enforced.</li>
-          <li>Do not harass or make any type of sexual, violent or discrminative comments towards any users posting self photographs (selfies) on this board.</li>
-        </ol>
-      </div>
+        <aside class="sidebar">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/o/</span> - Art / Oekaki</div>
-        <ol class="board-rules-list">
-          <li>AI-generated artwork is not permitted on this board, unless it is provided exclusively as a reference for artists in request threads.</li>
-          <li>NSFW/R-18 artwork must be tagged properly. Unlike on other boards, this rule does not apply to suggestive ''ecchi'' works.</li>
-        </ol>
-      </div>
+            <div class="box mobnav">
+                <div class="box-title">SITE NAVIGATION</div>
+                <div class="box-body mobtabs">
+                    <% navLinks.filter(link => !link.desktopOnly).forEach(link => { %>
+                    <a href="<%= link.href %>" class="mobtab<%= link.id === activePage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+                    <% }) %>
+                </div>
+            </div>
+        </aside>
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/c/</span> - Vocaloid/Cute</div>
-        <ol class="board-rules-list">
-          <li>Images should be cute ("moe") in nature.</li>
-          <li>Hentai artwork is strictly prohibited on this board. Ecchi is allowed, but we suggest that you tag it as NSFW.</li>
-          <li>Do not upload low quality AI-generated artwork.</li>
-          <li>Do not dump real-life images. This includes cosplay photos.</li>
-        </ol>
-      </div>
+        <main class="main">
+            <div class="box">
+                <div class="box-title">RULES</div>
+                <div class="box-body" style="padding: 20px;">
+                    <div class="global-rules-wrapper">
+                        <div class="section-heading">DISCLAIMER</div>
+                        <p class="rules-intro">By using this website, you acknowledge that all user-submitted content is the sole responsibility of the individual who posted it. <b>Team 39</b> will comply with valid legal requests, court orders, subpoenas, and other applicable legal obligations where required by law. Users are solely responsible for ensuring that the content they post complies with all applicable laws and regulations.</p>
+                        <p class="rules-intro"><b>Team 39</b> and 39chan do not endorse, verify, or assume liability for any user-generated content, opinions, or statements appearing on this website.</p>
+                        <div class="section-heading">GLOBAL RULES</div>
+                        <ol class="rules-list">
+                            <% globalRules.forEach(rule => { %>
+                            <li><%- rule %></li>
+                            <% }) %>
+                        </ol>
+                    </div>
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/j/</span> - Japanese Culture</div>
-        <ol class="board-rules-list">
-          <li>Global rule 11 will be strictly enforced. You shall not discuss politics even in a historical context.</li>
-        </ol>
-      </div>
+                    <div class="section-heading" style="margin-top: 40px;">BOARD-SPECIFIC RULES</div>
+                    <div class="board-rules-container">
+                        <% boardRules.forEach(board => { %>
+                        <div class="board-rule-block">
+                            <div class="board-rule-title"><span class="board-id"><%= board.id %></span> - <%= board.name %></div>
+                            <ol class="board-rules-list">
+                                <% board.rules.forEach(rule => { %>
+                                <li><%- rule %></li>
+                                <% }) %>
+                            </ol>
+                        </div>
+                        <% }) %>
+                    </div>
 
-      <div class="board-rule-block">
-        <div class="board-rule-title"><span class="board-id">/meta/</span> - Site Discussion</div>
-        <ol class="board-rules-list">
-          <li>You may only discuss issues related to the 39chan website &amp; software on this board.</li>
-        </ol>
-      </div>
+                </div>
+            </div>
+        </main>
+
+        <aside class="panel">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+        </aside>
+
     </div>
-  </div>
-</div>
-</div>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <nav class="dock" id="dock">
+        <button class="nav-item nav-arrow" data-nav="info" aria-label="Open left sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="nav-item active" data-nav="home" aria-label="Home">
+            <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-nav="search" aria-label="Search">
+            <span class="nav-icon"><i class="fas fa-search"></i></span><span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item nav-arrow" data-nav="threads" aria-label="Open links sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </nav>
+
+    <footer class="footer">
+        <div class="links">
+            <a href="https://x.com/39chanmoe">Twitter</a> &bull;
+            <a href="https://bsky.app/profile/39chan.moe">Bluesky</a> &bull;
+            <a href="https://stats.uptimerobot.com/OdWm6iTfcy">Site Status</a> &bull;
+            <a href="https://39chan.moe/rss.xml">RSS Feed</a> &bull;
+            <a href="contact.html">Contact</a>
+        </div>
+        <div>Powered by hitori (koshi fork) | Backgrounds by <a href="https://twitter.com/intent/user?user_id=16203043">kaku sugar</a>, <a href="https://twitter.com/intent/user?user_id=726438981496246272">baisishaonian</a>, <a href="https://twitter.com/intent/user?user_id=1307204963022503939">064</a> | 39chan © 2024-2026</div>
+        <div style="margin-top: 6px; font-size: 9px;">
+            <p>
+                <strong>39chan</strong> is an independent website and is not affiliated with,
+                endorsed by, or associated with <strong>Yamaha</strong>, <strong>Crypton Future Media</strong>, the
+                <strong>VOCALOID</strong>, brand, or the creators, publishers, or rights
+                holders of any content discussed on this site.
+            </p>
+
+            <p>
+                All trademarks, copyrights, and other intellectual property remain the
+                property of their respective owners. Images, files, comments, and all other user-submitted content are the
+                sole responsibility of the users who post them.
+            </p>
+
+            <p>User comments and posts on <strong>39chan</strong> are the opinions of
+                their respective authors and do not necessarily reflect the views,
+                opinions, or policies of the site's staff or administration.</p>
+        </div>
+    </footer>
+
+    <!--I compiled all the homepage scripts into a single file because it's convenient. Also hello to the dumbass reading this.-->
+    <script src="/frontpage.js"></script>
+    <script src="/verify.js"></script>
+</body>
+</html>

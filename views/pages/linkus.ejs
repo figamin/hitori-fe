@@ -1,0 +1,351 @@
+<%
+    // Optional: pass `siteUrl`, `banners`, or `currentPage` from your route to override these defaults.
+    const siteUrl = locals.siteUrl || 'https://39chan.moe';
+    const currentPage = locals.currentPage || 'linkus.html';
+
+    const banners = locals.banners || ['icon1.png', 'icon2.png', 'icon3.gif', 'icon4.png'];
+
+    const navLinks = [
+        { href: '/',                          icon: 'fa-home',            label: 'Home',       mobile: true },
+        { href: 'blog.html',                  icon: 'fa-newspaper',       label: 'Blog',       mobile: true },
+        { href: 'faq.html',                   icon: 'fa-question-circle', label: 'FAQ',        mobile: true },
+        { href: 'rules.html',                 icon: 'fa-gavel',           label: 'Rules',      mobile: true },
+        { href: 'linkus.html',                icon: 'fa-link',            label: 'Link Us',    mobile: true },
+        { href: '/frames',                    icon: 'fa-window-restore',  label: 'Frames',     mobile: false },
+        { href: 'https://radio.39chan.moe/',  icon: 'fa-broadcast-tower', label: 'Live Radio', mobile: true },
+        { href: 'https://downloads.39chan.moe/', icon: 'fa-download',     label: 'Downloads',  mobile: true }
+    ];
+
+    const footerLinks = [
+        { href: 'https://x.com/39chanmoe',                       label: 'Twitter' },
+        { href: 'https://bsky.app/profile/39chan.moe',           label: 'Bluesky' },
+        { href: 'https://stats.uptimerobot.com/OdWm6iTfcy',      label: 'Site Status' },
+        { href: siteUrl + '/rss.xml',                            label: 'RSS Feed' },
+        { href: 'contact.html',                                  label: 'Contact' }
+    ];
+
+    const bgCredits = [
+        { href: 'https://twitter.com/intent/user?user_id=16203043',               label: 'kaku sugar' },
+        { href: 'https://twitter.com/intent/user?user_id=726438981496246272',     label: 'baisishaonian' },
+        { href: 'https://twitter.com/intent/user?user_id=1307204963022503939',    label: '064' }
+    ];
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>39chan - Link Us</title>
+    <meta name="description" content="Got a website? Link back to 39chan with one of our banners.">
+    <meta name="robots" content="index, follow">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* whatever works works ig */
+        .wrap {
+            grid-template-columns: 1fr !important;
+            max-width: 750px !important;
+            margin: 20px auto !important;
+        }
+
+        .linkus-intro {
+            text-align: center;
+            margin-bottom: 22px;
+            color: var(--chan-text-dim);
+            font-size: 11px;
+            line-height: 1.6;
+        }
+
+        .linkus-intro strong {
+            color: var(--chan-text);
+        }
+
+        .linkus-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .linkus-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .linkus-banner {
+            display: block;
+            max-width: 100%;
+            border: 1px solid var(--chan-border);
+        }
+
+        .linkus-banner.is-badge {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+        }
+
+        .linkus-code {
+            position: relative;
+            width: 100%;
+            max-width: 460px;
+            background-color: #101010;
+            border: 1px solid var(--chan-border);
+            padding: 10px 40px 10px 12px;
+            font-family: "Courier New", monospace;
+            font-size: 11px;
+            line-height: 1.6;
+            color: var(--chan-text);
+            word-break: break-all;
+        }
+
+        .linkus-copy {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid var(--chan-border);
+            color: var(--chan-text-dim);
+            cursor: pointer;
+            font-size: 11px;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .linkus-copy:hover {
+            border-color: var(--chan-pink);
+            color: var(--chan-pink);
+        }
+
+        .linkus-copy.copied {
+            border-color: var(--chan-pink);
+            color: var(--chan-pink);
+        }
+
+        .linkus-sep {
+            height: 1px;
+            background-color: var(--chan-border);
+            margin: 28px 0;
+        }
+
+        .linkus-specs {
+            font-size: 11px;
+            color: var(--chan-text-dim);
+            line-height: 1.7;
+        }
+
+        .linkus-specs strong {
+            color: var(--chan-text);
+        }
+
+        .linkus-specs ul {
+            margin: 8px 0 0 18px;
+        }
+
+        .linkus-affiliates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .linkus-affiliates a {
+            display: block;
+        }
+
+        .linkus-affiliates img {
+            display: block;
+            width: 88px;
+            height: 31px;
+            border: 1px solid var(--chan-border);
+        }
+
+        @media (min-width: 560px) {
+            .linkus-item {
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar theme-surface" id="topbar" role="banner">
+        <div class="topbar-main">
+            <button class="btn-icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+            <div class="brand">
+                <img src="items/39logo2.png" alt="39chan Logo">
+            </div>
+            <button class="btn-icon" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button class="chan-app-btn-text" id="searchCancel">Cancel</button>
+        </div>
+    </div>
+
+    <header class="site-header theme-surface">
+        <div class="logo">
+            <a href="/"><img src="items/39logo.png" alt="Logo"></a>
+        </div>
+        <div class="header-actions">
+            <div class="header-search">
+                <input type="text" placeholder="Search...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="forumnav">
+        <div class="tabs">
+            <% navLinks.forEach(function (link) { %>
+            <a href="<%= link.href %>" class="tab<%= link.href === currentPage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+            <% }); %>
+        </div>
+    </nav>
+
+    <div class="wrap">
+
+        <aside class="sidebar">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+            <div class="box mobnav">
+                <div class="box-title">SITE NAVIGATION</div>
+                <div class="box-body mobtabs">
+                    <% navLinks.filter(function (l) { return l.mobile; }).forEach(function (link) { %>
+                    <a href="<%= link.href %>" class="mobtab<%= link.href === currentPage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+                    <% }); %>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="box">
+                <div class="box-title">LINK US</div>
+                <div class="box-body" style="padding: 20px;">
+
+                    <p class="linkus-intro">Got a website and want others to discover 39chan? <strong>Link us!</strong> Grab a banner below and drop the code on your site, it'd mean a lot to us.</p>
+
+                    <div class="linkus-sep"></div>
+
+                    <div class="linkus-grid">
+                        <% banners.forEach(function (file) {
+                            const snippet = '<a href="' + siteUrl + '"><img src="' + siteUrl + '/' + file + '"></a>';
+                        %>
+                        <div class="linkus-item">
+                            <img class="linkus-banner" src="<%= file %>" alt="39chan banner">
+                            <div class="linkus-code">
+                                <code><span class="tag">&lt;a</span> <span class="attr">href=</span><span class="val">"<%= siteUrl %>"</span><span class="tag">&gt;&lt;img</span> <span class="attr">src=</span><span class="val">"<%= siteUrl %>/<%= file %>"</span><span class="tag">&gt;&lt;/a&gt;</span></code>
+                                <button class="linkus-copy" type="button" data-copy="<%= snippet %>" aria-label="Copy code"><i class="fas fa-copy"></i></button>
+                            </div>
+                        </div>
+                        <% }); %>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+
+        <aside class="panel">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+        </aside>
+
+    </div>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <nav class="dock" id="dock">
+        <button class="nav-item nav-arrow" data-nav="info" aria-label="Open left sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="nav-item active" data-nav="home" aria-label="Home">
+            <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-nav="search" aria-label="Search">
+            <span class="nav-icon"><i class="fas fa-search"></i></span><span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item nav-arrow" data-nav="threads" aria-label="Open links sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </nav>
+
+    <footer class="footer">
+        <div class="links">
+            <%- footerLinks.map(function (l) {
+                return '<a href="' + l.href + '">' + l.label + '</a>';
+            }).join(' &bull;\n            ') %>
+        </div>
+        <div>Powered by hitori (koshi fork) | Backgrounds by
+            <%- bgCredits.map(function (c) {
+                return '<a href="' + c.href + '">' + c.label + '</a>';
+            }).join(', ') %>
+            | 39chan &copy; 2024-<%= new Date().getFullYear() %></div>
+        <div style="margin-top: 6px; font-size: 9px;">
+            <p>
+                <strong>39chan</strong> is an independent website and is not affiliated with,
+                endorsed by, or associated with <strong>Yamaha</strong>, <strong>Crypton Future Media</strong>, the
+                <strong>VOCALOID</strong>, brand, or the creators, publishers, or rights
+                holders of any content discussed on this site.
+            </p>
+
+            <p>
+                All trademarks, copyrights, and other intellectual property remain the
+                property of their respective owners. Images, files, comments, and all other user-submitted content are the
+                sole responsibility of the users who post them.
+            </p>
+
+            <p>User comments and posts on <strong>39chan</strong> are the opinions of
+                their respective authors and do not necessarily reflect the views,
+                opinions, or policies of the site's staff or administration.</p>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+    <script src="verify.js"></script>
+    <script>
+        document.querySelectorAll('.linkus-copy').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                // getAttribute already returns the decoded string, so no manual entity replacement is needed
+                var text = btn.getAttribute('data-copy');
+
+                var done = function () {
+                    var icon = btn.querySelector('i');
+                    btn.classList.add('copied');
+                    icon.className = 'fas fa-check';
+                    setTimeout(function () {
+                        btn.classList.remove('copied');
+                        icon.className = 'fas fa-copy';
+                    }, 1500);
+                };
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text).then(done).catch(function () {
+                        fallbackCopy(text, done);
+                    });
+                } else {
+                    fallbackCopy(text, done);
+                }
+            });
+        });
+
+        function fallbackCopy(text, done) {
+            var ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); } catch (e) {}
+            document.body.removeChild(ta);
+        }
+    </script>
+</body>
+</html>

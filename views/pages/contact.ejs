@@ -1,0 +1,220 @@
+<%
+    const navLinks = [
+        { href: '/',                              icon: 'fa-home',            label: 'Home',       mobile: true  },
+        { href: 'blog.html',                      icon: 'fa-newspaper',       label: 'Blog',       mobile: true  },
+        { href: 'faq.html',                       icon: 'fa-question-circle', label: 'FAQ',        mobile: true  },
+        { href: 'rules.html',                     icon: 'fa-gavel',           label: 'Rules',      mobile: true  },
+        { href: 'linkus.html',                    icon: 'fa-link',            label: 'Link Us',    mobile: true  },
+        { href: '/frames',                        icon: 'fa-window-restore',  label: 'Frames',     mobile: false },
+        { href: 'https://radio.39chan.moe/',      icon: 'fa-broadcast-tower', label: 'Live Radio', mobile: true  },
+        { href: 'https://downloads.39chan.moe/',  icon: 'fa-download',        label: 'Downloads',  mobile: true  }
+    ];
+
+    const footerLinks = [
+        { href: 'https://x.com/39chanmoe',                        label: 'Twitter'     },
+        { href: 'https://bsky.app/profile/39chan.moe',            label: 'Bluesky'     },
+        { href: 'https://stats.uptimerobot.com/OdWm6iTfcy',       label: 'Site Status' },
+        { href: 'https://39chan.moe/rss.xml',                     label: 'RSS Feed'    },
+        { href: 'contact.html',                                   label: 'Contact'     }
+    ];
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+    <title>39chan - Contact Us</title>
+    <meta name="description" content="Get in touch with the 39chan staff.">
+    <meta name="robots" content="index, follow">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="frontpage.css">
+</head>
+<body>
+
+    <div class="topbar theme-surface" id="topbar" role="banner">
+        <div class="topbar-main">
+            <button class="btn-icon" id="menuBtn" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+            <div class="brand">
+                <img src="items/39logo2.png" alt="39chan Logo">
+            </div>
+            <button class="btn-icon" id="searchBtn" aria-label="Search"><i class="fas fa-search"></i></button>
+        </div>
+        <div class="topbar-search">
+            <input type="text" id="searchInput" placeholder="Search...">
+            <button class="chan-app-btn-text" id="searchCancel">Cancel</button>
+        </div>
+    </div>
+
+    <header class="site-header theme-surface">
+        <div class="logo">
+            <a href="/"><img src="items/39logo.png" alt="Logo"></a>
+        </div>
+        <div class="header-actions">
+            <div class="header-search">
+                <input type="text" placeholder="Search...">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <nav class="forumnav">
+        <div class="tabs">
+            <% navLinks.forEach(link => { %>
+            <a href="<%= link.href %>" class="tab<%= link.href === currentPage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+            <% }) %>
+        </div>
+    </nav>
+
+    <div class="wrap contact-wrap">
+
+        <aside class="sidebar">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+
+            <div class="box mobnav">
+                <div class="box-title">SITE NAVIGATION</div>
+                <div class="box-body mobtabs">
+                    <% navLinks.filter(link => link.mobile).forEach(link => { %>
+                    <a href="<%= link.href %>" class="mobtab<%= link.href === currentPage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+                    <% }) %>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="box">
+                <div class="box-title">CONTACT US</div>
+                <div class="box-body" style="padding: 20px;">
+
+                    <form class="contact-form" id="contactForm" novalidate>
+
+                        <div class="contact-field" id="fieldEmail">
+                            <label for="ctEmail">Your Email</label>
+                            <input type="email" id="ctEmail" name="email" placeholder="you@example.com" autocomplete="email" required>
+                            <span class="field-error">Please enter a valid email address.</span>
+                        </div>
+
+                        <div class="contact-field" id="fieldSubject">
+                            <label for="ctSubject">Subject</label>
+                            <input type="text" id="ctSubject" name="subject" placeholder="Write your subject here..." maxlength="150" required>
+                            <span class="field-error">Please enter a subject.</span>
+                        </div>
+
+                        <div class="contact-field" id="fieldBody">
+                            <label for="ctBody">Message</label>
+                            <textarea id="ctBody" name="body" placeholder="Write your message here..." required></textarea>
+                            <span class="field-error">Please enter a message.</span>
+                        </div>
+
+                        <div class="contact-submit-row">
+                            <button type="submit" class="contact-submit"><i class="fas fa-paper-plane"></i> Send</button>
+                            <span class="contact-status" id="contactStatus"></span>
+                        </div>
+
+                    </form>
+
+                    <p class="contact-note">By sending a message you agree it may be reviewed by 39chan staff. We do not share your email with third parties.</p>
+
+                </div>
+            </div>
+        </main>
+
+        <aside class="panel">
+            <button class="drawer-close" data-drawer-close>&times; Close</button>
+        </aside>
+
+    </div>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <nav class="dock" id="dock">
+        <button class="nav-item nav-arrow" data-nav="info" aria-label="Open left sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-left"></i></span>
+        </button>
+        <button class="nav-item active" data-nav="home" aria-label="Home">
+            <span class="nav-icon"><i class="fas fa-home"></i></span><span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" data-nav="search" aria-label="Search">
+            <span class="nav-icon"><i class="fas fa-search"></i></span><span class="nav-label">Search</span>
+        </button>
+        <button class="nav-item nav-arrow" data-nav="threads" aria-label="Open links sidebar">
+            <span class="nav-icon"><i class="fas fa-chevron-right"></i></span>
+        </button>
+    </nav>
+
+    <footer class="footer">
+        <div class="links">
+            <% footerLinks.forEach((link, i) => { %>
+            <a href="<%= link.href %>"><%= link.label %></a><%- i < footerLinks.length - 1 ? ' &bull;' : '' %>
+            <% }) %>
+        </div>
+        <div>Powered by hitori (koshi fork) | Backgrounds by <a href="https://twitter.com/intent/user?user_id=16203043">kaku sugar</a>, <a href="https://twitter.com/intent/user?user_id=726438981496246272">baisishaonian</a>, <a href="https://twitter.com/intent/user?user_id=1307204963022503939">064</a> | 39chan &copy; 2024-2026</div>
+        <div style="margin-top: 6px; font-size: 9px;">
+          <p>
+        <strong>39chan</strong> is an independent website and is not affiliated with,
+        endorsed by, or associated with <strong>Yamaha</strong>, <strong>Crypton Future Media</strong>, the
+        <strong>VOCALOID</strong>, brand, or the creators, publishers, or rights
+        holders of any content discussed on this site.
+    </p>
+
+    <p>
+        All trademarks, copyrights, and other intellectual property remain the
+        property of their respective owners. Images, files, comments, and all other user-submitted content are the
+        sole responsibility of the users who post them.
+    </p>
+
+    <p>User comments and posts on <strong>39chan</strong> are the opinions of
+        their respective authors and do not necessarily reflect the views,
+        opinions, or policies of the site's staff or administration.</p>
+        </div>
+    </footer>
+
+    <script src="scripts.js"></script>
+    <script src="verify.js"></script>
+    <script>
+        (function () {
+            var form = document.getElementById('contactForm');
+            var status = document.getElementById('contactStatus');
+
+            var fields = [
+                { wrap: document.getElementById('fieldEmail'), input: document.getElementById('ctEmail'), validate: function (v) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()); } },
+                { wrap: document.getElementById('fieldSubject'), input: document.getElementById('ctSubject'), validate: function (v) { return v.trim().length > 0; } },
+                { wrap: document.getElementById('fieldBody'), input: document.getElementById('ctBody'), validate: function (v) { return v.trim().length > 0; } }
+            ];
+
+            fields.forEach(function (f) {
+                f.input.addEventListener('input', function () {
+                    if (f.wrap.classList.contains('invalid') && f.validate(f.input.value)) {
+                        f.wrap.classList.remove('invalid');
+                    }
+                });
+            });
+
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                var allValid = true;
+                fields.forEach(function (f) {
+                    if (!f.validate(f.input.value)) {
+                        f.wrap.classList.add('invalid');
+                        allValid = false;
+                    } else {
+                        f.wrap.classList.remove('invalid');
+                    }
+                });
+
+                if (!allValid) {
+                    status.textContent = 'Please fix the highlighted fields.';
+                    status.classList.remove('ok');
+                    status.classList.add('visible');
+                    return;
+                }
+
+                status.textContent = 'Message ready to send — connect this form to your backend to deliver it.';
+                status.classList.add('visible', 'ok');
+            });
+        })();
+    </script>
+</body>
+</html>

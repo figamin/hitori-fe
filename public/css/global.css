@@ -1674,30 +1674,42 @@ details:not([open]) .hide-file-button::before {
 }
 
 .poll-wrapper {
-  display: flex;
+  display: block;
+  margin: 0px 20px 12px;
 }
 
 .poll-container {
   display: inline-block;
   margin-top: 10px;
-  width: 550px;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 240px;
+  max-width: 450px;
+  margin-top: 0;
 }
 
 .poll-header h4 {
-  margin: 0 0 5px;
+  margin: 0 0 2px;
+  color: var(--subject-color);
 }
 
 .poll-options {
-  margin: 15px 0;
+  font-size: 12px;
+  margin: 10px 0 8px;
 }
 
 .poll-option {
   margin-bottom: 8px;
 }
 
+.poll-option:last-child {
+  margin-bottom: 0;
+}
+
 .poll-bar-container {
-  background: rgba(0, 0, 0, 0.1);
-  height: 20px;
+  height: 16px;
+  background: rgba(128, 128, 128, 0.15);
+  border: 1px solid var(--border-color);
   margin-top: 5px;
   overflow: hidden;
   position: relative;
@@ -1705,7 +1717,8 @@ details:not([open]) .hide-file-button::before {
 
 .poll-bar {
   height: 100%;
-  opacity: 0.7;
+  opacity: 0.85;
+  min-width: 0;
   transition: width 0.3s ease;
 }
 
@@ -1713,7 +1726,9 @@ details:not([open]) .hide-file-button::before {
   color: var(--text-color);
   font-size: 0.9em;
   position: absolute;
-  right: 10px;
+  right: 6px;
+  font-size: 0.9em;
+  white-space: nowrap;
   top: 50%;
   transform: translateY(-50%);
 }
@@ -1723,6 +1738,7 @@ details:not([open]) .hide-file-button::before {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
+  font-size: 0.7em;
 }
 
 .poll-expired {
@@ -1730,8 +1746,9 @@ details:not([open]) .hide-file-button::before {
 }
 
 .option-label {
-  align-items: center;
   display: flex;
+  align-items: center;
+  cursor: pointer;
   gap: 5px;
 }
 

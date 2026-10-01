@@ -135,7 +135,7 @@
         <div class="age-gate-modal">
             <div class="age-gate-title">Are you 18+?</div>
             <div class="age-gate-body">
-                <img src="items/stoprightthere.png" class="age-gate-logo">
+                <img src="/items/stoprightthere.png" class="age-gate-logo">
                 <p>
                     We support open discussion, therefore some threads may contain mature or explicit content. By entering, you confirm that you are <strong>18+</strong> and acknowledge that <strong>we are not responsible</strong> for user-generated content or opinions posted on this site. For more information visit our FAQ or Rules page.
                 </p>

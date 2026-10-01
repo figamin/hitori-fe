@@ -14,15 +14,27 @@ const YT_RE = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|yout
 const NICO_RE = /(?:nicovideo\.jp\/watch\/|nico\.ms\/)((?:sm|nm|so|lv)\d+)/i;
 const TWEET_RE = /(?:twitter|x|fxtwitter|fixupx|twittpr|fixvx)\.com\/(?:i\/(?:web\/)?|[\w.]+\/)?status(?:es)?\/(\d+)/i;
 const BSKY_RE = /(?:bsky\.app|fxbsky\.app|bsky\.social)\/profile\/([\w.:%-]+)\/post\/([a-z0-9]+)/i;
+const BILI_BV_RE = /bilibili\.com\/video\/(BV[0-9A-Za-z]{10})/i;
+const BILI_AV_RE = /bilibili\.com\/video\/[aA][vV](\d+)/;
+const BILI_PAGE_RE = /[?&]p=(\d+)/i;
 
 // A posted embed is stored as a file whose `path` is the watch URL; the player
-// URL is derived from it here, so YouTube and nicovideo share one code path.
+// URL is derived from it here, so YouTube, nicovideo and bilibili share one
+// code path.
 function embedUrlFor(href) {
   const url = String(href || '');
   const youtube = url.match(YT_RE);
   if (youtube) return 'https://www.youtube.com/embed/' + youtube[1];
   const nicovideo = url.match(NICO_RE);
   if (nicovideo) return 'https://embed.nicovideo.jp/watch/' + nicovideo[1].toLowerCase();
+
+  const bilibili = url.match(BILI_BV_RE) || url.match(BILI_AV_RE);
+  if (bilibili) {
+    // bilibili addresses multi-part videos with `?p=N`.
+    const page = (url.match(BILI_PAGE_RE) || [])[1] || '1';
+    const id = bilibili[1].startsWith('BV') ? 'bvid=' + bilibili[1] : 'aid=' + bilibili[1];
+    return 'https://player.bilibili.com/player.html?' + id + '&page=' + page + '&high_quality=1';
+  }
   return null;
 }
 
@@ -300,7 +312,7 @@ const thumbs = {
         },
         { once: true }
       );
-    } else if (mime === 'youtube/video' || mime === 'nicovideo/video') {
+    } else if (mime === 'youtube/video' || mime === 'nicovideo/video' || mime === 'bilibili/video') {
       link.addEventListener(
         'click',
         (e) => {
