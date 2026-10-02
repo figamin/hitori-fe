@@ -17,10 +17,17 @@ const BSKY_RE = /(?:bsky\.app|fxbsky\.app|bsky\.social)\/profile\/([\w.:%-]+)\/p
 const BILI_BV_RE = /bilibili\.com\/video\/(BV[0-9A-Za-z]{10})/i;
 const BILI_AV_RE = /bilibili\.com\/video\/[aA][vV](\d+)/;
 const BILI_PAGE_RE = /[?&]p=(\d+)/i;
+const CYTUBE_RE = /cytu\.be\/r\/([\w-]{1,30})/i;
+// One path segment only, and the host anchored - so `/directory/game/x` and
+// `clips.twitch.tv/<slug>` are not read as a channel.
+const TWITCH_CHANNEL_RE = /(?:^|\/\/)(?:www\.|m\.)?twitch\.tv\/([A-Za-z0-9_]+)\/?(?:[?#]|$)/i;
+const TWITCH_VOD_RE = /(?:^|\/\/)(?:www\.|m\.)?twitch\.tv\/videos\/(\d+)/i;
+const TWITCH_CLIP_RE = /(?:^|\/\/)(?:www\.|m\.)?clips\.twitch\.tv\/([A-Za-z0-9_-]+)/i;
+const TWITCH_CHANNEL_CLIP_RE = /(?:^|\/\/)(?:www\.|m\.)?twitch\.tv\/[A-Za-z0-9_]+\/clip\/([A-Za-z0-9_-]+)/i;
 
 // A posted embed is stored as a file whose `path` is the watch URL; the player
-// URL is derived from it here, so YouTube, nicovideo and bilibili share one
-// code path.
+// URL is derived from it here, so YouTube, nicovideo, bilibili and Twitch share
+// one code path.
 function embedUrlFor(href) {
   const url = String(href || '');
   const youtube = url.match(YT_RE);
@@ -35,6 +42,128 @@ function embedUrlFor(href) {
     const id = bilibili[1].startsWith('BV') ? 'bvid=' + bilibili[1] : 'aid=' + bilibili[1];
     return 'https://player.bilibili.com/player.html?' + id + '&page=' + page + '&high_quality=1';
   }
+
+  return twitchPlayerUrlFor(url);
+}
+
+// Twitch's player is only served to an https page or a loopback one. Asked with
+// `parent=board.example.com` it answers `frame-ancestors https://board.example.com`,
+// so an http page on a domain is refused outright ("player.twitch.tv refused to
+// connect" in Chrome, a blank frame in Safari) and a LAN address is not accepted
+// as a parent at all ("Whoops! This embed is misconfigured"). Checked in a real
+// browser: http + localhost, http + 127.0.0.1, https + a domain and https + a
+// hostname all play; http + a domain and http + an IP never do. Opening the player
+// in its own tab always works, because nothing is framing it there.
+const TWITCH_LOOPBACK_RE = /^(?:localhost|127\.0\.0\.1|\[::1\]|.*\.localhost)$/i;
+const TWITCH_FRAME_RE = /^https:\/\/(?:player\.twitch\.tv\/\?|clips\.twitch\.tv\/embed\?)/i;
+
+// Why this page cannot hold a Twitch player, in a few words, or null when it can.
+// Twitch only frames its player for an https page or a loopback one; it will not
+// take a port in `parent`, and a policy for a domain names the default port only,
+// so a site on any other port is refused whatever we send (`https://host:2101` is
+// "player.twitch.tv refused to connect"); and it does not accept an IP literal as
+// an embedding site at all ("Whoops! This embed is misconfigured"). Checked in a
+// real browser: http + localhost, http + 127.0.0.1, https + a domain and https + a
+// hostname (all on the default port) play; http + a domain, an IP, and a
+// non-default port never do. Opening the player in its own tab always works,
+// because nothing is framing it there.
+function twitchFrameRefusalReason() {
+  const { protocol, hostname, port } = window.location;
+  if (TWITCH_LOOPBACK_RE.test(hostname)) return null;
+  if (/^[\d.]+$/.test(hostname) || hostname.startsWith('[')) return 'Twitch does not accept an IP address as an embedding site';
+  if (protocol !== 'https:') return 'Twitch only embeds its player on an https page';
+  if (port && port !== '443') return `Twitch only embeds its player on the standard https port, and this site is on :${port}`;
+  return null;
+}
+
+function twitchCanBeFramed() {
+  return twitchFrameRefusalReason() === null;
+}
+
+// Where a player URL's stream can be watched, so a frame that cannot be shown here
+// is still offered as something to click.
+function twitchWatchUrlFor(playerUrl) {
+  try {
+    const url = new URL(playerUrl);
+    const channel = url.searchParams.get('channel');
+    if (channel) return 'https://www.twitch.tv/' + channel;
+    const video = url.searchParams.get('video');
+    if (video) return 'https://www.twitch.tv/videos/' + video;
+    const clip = url.searchParams.get('clip');
+    if (clip) return 'https://clips.twitch.tv/' + clip;
+  } catch {
+    /* Not a player URL. */
+  }
+  return null;
+}
+
+// Shown instead of a Twitch player that could only come up blank or refused.
+function twitchEmbedNote(watchUrl, reason) {
+  const note = document.createElement('span');
+  note.className = 'twitch-embed-note';
+  note.textContent = `${reason || 'Twitch will not play in a frame on this page'} - `;
+  const link = document.createElement('a');
+  link.href = watchUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.textContent = 'watch on twitch.tv';
+  note.appendChild(link);
+  return note;
+}
+
+// Players the *server* rendered carry the host it was asked on, which is not
+// necessarily the host the reader is on (port forwarding, a proxy or a tunnel can
+// rewrite it) - and on a page Twitch will not frame at all, a frame would only ever
+// be blank. Both are settled here, before the reader clicks anything; the server
+// asks for `loading="lazy"` on these frames (see `be/lib/embeds.js`), which is what
+// leaves time for it, and a frame that has already started loading simply reloads.
+function fixTwitchFrames(root) {
+  const hostname = window.location.hostname;
+  const canFrame = twitchCanBeFramed();
+
+  for (const iframe of (root || document).querySelectorAll('iframe[src]')) {
+    const src = iframe.getAttribute('src') || '';
+    if (!TWITCH_FRAME_RE.test(src)) continue;
+
+    if (!canFrame) {
+      const watchUrl = twitchWatchUrlFor(src);
+      if (watchUrl) iframe.replaceWith(twitchEmbedNote(watchUrl, twitchFrameRefusalReason()));
+      else iframe.remove();
+      continue;
+    }
+
+    if (!hostname || iframe.dataset.twitchParent === hostname) continue;
+    try {
+      const url = new URL(src);
+      url.searchParams.set('parent', hostname);
+      iframe.dataset.twitchParent = hostname;
+      iframe.setAttribute('src', url.toString());
+    } catch {
+      /* Not a URL we can rewrite; leave the player as it was. */
+    }
+  }
+}
+
+// Twitch's player has to be told which domain it is embedded on, and it only
+// serves itself to a page on that domain (`frame-ancestors`, see
+// `be/lib/twitch.js`) - so the domain is asked of the browser rather than of the
+// server, because it is the page the reader actually has open that has to be
+// named. A channel plays from player.twitch.tv, a video-on-demand from the same
+// place, and a clip from clips.twitch.tv.
+function twitchPlayerUrlFor(url) {
+  const parent = encodeURIComponent(window.location.hostname);
+
+  const vod = url.match(TWITCH_VOD_RE);
+  if (vod) return 'https://player.twitch.tv/?video=' + vod[1] + '&parent=' + parent;
+
+  // `clips.twitch.tv/embed` is the player itself, not a clip called "embed".
+  const clip = url.match(TWITCH_CLIP_RE) || url.match(TWITCH_CHANNEL_CLIP_RE);
+  if (clip && clip[1].toLowerCase() !== 'embed') {
+    return 'https://clips.twitch.tv/embed?clip=' + clip[1] + '&parent=' + parent;
+  }
+
+  const channel = url.match(TWITCH_CHANNEL_RE);
+  if (channel) return 'https://player.twitch.tv/?channel=' + channel[1].toLowerCase() + '&parent=' + parent;
   return null;
 }
 
@@ -83,10 +212,523 @@ function blueskyVideoUrl(href) {
   return resolvePostVideo('bluesky:' + handle + '/' + rkey, 'https://api.fxbsky.app/2/status/' + handle + '/' + rkey);
 }
 
+// CyTube rooms need a different treatment again: cytu.be refuses to be framed
+// (every page is served with `X-Frame-Options: DENY`, and its only frameable
+// page is a player shell that never joins a channel), so there is no room to put
+// in an iframe. Instead the room is asked what it is playing, and that item is
+// played here. The question is asked when the reader presses play, so the answer
+// is current, and it is remembered per channel for the life of the page.
+const cytubeRooms = new Map();
+
+// The last answer from each room, so a player can be put back at the point the
+// room is at without being handed its block's state (see `dismissCytubeMoves`).
+const cytubeRoomState = new Map();
+
+function cytubeChannelOf(href) {
+  const match = String(href || '').match(CYTUBE_RE);
+  return match ? match[1].toLowerCase() : null;
+}
+
+function cytubeStreamInfo(channel, { refresh = false } = {}) {
+  const cached = cytubeRooms.get(channel);
+  if (cached && !refresh) return cached;
+
+  // `live=1` asks the server to keep a client joined to the room, so this answer
+  // is not just a snapshot and later ones can follow the room as it plays.
+  const pending = fetch('/api/cytube/' + encodeURIComponent(channel) + '?live=1')
+    .then((res) => (res.ok ? res.json() : null))
+    .catch(() => null);
+
+  cytubeRooms.set(channel, pending);
+  return pending;
+}
+
+// Where the room is *now*. The position it reported is moved on by however long
+// ago it reported it - an answer can sit in a cache for a few seconds, and the
+// room keeps playing while it does - unless the room is paused.
+function cytubePosition(info) {
+  const at = Number(info.currentTime) || 0;
+  if (info.paused || !info.positionAt) return at;
+  return at + Math.max(0, Date.now() - Number(info.positionAt)) / 1000;
+}
+
+// The player URL, aimed at the point the room is at: the same place a reader
+// lands in when they open the room itself. Returns the plain URL when the room is
+// at the start (a sub-second offset is not worth asking for).
+function cytubePlayerUrl(info, { autoplay = false } = {}) {
+  if (!info.embedUrl) return null;
+  const url = new URL(info.embedUrl, window.location.origin);
+  const seconds = Math.floor(cytubePosition(info));
+  if (info.offsetParam && seconds >= 1) url.searchParams.set(info.offsetParam, String(seconds));
+  if (info.provider === 'youtube') {
+    // So the player reports what it is doing and takes a nudge back into step
+    // (see `seekCytubeMedia`); cytu.be's own embeds ask for the same.
+    url.searchParams.set('enablejsapi', '1');
+    url.searchParams.set('origin', window.location.origin);
+  }
+  // Only ever asked for when the room has moved on to the next item by itself: a
+  // reader opening a block is left to press play (see `setCytubeStream`).
+  if (autoplay) url.searchParams.set('autoplay', '1');
+  return url.toString();
+}
+
+// "16:18" / "1:02:33", the way a player shows a position.
+function clockText(seconds) {
+  const pad = (value) => String(value).padStart(2, '0');
+  const total = Math.max(0, Math.floor(seconds));
+  const hours = Math.floor(total / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  return hours ? `${hours}:${pad(minutes)}:${pad(total % 60)}` : `${minutes}:${pad(total % 60)}`;
+}
+
+function cytubeTitleText(info) {
+  return info.kind === 'none' ? 'Nothing is playing in this room right now' : 'Now playing: ' + (info.title || 'unknown');
+}
+
+// The room's position in the item, with its length, or '' when there is neither.
+function cytubeTimeText(info) {
+  if (info.kind === 'none' || !info.seconds) return '';
+  return `${clockText(cytubePosition(info))} / ${clockText(info.seconds)}`;
+}
+
+// A note's clock counts up on its own rather than only stepping when the room is
+// read again - every few seconds - which is what makes the time jump instead of
+// run. Nothing is asked of the room for this: the position it last reported is
+// moved on by the time since it reported it (`cytubePosition`), so a room that
+// says it is playing reads like a player's clock, and one that says it is paused
+// stands still.
+const CYTUBE_CLOCK_MIN_MS = 250;
+const CYTUBE_CLOCK_MAX_MS = 1000;
+const cytubeNotes = new Set();
+let cytubeClockTimer = null;
+
+function setCytubeClock(note) {
+  const time = note.querySelector('.cytube-time');
+  if (!time) return;
+  const text = note.cytubeInfo ? cytubeTimeText(note.cytubeInfo) : '';
+  const shown = text ? ` \u00b7 ${text}` : '';
+  // Written only when the second actually changed, so a paused room - and a note
+  // that is collapsed or on a hidden tab - costs nothing.
+  if (time.textContent !== shown) time.textContent = shown;
+  time.hidden = !text;
+}
+
+// One timer for every note on the page, aimed at the next whole second of the
+// room's own clock so the display flips when the second does rather than a
+// fraction of one later every time, and stopped once the last note is gone.
+function runCytubeClock() {
+  cytubeClockTimer = null;
+  let wait = null;
+
+  for (const note of [...cytubeNotes]) {
+    // A note taken off the page is done with (its block re-rendered, or went
+    // away); one that is not on the page *yet* is a note still being built.
+    if (note.isConnected) note.cytubeInPage = true;
+    else if (note.cytubeInPage) {
+      cytubeNotes.delete(note);
+      continue;
+    }
+
+    const info = note.cytubeInfo;
+    if (!info) continue;
+    if (!document.hidden) setCytubeClock(note);
+    const next = info.paused ? CYTUBE_CLOCK_MAX_MS : (1 - (cytubePosition(info) % 1)) * CYTUBE_CLOCK_MAX_MS;
+    wait = wait === null ? next : Math.min(wait, next);
+  }
+
+  // Nothing measurable yet (a note that has not been put in the page): come back
+  // for it, so the clock is running by the time a reader can see it.
+  if (wait === null) wait = cytubeNotes.size ? CYTUBE_CLOCK_MIN_MS : null;
+  if (wait !== null) {
+    cytubeClockTimer = setTimeout(runCytubeClock, Math.max(CYTUBE_CLOCK_MIN_MS, Math.min(CYTUBE_CLOCK_MAX_MS, wait)));
+  }
+}
+
+// Bring a note's title and clock up to date without touching the player beside
+// it, which is what the live updates below change on every tick.
+function updateCytubeNote(note, info) {
+  note.cytubeInfo = info;
+  const title = note.querySelector('.cytube-title');
+  if (title) title.textContent = cytubeTitleText(info);
+
+  setCytubeClock(note);
+  // The clock runs on from here by itself (see `runCytubeClock`).
+  cytubeNotes.add(note);
+  if (cytubeClockTimer === null) runCytubeClock();
+}
+
+// How far the reader's copy may fall behind before it is pulled back: far enough
+// that a pause or a buffer hiccup does not make it jump. A reader *moving* the
+// player is a different matter and is put back at once (see below).
+const CYTUBE_DRIFT_SECONDS = 15;
+
+// How long a seek of ours is left alone: the player buffering straight afterwards
+// is the move settling, not the reader having moved it again.
+const YOUTUBE_SEEK_GRACE_MS = 2500;
+
+// YouTube's player cannot be asked where it is, but it does report when it starts
+// and stops playing, so its position can be followed from the point it was aimed
+// at (see `cytubePlayerUrl`) for as long as it plays. `enablejsapi=1`, which that
+// URL asks for, is what makes it report and accept the command below.
+const YOUTUBE_ORIGIN = 'https://www.youtube.com';
+const youtubePlayers = new WeakMap();
+
+// A player only becomes worth watching once it is in the document: an iframe that
+// has not been inserted yet has no content window to key it by.
+function trackPlayer(media, info) {
+  if (!media) return media;
+  if (media.tagName === 'IFRAME' && info.provider === 'youtube') trackYouTube(media, info);
+  else if (media.tagName === 'VIDEO') guardCytubePosition(media, info.channel);
+  return media;
+}
+
+let youtubePlayerSeq = 0;
+
+// A YouTube embed stays silent - it reports nothing and ignores commands - until
+// it is told that somebody is listening. The IFrame API script sends this
+// handshake for you; a plain embed has to send it itself, and without it a moved
+// position looks like it is never put back.
+function tellYouTubeListening(iframe) {
+  if (!iframe || !iframe.contentWindow) return;
+  iframe.contentWindow.postMessage(
+    JSON.stringify({ event: 'listening', id: iframe.id, channel: 'widget' }),
+    YOUTUBE_ORIGIN
+  );
+}
+
+function trackYouTube(iframe, info) {
+  const track = {
+    channel: info.channel,
+    seconds: Math.max(0, cytubePosition(info)),
+    at: Date.now(),
+    playing: false,
+    // Whether the player has ever reported anything: until it has, there is no
+    // way to know where it is (see `seekCytubeMedia`).
+    reported: false,
+    // Treated as if we had just aimed it, so the buffering that follows the player
+    // loading is not mistaken for the reader moving it.
+    seekAt: Date.now()
+  };
+  if (iframe.contentWindow) youtubePlayers.set(iframe.contentWindow, track);
+
+  // Now, and again whenever the frame reloads itself - which is the moment the
+  // player is actually ready to hear it.
+  tellYouTubeListening(iframe);
+  iframe.addEventListener('load', () => tellYouTubeListening(iframe));
+}
+
+window.addEventListener('message', (event) => {
+  if (event.origin !== YOUTUBE_ORIGIN || !event.source) return;
+  let message;
+  try {
+    message = JSON.parse(event.data);
+  } catch {
+    return;
+  }
+  const track = youtubePlayers.get(event.source);
+  if (!track) return;
+  // Anything at all from the player means the handshake took: from here on it can
+  // be measured rather than guessed at (see `seekCytubeMedia`).
+  track.reported = true;
+  if (message.event !== 'onStateChange') return;
+  // Fold in the time it has been playing, then follow the new state.
+  const now = Date.now();
+  if (track.playing) track.seconds += (now - track.at) / 1000;
+  track.at = now;
+  track.playing = message.info === 1;
+  // A YouTube player reports nothing about being seeked, so a state change to
+  // playing or buffering is read as the reader having moved it - a resumed or
+  // scrubbed player is put back where the room is (see `dismissCytubeMoves`).
+  if (message.info === 1 || message.info === 3) dismissYouTubeMove(track, event.source);
+});
+
+// Put a YouTube player back at the room's point. Nothing is asked of the player
+// first, because a YouTube embed can be told to seek but never asked where it is.
+function commandYouTubeSeek(track, source, target) {
+  if (!source || !Number.isFinite(target) || target < 0) return;
+  track.seekAt = Date.now();
+  track.seconds = target;
+  track.at = track.seekAt;
+  source.postMessage(JSON.stringify({ event: 'command', func: 'seekTo', args: [Math.floor(target), true] }), YOUTUBE_ORIGIN);
+}
+
+// The room owns the position, and a YouTube player cannot be asked where it is -
+// so whenever it says it started or is buffering, it is put back where the room
+// is. A seek we have just sent makes the player buffer too, so that is ignored.
+function dismissYouTubeMove(track, source) {
+  if (!track || Date.now() - track.seekAt < YOUTUBE_SEEK_GRACE_MS) return;
+  const room = cytubeRoomState.get(track.channel);
+  if (room) commandYouTubeSeek(track, source, cytubePosition(room));
+}
+
+// A room's own file is a plain element, so the browser tells us exactly when the
+// reader moved it: put it straight back, then let the room carry on from there.
+function guardCytubePosition(media, channel) {
+  media.addEventListener('seeked', () => {
+    if (media.cytubeSeeking) {
+      // Our own move landing, not the reader's.
+      media.cytubeSeeking = false;
+      return;
+    }
+    const room = cytubeRoomState.get(channel);
+    if (room) restoreCytubePosition(media, room);
+  });
+  media.addEventListener('play', () => {
+    // Starting our copy - after a pause, or after opening a block and pressing
+    // play later - is a move like any other: the room carried on without the
+    // reader while they were stopped, so they are put where it is *now*, however
+    // short the pause was. (A stopped player is left alone otherwise, see
+    // `seekCytubeMedia`, which is why nothing has been keeping it in step.)
+    const room = cytubeRoomState.get(channel);
+    if (room) restoreCytubePosition(media, room);
+  });
+}
+
+function restoreCytubePosition(media, info) {
+  const target = cytubePosition(info);
+  if (!media || !Number.isFinite(target) || target < 0) return;
+  media.cytubeSeeking = true;
+  try {
+    media.currentTime = target;
+  } catch {
+    // Not seekable yet; nothing to put back.
+    media.cytubeSeeking = false;
+    return;
+  }
+  // Cleared by our own `seeked`, and by a timer in case the browser decides the
+  // move was too small to count as a seek at all.
+  setTimeout(() => {
+    if (media) media.cytubeSeeking = false;
+  }, 500);
+}
+
+function youtubePosition(track) {
+  return Math.max(0, track.seconds + (track.playing ? (Date.now() - track.at) / 1000 : 0));
+}
+
+// Pull a player back to where the room is, once it has drifted a long way. A
+// player the reader has stopped is left alone: the room moving on is handled by
+// mounting the new item instead (`apply` in `setCytubeStream`).
+function seekCytubeMedia(media, info) {
+  const target = cytubePosition(info);
+  if (!media || target < 1) return;
+  // A player that is no longer on the page has nobody watching it - a block that
+  // was re-rendered or taken away between the room being read and this landing.
+  if (!media.isConnected) return;
+
+  if (media.tagName === 'VIDEO') {
+    // A room's own file: the element knows exactly where it is.
+    if (media.paused) return;
+    if (Math.abs(media.currentTime - target) >= CYTUBE_DRIFT_SECONDS) restoreCytubePosition(media, info);
+    return;
+  }
+
+  if (media.tagName !== 'IFRAME' || info.provider !== 'youtube') return;
+  const track = media.contentWindow && youtubePlayers.get(media.contentWindow);
+  if (!track || Date.now() - track.seekAt < YOUTUBE_SEEK_GRACE_MS) return;
+
+  // A player that has never reported anything cannot be measured, so it is put
+  // back at the room's point on every tick instead - reachable only when the
+  // handshake above did not take.
+  if (!track.reported) return commandYouTubeSeek(track, media.contentWindow, target);
+
+  if (!track.playing) return;
+  if (Math.abs(youtubePosition(track) - target) < CYTUBE_DRIFT_SECONDS) return;
+  commandYouTubeSeek(track, media.contentWindow, target);
+}
+
+// Every cytu.be block on the page registers here. A room is read once per tick
+// however many posts show it, and all of its blocks are updated together - which
+// is what makes them follow the room as it switches item.
+const cytubeWatchers = new Map();
+const CYTUBE_POLL_MS = 5000;
+
+function watchCytubeBlock(channel, block) {
+  let watcher = cytubeWatchers.get(channel);
+  if (!watcher) {
+    watcher = { channel, blocks: new Set(), timer: null };
+    cytubeWatchers.set(channel, watcher);
+    watcher.timer = setInterval(() => pollCytubeRoom(watcher), CYTUBE_POLL_MS);
+  }
+  watcher.blocks.add(block);
+  return block;
+}
+
+async function pollCytubeRoom(watcher) {
+  // No point asking while the page is not being looked at (the server-side
+  // session is shared, so leaving it alone costs nothing).
+  if (document.hidden) return;
+
+  const info = await cytubeStreamInfo(watcher.channel, { refresh: true });
+  for (const block of [...watcher.blocks]) {
+    if (!block.alive()) watcher.blocks.delete(block);
+    else if (info) block.update(info);
+  }
+
+  // Nothing left on the page showing this room.
+  if (!watcher.blocks.size) {
+    clearInterval(watcher.timer);
+    cytubeWatchers.delete(watcher.channel);
+  }
+}
+
+// The room's current item plus a link to the room itself. `media` is null when
+// the item cannot be played here (an HLS stream, a custom embed, ...) or when
+// the room is idle. Nothing plays until the reader says so, unless `autoplay` -
+// which is only used when the room has switched item under a reader who is
+// watching, where following the room means playing the next one as it does.
+function cytubePlayer(info, { autoplay = false } = {}) {
+  const note = document.createElement('div');
+  note.className = 'cytube-note';
+
+  const title = document.createElement('span');
+  title.className = 'cytube-title';
+  note.appendChild(title);
+
+  const time = document.createElement('span');
+  time.className = 'cytube-time';
+  note.appendChild(time);
+
+  note.appendChild(document.createTextNode(' \u00b7 '));
+  const join = document.createElement('a');
+  join.href = info.roomUrl;
+  join.target = '_blank';
+  join.rel = 'noopener noreferrer';
+  join.textContent = 'Join the room';
+  note.appendChild(join);
+  if (info.note) note.appendChild(document.createTextNode(' (' + info.note + ')'));
+  updateCytubeNote(note, info);
+
+  if (info.kind === 'embed' && info.embedUrl) {
+    const iframe = document.createElement('iframe');
+    // The player tags what it tells us with this, and the listening handshake
+    // has to name it (see `tellYouTubeListening`).
+    iframe.id = `cytube-player-${(youtubePlayerSeq += 1)}`;
+    iframe.width = '640';
+    iframe.height = '360';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+    // The page sends `Referrer-Policy: no-referrer` and an iframe with no policy
+    // of its own inherits it; YouTube refuses to play without a referrer.
+    iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+    iframe.style.maxWidth = '100%';
+    iframe.src = cytubePlayerUrl(info, { autoplay }) || info.embedUrl;
+    return { note, media: iframe };
+  }
+
+  if (info.kind === 'video' && info.videoUrl) {
+    // The room's own file, fetched by the reader's browser (see `media-src`).
+    const video = document.createElement('video');
+    video.controls = true;
+    video.style.maxWidth = '100%';
+    const source = document.createElement('source');
+    source.src = info.videoUrl;
+    if (info.mime) source.type = info.mime;
+    video.appendChild(source);
+    // Start where the room is, rather than at the beginning of the file.
+    if (info.currentTime > 0) {
+      const seek = () => {
+        try {
+          video.currentTime = cytubePosition(info);
+        } catch {
+          /* not seekable (yet) */
+        }
+      };
+      if (video.readyState >= 1) seek();
+      else video.addEventListener('loadedmetadata', seek, { once: true });
+    }
+    // Left paused unless this is the room moving on by itself (see `cytubePlayer`):
+    // starting playback before the reader asks for it would be rude, and a browser
+    // that has not been touched will refuse it anyway. (The controls are there.)
+    if (autoplay) Promise.resolve(video.play()).catch(() => {});
+    return { note, media: video };
+  }
+
+  return { note, media: null };
+}
+
+// The title and cover stored on a `cytube/stream` row are what the room was
+// showing when the post was made, which is usually stale by the time anyone
+// reads it. The room has just been asked what it is playing, so put that in the
+// file header - the label beside the room's URL, and the poster behind it (only
+// when the item has a cover of its own; a room's plain file has none).
+function refreshCytubeBlockMeta(container, info) {
+  const block = container.closest('details');
+  if (!block) return;
+
+  const label = block.querySelector('.cytube-now-playing');
+  if (label) label.textContent = info.kind === 'none' ? 'nothing playing now' : info.title || 'unknown';
+
+  const poster = block.querySelector('.image-container img');
+  if (poster && info.coverUrl && poster.getAttribute('src') !== info.coverUrl) {
+    poster.setAttribute('src', info.coverUrl);
+    poster.setAttribute('data-thumb', info.coverUrl);
+  }
+}
+
+// A cytu.be link in a post's text is rendered by the server as a block holding
+// nothing but the room's URL (see `be/lib/embeds.js`); it is filled in here as
+// soon as it is on the page, so the block opens onto a player like every other
+// provider's rather than onto something to click again. The room is live, so
+// the item can only be resolved from the reader's side anyway, and the plain
+// link is kept for a reader without scripts - and when the room cannot be read
+// (unknown, private, socket server unreachable) or is playing something that
+// cannot be played here.
+function mountCytubeBlock(container) {
+  const channel = (container.dataset.channel || '').toLowerCase();
+  if (!channel) return;
+
+  const fallback = container.querySelector('.cytube-play');
+  container.dataset.cytubeMounted = 'true';
+  container.textContent = 'Reading the room\u2026';
+
+  let shown = null;
+  let media = null;
+  // Whether this block has rendered anything yet, which is what tells the first
+  // render (the reader asked for it) from a later one (the room moved on).
+  let rendered = false;
+
+  const render = (info, { autoplay = false } = {}) => {
+    const player = cytubePlayer(info, { autoplay });
+    container.textContent = '';
+    container.appendChild(player.note);
+    if (player.media) container.appendChild(player.media);
+    else if (info.kind !== 'none' && fallback) container.appendChild(fallback);
+    media = trackPlayer(player.media, info);
+    rendered = true;
+  };
+
+  // Rendered when the block appears, and then re-rendered whenever the room moves
+  // on to another item (`watchCytubeBlock`); while the item stays the same only
+  // the note's clock is brought up to date and the player pulled back into step.
+  const apply = (info) => {
+    if (!info) {
+      container.textContent = '';
+      if (fallback) container.appendChild(fallback);
+      return;
+    }
+
+    cytubeRoomState.set(channel, info);
+    const key = info.kind === 'none' ? 'idle' : `${info.type}:${info.mediaId}`;
+    if (key !== shown) {
+      // Anything after the first render is the room moving on, which plays.
+      const autoplay = rendered;
+      shown = key;
+      return render(info, { autoplay });
+    }
+
+    const note = container.querySelector('.cytube-note');
+    if (note) updateCytubeNote(note, info);
+    seekCytubeMedia(media, info);
+  };
+
+  cytubeStreamInfo(channel).then(apply);
+  watchCytubeBlock(channel, { alive: () => container.isConnected, update: apply });
+}
+
 function isModifiedClick(e) {
   return e.which === 2 || e.ctrlKey;
 }
-
 function makeHideLink() {
   const a = document.createElement('a');
   a.textContent = '[ - ]';
@@ -198,9 +840,31 @@ const thumbs = {
     if (autoExpand) thumbLink.onclick({ which: 1 });
   },
 
+  // A twitch.tv stream on a page Twitch will not frame (see `twitchCanBeFramed`):
+  // the thumbnail stays, and opening the block offers the stream on twitch.tv
+  // rather than a player that could only come up blank or refused.
+  setTwitchLink(link, mime, autoExpand) {
+    const parent = link.parentNode;
+    const container = document.createElement('span');
+    const hideLink = makeHideLink();
+    const thumbLink = cloneThumbLink(link, mime);
+    const panel = document.createElement('span');
+    panel.style.display = 'none';
+    panel.appendChild(twitchEmbedNote(twitchWatchUrlFor(embedUrlFor(link.href)) || link.href, twitchFrameRefusalReason()));
+
+    wireToggle(parent, thumbLink, panel, hideLink);
+    container.append(hideLink, panel, thumbLink);
+    parent.replaceChild(container, link);
+    if (autoExpand) thumbLink.onclick({ which: 1 });
+  },
+
   setEmbedVideo(link, mime, autoExpand) {
     const embedUrl = embedUrlFor(link.href);
     if (!embedUrl) return;
+
+    // Twitch refuses to be framed by an http page on a domain - or by an IP at
+    // all - so there the stream is offered as a link instead of a dead frame.
+    if (mime === 'twitch/video' && !twitchCanBeFramed()) return this.setTwitchLink(link, mime, autoExpand);
 
     const parent = link.parentNode;
     const container = document.createElement('span');
@@ -284,6 +948,104 @@ const thumbs = {
     if (autoExpand) thumbLink.onclick({ which: 1 });
   },
 
+  // A cytu.be room cannot be framed, so what plays is the item the room is
+  // showing, resolved when the block is opened - and a posted room is opened
+  // straight away, because a room is live: its frozen snapshot says what *was*
+  // on when the post was made, which is rarely what a reader wants. The item
+  // starts at the point the room is at, so pressing play puts the reader in the
+  // same place as opening the room itself would (see `cytubePlayer`).
+  // Collapsing the block falls back to that snapshot and stops our copy.
+  setCytubeStream(link, mime, autoExpand) {
+    const channel = cytubeChannelOf(link.href);
+    if (!channel) return;
+
+    const parent = link.parentNode;
+    const container = document.createElement('span');
+    const hideLink = makeHideLink();
+    const thumbLink = cloneThumbLink(link, mime);
+    const panel = document.createElement('div');
+    panel.className = 'cytube-stream';
+    panel.textContent = 'Reading the room\u2026';
+    panel.style.display = 'none';
+
+    let info = null;
+    let media = null;
+    // Whether the panel is the visible state of this block (rather than the
+    // thumbnail it falls back to).
+    let active = false;
+
+    const mount = (data, { autoplay = false } = {}) => {
+      const player = cytubePlayer(data, { autoplay });
+      refreshCytubeBlockMeta(container, data);
+      panel.textContent = '';
+      panel.appendChild(player.note);
+      media = player.media;
+      if (media) panel.appendChild(media);
+      trackPlayer(media, data);
+    };
+
+    // Nothing to play and nothing to fall back on: leave a plain link to the
+    // room. The block opens by itself, so it must never navigate the reader away
+    // on its own.
+    const showRoomLink = () => {
+      const fallback = document.createElement('a');
+      fallback.href = link.href;
+      fallback.target = '_blank';
+      fallback.rel = 'noopener noreferrer';
+      fallback.textContent = 'Open the room on cytu.be';
+      panel.textContent = '';
+      panel.appendChild(fallback);
+    };
+
+    // A fresh answer from the room. The header always follows it, and a new item
+    // is mounted on the spot - a room switches video whenever it likes, and the
+    // reader came here to watch the room, not the clip it happened to be on when
+    // the post was written (`watchCytubeBlock`).
+    const apply = (data, { remount = false } = {}) => {
+      if (!data) return showRoomLink();
+      const changed = !info || data.type !== info.type || data.mediaId !== info.mediaId;
+      info = data;
+      cytubeRoomState.set(channel, data);
+      refreshCytubeBlockMeta(container, data);
+      if (!active) return; // collapsed: the header is the whole block
+      // The room switching item under a reader who is watching starts the next one
+      // by itself, the way the room does; opening a block by hand does not.
+      if (remount || changed) return mount(data, { autoplay: changed && !remount });
+      // Same item: the note catches up with the room (which is also what keeps the
+      // clock it runs by itself (`runCytubeClock`) honest about the position),
+      // and the player is pulled back only if it has drifted.
+      const note = panel.querySelector('.cytube-note');
+      if (note) updateCytubeNote(note, data);
+      seekCytubeMedia(media, data);
+    };
+
+    wireToggle(
+      parent,
+      thumbLink,
+      panel,
+      hideLink,
+      () => {
+        // Opening the block re-reads the room rather than trusting whatever the
+        // watcher last saw, because a page sitting in a hidden tab has not been
+        // keeping up with it.
+        active = true;
+        cytubeStreamInfo(channel, { refresh: true }).then((data) => apply(data || info, { remount: true }));
+      },
+      () => {
+        // Nothing to sync with: collapsing stops our copy of the item.
+        active = false;
+        if (!media) return;
+        if (media.tagName === 'IFRAME') media.removeAttribute('src');
+        else media.pause();
+      }
+    );
+
+    container.append(hideLink, panel, thumbLink);
+    parent.replaceChild(container, link);
+    if (autoExpand) thumbLink.onclick({ which: 1 });
+    watchCytubeBlock(channel, { alive: () => container.isConnected, update: apply });
+  },
+
   processImageLink(link) {
     const mime = link.getAttribute('data-mime') || '';
     if (mime.startsWith('image/')) {
@@ -312,7 +1074,11 @@ const thumbs = {
         },
         { once: true }
       );
-    } else if (mime === 'youtube/video' || mime === 'nicovideo/video' || mime === 'bilibili/video') {
+    } else if (mime === 'cytube/stream') {
+      // Opened as soon as it is on the page; the room is read then (see
+      // `setCytubeStream`).
+      this.setCytubeStream(link, mime, true);
+    } else if (mime === 'youtube/video' || mime === 'nicovideo/video' || mime === 'bilibili/video' || mime === 'twitch/video') {
       link.addEventListener(
         'click',
         (e) => {
@@ -327,11 +1093,23 @@ const thumbs = {
 };
 
 window.initializeThumbnails = function () {
+  // Before anything else: the players the *server* rendered carry the host it
+  // was asked on, which is not necessarily the host the reader is on - and a page
+  // Twitch will not frame must not be left holding a dead frame either (see
+  // `fixTwitchFrames`).
+  fixTwitchFrames(document);
+
   document.querySelectorAll('.image-container:not([data-initialized])').forEach((container) => {
     const link = container.querySelector('.media-toggle');
     if (!link) return;
     container.dataset.initialized = 'true';
     thumbs.processImageLink(link);
+  });
+
+  // cytu.be links in a post's text carry only the room's URL: read the room and
+  // mount whatever it is playing now (see `mountCytubeBlock`).
+  document.querySelectorAll('.cytube-stream:not([data-cytube-mounted])').forEach((container) => {
+    if (container.querySelector('.cytube-play')) mountCytubeBlock(container);
   });
 };
 

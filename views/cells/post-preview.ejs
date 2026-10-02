@@ -16,7 +16,8 @@
     <span>No.<%= post.postId || post.threadId %></span>
   </div>
   <% if (post.files && post.files.length > 0) { %>
-  <% var isEmbed = (mime) => mime === 'youtube/video' || mime === 'nicovideo/video'; %>
+  <% var EMBED_MIMES = ['youtube/video', 'nicovideo/video', 'bilibili/video', 'twitch/video', 'twitter/video', 'bluesky/video', 'cytube/stream']; %>
+  <% var isEmbed = (mime) => EMBED_MIMES.indexOf(mime) !== -1; %>
   <% if (post.files.length === 1) { %>
   <span class="file-info">
     <details open>

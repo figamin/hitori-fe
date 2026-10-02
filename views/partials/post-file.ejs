@@ -5,7 +5,7 @@
 <% var dw = file.width; var dh = file.height; var placeholderThumbs = ['/spoiler.png', '/spoiler.webp', '/spoiler-nsfw.png', '/spoiler-nsfw.webp', '/genericThumb.webp', '/audioGenericThumb.webp', '/imageNotFound.webp']; if (dw && dh && placeholderThumbs.indexOf(file.thumb) === -1) { if (dw > maxW || dh > maxH) { var r = Math.min(maxW / dw, maxH / dh); dw = Math.round(dw * r); dh = Math.round(dh * r); } } else { dw = null; dh = null; } %>
 <% var fileUrl = site + file.path; %>
 <% var matchingReplay = null; if (file.originalName && file.originalName.endsWith('-tegaki.png') && locals.files) { matchingReplay = files.find(function(f) { return f.mime === 'tegaki/replay' && f.originalName && f.originalName.slice(0, -4) === file.originalName.slice(0, -3); }); } %>
-<% var EMBED_ICONS = { 'youtube/video': { icon: '/img/youtube.png', label: 'YouTube' }, 'nicovideo/video': { icon: '/img/niconico.png', label: 'Nicovideo' }, 'bilibili/video': { icon: '/img/bilibili.svg', label: 'BiliBili' }, 'twitter/video': { icon: '/img/twitter.svg', label: 'Twitter/X' }, 'bluesky/video': { icon: '/img/bluesky.svg', label: 'Bluesky' } }; %>
+<% var EMBED_ICONS = { 'youtube/video': { icon: '/img/youtube.png', label: 'YouTube' }, 'nicovideo/video': { icon: '/img/niconico.png', label: 'Nicovideo' }, 'bilibili/video': { icon: '/img/bilibili.svg', label: 'BiliBili' }, 'twitch/video': { icon: '/img/twitch.svg', label: 'Twitch' }, 'twitter/video': { icon: '/img/twitter.svg', label: 'Twitter/X' }, 'bluesky/video': { icon: '/img/bluesky.svg', label: 'Bluesky' }, 'cytube/stream': { icon: '/img/cytube.svg', label: 'CyTube' } }; %>
 <% var isEmbed = Boolean(EMBED_ICONS[file.mime]); %>
 <details open>
   <summary>
@@ -31,6 +31,9 @@
     <% var embedIcon = EMBED_ICONS[file.mime]; %>
     <% if (embedIcon) { %>
     <a target="_blank" style="text-decoration: underline;" title="<%= embedIcon.label %>" href="<%= file.path %>"><img src="<%= embedIcon.icon %>" width="16" alt="<%= embedIcon.label %>"></a>
+    <% } %>
+    <% if (file.mime === 'cytube/stream') { %>
+    <span class="cytube-now-playing" title="This is a CyTube room, not a video: the player follows whatever the room is showing"><%= file.originalName %></span>
     <% } %>
     <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } %>
