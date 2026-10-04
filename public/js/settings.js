@@ -156,9 +156,41 @@ const settings = {
     disableAutoWatchOption.appendChild(disableAutoWatchCheckbox);
     disableAutoWatchOption.appendChild(disableAutoWatchLabel);
 
+    const hideFortunesOption = document.createElement('div');
+    hideFortunesOption.className = 'option-item';
+
+    const hideFortunesCheckbox = document.createElement('input');
+    hideFortunesCheckbox.type = 'checkbox';
+    hideFortunesCheckbox.id = 'hide-fortunes';
+    hideFortunesCheckbox.checked = localStorage.getItem('hideFortunes') === 'true';
+
+    const hideFortunesLabel = document.createElement('label');
+    hideFortunesLabel.htmlFor = 'hide-fortunes';
+    hideFortunesLabel.textContent = 'Hide fortunes in posts';
+
+    hideFortunesOption.appendChild(hideFortunesCheckbox);
+    hideFortunesOption.appendChild(hideFortunesLabel);
+
+    const newPostSoundOption = document.createElement('div');
+    newPostSoundOption.className = 'option-item';
+
+    const newPostSoundCheckbox = document.createElement('input');
+    newPostSoundCheckbox.type = 'checkbox';
+    newPostSoundCheckbox.id = 'new-post-sound';
+    newPostSoundCheckbox.checked = localStorage.getItem('newPostSound') === 'true';
+
+    const newPostSoundLabel = document.createElement('label');
+    newPostSoundLabel.htmlFor = 'new-post-sound';
+    newPostSoundLabel.textContent = 'Play a sound when a thread gets a new post';
+
+    newPostSoundOption.appendChild(newPostSoundCheckbox);
+    newPostSoundOption.appendChild(newPostSoundLabel);
+
     optionsList.appendChild(disableYouOption);
     optionsList.appendChild(imagePreviewOption);
     optionsList.appendChild(disableAutoWatchOption);
+    optionsList.appendChild(hideFortunesOption);
+    optionsList.appendChild(newPostSoundOption);
 
     otherContent.appendChild(optionsList);
 
@@ -291,6 +323,10 @@ const settings = {
     const disableYouTag = document.getElementById('disable-you-tag').checked;
     const imagePreviewHover = document.getElementById('image-preview-hover').checked;
     const disableAutoWatch = document.getElementById('disable-auto-watch').checked;
+    const hideFortunes = document.getElementById('hide-fortunes').checked;
+    // Nothing has to be applied for this one: `thread.js` reads it when a new post
+    // actually arrives.
+    const newPostSound = document.getElementById('new-post-sound').checked;
 
     localStorage.setItem('customCSS', customCSS);
     localStorage.setItem('customJS', customJS);
@@ -298,6 +334,8 @@ const settings = {
     localStorage.setItem('disableYouTag', disableYouTag);
     localStorage.setItem('imagePreviewHover', imagePreviewHover);
     localStorage.setItem('disableAutoWatch', disableAutoWatch);
+    localStorage.setItem('hideFortunes', hideFortunes);
+    localStorage.setItem('newPostSound', newPostSound);
 
     this.applySettings();
     this.hide();
@@ -306,6 +344,7 @@ const settings = {
   applySettings() {
     const customCSS = localStorage.getItem('customCSS') || '';
     const disableYouTag = localStorage.getItem('disableYouTag') === 'true';
+    const hideFortunes = localStorage.getItem('hideFortunes') === 'true';
 
     let styleElement = document.getElementById('custom-style');
     if (!styleElement) {
@@ -327,6 +366,28 @@ const settings = {
         .you.opReply::after {
           content: ' (OP)' !important;
           display: inline !important;
+        }
+      `;
+    }
+
+    if (hideFortunes) {
+      // A fortune is part of the post's stored markdown (`be/lib/fortunes.js`) and
+      // always sits in a div of its own, so hiding it is a CSS job. The shared
+      // `fortune` class covers new ones; the class names below belong to the ones
+      // written before that class existed, which are still in the boards' posts.
+      combinedCSS += `
+        .fortune,
+        .excellentLuck,
+        .goodLuck,
+        .averageLuck,
+        .badLuck,
+        .tellYouNow,
+        .outlookGood,
+        .veryBadLuck,
+        .godlyLuck,
+        .youAreBanned,
+        .divFortune {
+          display: none !important;
         }
       `;
     }

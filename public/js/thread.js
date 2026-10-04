@@ -72,6 +72,7 @@ const threadAutoRefresh = {
   refreshLabel: null,
   refreshButton: null,
   autoCheckbox: null,
+  sound: null,
 
   init() {
     const threadElement = document.querySelector('.thread');
@@ -156,15 +157,24 @@ const threadAutoRefresh = {
       .then((data) => {
         const posts = data.posts || [];
         let foundPosts = false;
+        // Only posts the reader did not write on this page are worth a sound; their
+        // own reply landing is already handled by `lastPostedId` below.
+        let foundOthersPost = false;
         let replyNum = nextReplyNumber();
         for (let i = 0; i < posts.length; i++) {
           const post = posts[i];
           if (post.postId > lastReplyId) {
             foundPosts = true;
+            if (post.postId !== lastPostedId) foundOthersPost = true;
             this.appendPost(post, replyNum++);
             lastReplyId = post.postId;
           }
         }
+        // The reader asked for this setting, so the sound is only for the thing they
+        // asked about: the *automatic* refresh bringing in somebody else's post. A
+        // manual refresh is their own click (nothing arrives that they did not ask
+        // for) and their own post needs no announcing either.
+        if (foundOthersPost && !manual) this.playNewPostSound();
         if (!this.pendingRefresh) this.scheduleNextTimer(foundPosts);
       })
       .catch((err) => {
@@ -180,6 +190,20 @@ const threadAutoRefresh = {
           this.refreshPosts(true);
         }
       });
+  },
+
+  // The reader turned on "play a sound when a thread gets a new post": say so when
+  // the auto refresh brings one in. The sound is made on first use, so a reader who
+  // never turns the setting on never downloads it; `/sound/new-post.mp3` is a
+  // placeholder - replace the file, or change the name here.
+  playNewPostSound() {
+    if (localStorage.getItem('newPostSound') !== 'true') return;
+    if (!this.sound) this.sound = new Audio('/sound/mikudayo.mp3');
+    this.sound.currentTime = 0;
+    // A page the reader has not interacted with yet is not allowed to play audio at
+    // all; that is the browser's decision, not something to report.
+    const played = this.sound.play();
+    if (played && played.catch) played.catch(() => {});
   },
 
   appendPost(post, replyNumber) {
