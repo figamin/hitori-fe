@@ -17,6 +17,7 @@ const BSKY_RE = /(?:bsky\.app|fxbsky\.app|bsky\.social)\/profile\/([\w.:%-]+)\/p
 const BILI_BV_RE = /bilibili\.com\/video\/(BV[0-9A-Za-z]{10})/i;
 const BILI_AV_RE = /bilibili\.com\/video\/[aA][vV](\d+)/;
 const BILI_PAGE_RE = /[?&]p=(\d+)/i;
+const BILI_PLAYER_RE = /^https:\/\/player\.bilibili\.com\/player\.html\?/i;
 const CYTUBE_RE = /cytu\.be\/r\/([\w-]{1,30})/i;
 // One path segment only, and the host anchored - so `/directory/game/x` and
 // `clips.twitch.tv/<slug>` are not read as a channel.
@@ -132,15 +133,67 @@ function fixTwitchFrames(root) {
       continue;
     }
 
-    if (!hostname || iframe.dataset.twitchParent === hostname) continue;
+    if (!hostname) continue;
     try {
       const url = new URL(src);
+      // The reader's own host, whatever the server assumed it was ...
       url.searchParams.set('parent', hostname);
-      iframe.dataset.twitchParent = hostname;
-      iframe.setAttribute('src', url.toString());
+      // ... and no autoplay, whatever the frame was rendered with (Twitch's player
+      // starts by itself otherwise, and a page that was rendered before this ran
+      // could be carrying an older URL).
+      url.searchParams.set('autoplay', 'false');
+      const wanted = url.toString();
+      // Only rewritten when it actually differs, so this stays idempotent.
+      if (src !== wanted) iframe.setAttribute('src', wanted);
     } catch {
       /* Not a URL we can rewrite; leave the player as it was. */
     }
+  }
+}
+
+// bilibili's player starts playing the moment its frame is loaded, and there is no
+// way to ask it to wait: `autoplay=0`, `autoplay=false`, `isOutside=true` and
+// leaving the `autoplay` permission off the frame all play anyway (measured in a
+// real browser) - and a frame inside a *collapsed* <details> is loaded all the same,
+// which is why a bilibili link in a post used to play before the reader expanded
+// anything. The only thing that keeps it quiet is not loading it, so the server
+// parks the URL in `data-src` (see `embedBlock` in `be/lib/embeds.js`) and it is
+// handed over when the block is opened - the same thing the posted embed blocks do
+// for themselves (`setEmbedVideo`). A closed block therefore holds no player, and
+// closing one takes its player away again.
+function loadDeferredEmbeds(root) {
+  for (const iframe of (root || document).querySelectorAll('iframe[data-src], iframe[src]')) {
+    const details = iframe.closest('details');
+    const parked = iframe.getAttribute('data-src');
+    // The parked players - and, for a page rendered by a server that did not park
+    // them yet, a bilibili frame sitting in a shut block.
+    if (!parked && !BILI_PLAYER_RE.test(iframe.getAttribute('src') || '')) continue;
+
+    const load = () => {
+      const src = iframe.getAttribute('data-src');
+      if (!src) return;
+      iframe.removeAttribute('data-src');
+      iframe.setAttribute('src', src);
+    };
+    const unload = () => {
+      const src = iframe.getAttribute('src');
+      if (!src) return;
+      iframe.setAttribute('data-src', src);
+      iframe.removeAttribute('src');
+    };
+
+    // No block around it: nothing to wait for.
+    if (!details) {
+      load();
+      continue;
+    }
+
+    const apply = () => (details.open ? load() : unload());
+    if (details.dataset.embedToggle !== 'true') {
+      details.dataset.embedToggle = 'true';
+      details.addEventListener('toggle', apply);
+    }
+    apply();
   }
 }
 
@@ -152,25 +205,30 @@ function fixTwitchFrames(root) {
 // place, and a clip from clips.twitch.tv.
 function twitchPlayerUrlFor(url) {
   const parent = encodeURIComponent(window.location.hostname);
+  // Twitch's player starts playing on its own unless told not to, and nothing on
+  // this site plays until the reader presses play (the server-rendered blocks ask
+  // for the same - see `twitchEmbedUrl` in `be/lib/twitch.js`).
+  const tail = `&parent=${parent}&autoplay=false`;
 
   const vod = url.match(TWITCH_VOD_RE);
-  if (vod) return 'https://player.twitch.tv/?video=' + vod[1] + '&parent=' + parent;
+  if (vod) return 'https://player.twitch.tv/?video=' + vod[1] + tail;
 
   // `clips.twitch.tv/embed` is the player itself, not a clip called "embed".
   const clip = url.match(TWITCH_CLIP_RE) || url.match(TWITCH_CHANNEL_CLIP_RE);
   if (clip && clip[1].toLowerCase() !== 'embed') {
-    return 'https://clips.twitch.tv/embed?clip=' + clip[1] + '&parent=' + parent;
+    return 'https://clips.twitch.tv/embed?clip=' + clip[1] + tail;
   }
 
   const channel = url.match(TWITCH_CHANNEL_RE);
-  if (channel) return 'https://player.twitch.tv/?channel=' + channel[1].toLowerCase() + '&parent=' + parent;
+  if (channel) return 'https://player.twitch.tv/?channel=' + channel[1].toLowerCase() + tail;
   return null;
 }
 
 // Twitter/X and Bluesky embeds store the *post's* URL rather than a media URL,
 // so the raw mp4 is asked of FxEmbed (the service that resolves it in the first
-// place) when the player opens. The pending lookup is what gets cached, so a
-// page showing the same post twice only asks once.
+// place) when the player opens, along with the poster frame it hands out. The
+// pending lookup is what gets cached, so a page showing the same post twice only
+// asks once.
 const postVideos = new Map();
 
 function resolvePostVideo(key, apiUrl) {
@@ -186,13 +244,14 @@ function resolvePostVideo(key, apiUrl) {
         Array.isArray(media.videos) && media.videos.length
           ? media.videos
           : (media.all || []).filter((item) => item && item.type === 'video');
-      return (videos[0] && videos[0].url) || null;
+      const video = videos[0];
+      return video ? { url: video.url || null, thumb: video.thumbnail_url || null } : null;
     })
     .catch(() => null)
-    .then((url) => {
+    .then((media) => {
       // A lookup that failed is not remembered, so the next click retries.
-      if (!url) postVideos.delete(key);
-      return url;
+      if (!media || !media.url) postVideos.delete(key);
+      return media;
     });
 
   postVideos.set(key, pending);
@@ -255,7 +314,7 @@ function cytubePosition(info) {
 // The player URL, aimed at the point the room is at: the same place a reader
 // lands in when they open the room itself. Returns the plain URL when the room is
 // at the start (a sub-second offset is not worth asking for).
-function cytubePlayerUrl(info, { autoplay = false } = {}) {
+function cytubePlayerUrl(info) {
   if (!info.embedUrl) return null;
   const url = new URL(info.embedUrl, window.location.origin);
   const seconds = Math.floor(cytubePosition(info));
@@ -266,9 +325,8 @@ function cytubePlayerUrl(info, { autoplay = false } = {}) {
     url.searchParams.set('enablejsapi', '1');
     url.searchParams.set('origin', window.location.origin);
   }
-  // Only ever asked for when the room has moved on to the next item by itself: a
-  // reader opening a block is left to press play (see `setCytubeStream`).
-  if (autoplay) url.searchParams.set('autoplay', '1');
+  // Nothing is asked for that would start it playing: every embed on this site
+  // waits for the reader to press play (see `cytubePlayer`).
   return url.toString();
 }
 
@@ -573,11 +631,10 @@ async function pollCytubeRoom(watcher) {
 }
 
 // The room's current item plus a link to the room itself. `media` is null when
-// the item cannot be played here (an HLS stream, a custom embed, ...) or when
-// the room is idle. Nothing plays until the reader says so, unless `autoplay` -
-// which is only used when the room has switched item under a reader who is
-// watching, where following the room means playing the next one as it does.
-function cytubePlayer(info, { autoplay = false } = {}) {
+// the item cannot be played here (an HLS stream, a custom embed, ...) or when the
+// room is idle. Nothing on this site plays on its own, so this is left paused -
+// even when the room turns over to the next item - and the reader presses play.
+function cytubePlayer(info) {
   const note = document.createElement('div');
   note.className = 'cytube-note';
 
@@ -612,7 +669,7 @@ function cytubePlayer(info, { autoplay = false } = {}) {
     // of its own inherits it; YouTube refuses to play without a referrer.
     iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     iframe.style.maxWidth = '100%';
-    iframe.src = cytubePlayerUrl(info, { autoplay }) || info.embedUrl;
+    iframe.src = cytubePlayerUrl(info) || info.embedUrl;
     return { note, media: iframe };
   }
 
@@ -637,10 +694,9 @@ function cytubePlayer(info, { autoplay = false } = {}) {
       if (video.readyState >= 1) seek();
       else video.addEventListener('loadedmetadata', seek, { once: true });
     }
-    // Left paused unless this is the room moving on by itself (see `cytubePlayer`):
-    // starting playback before the reader asks for it would be rude, and a browser
-    // that has not been touched will refuse it anyway. (The controls are there.)
-    if (autoplay) Promise.resolve(video.play()).catch(() => {});
+    // Left paused, like every other embed on the site: starting playback before
+    // the reader asks for it would be rude, and a browser that has not been
+    // touched will refuse it anyway. (The controls are there.)
     return { note, media: video };
   }
 
@@ -684,23 +740,20 @@ function mountCytubeBlock(container) {
 
   let shown = null;
   let media = null;
-  // Whether this block has rendered anything yet, which is what tells the first
-  // render (the reader asked for it) from a later one (the room moved on).
-  let rendered = false;
 
-  const render = (info, { autoplay = false } = {}) => {
-    const player = cytubePlayer(info, { autoplay });
+  const render = (info) => {
+    const player = cytubePlayer(info);
     container.textContent = '';
     container.appendChild(player.note);
     if (player.media) container.appendChild(player.media);
     else if (info.kind !== 'none' && fallback) container.appendChild(fallback);
     media = trackPlayer(player.media, info);
-    rendered = true;
   };
 
   // Rendered when the block appears, and then re-rendered whenever the room moves
   // on to another item (`watchCytubeBlock`); while the item stays the same only
   // the note's clock is brought up to date and the player pulled back into step.
+  // A re-render mounts the new item paused, and does not start it playing.
   const apply = (info) => {
     if (!info) {
       container.textContent = '';
@@ -711,10 +764,8 @@ function mountCytubeBlock(container) {
     cytubeRoomState.set(channel, info);
     const key = info.kind === 'none' ? 'idle' : `${info.type}:${info.mediaId}`;
     if (key !== shown) {
-      // Anything after the first render is the room moving on, which plays.
-      const autoplay = rendered;
       shown = key;
-      return render(info, { autoplay });
+      return render(info);
     }
 
     const note = container.querySelector('.cytube-note');
@@ -924,20 +975,21 @@ const thumbs = {
       media,
       hideLink,
       () => {
-        resolve(link.href).then((url) => {
+        resolve(link.href).then((post) => {
           // Nothing to play: send the reader to the post itself.
-          if (!url) {
+          if (!post || !post.url) {
             if (!loaded) window.location.href = link.href;
             return;
           }
           if (!loaded) {
             const src = document.createElement('source');
-            src.src = url;
+            src.src = post.url;
             src.type = 'video/mp4';
             media.appendChild(src);
             loaded = true;
           }
-          media.play();
+          // Loaded, not started: the reader presses play (its controls are there),
+          // the same as every other embed on the site.
         });
       },
       () => media.pause()
@@ -974,8 +1026,8 @@ const thumbs = {
     // thumbnail it falls back to).
     let active = false;
 
-    const mount = (data, { autoplay = false } = {}) => {
-      const player = cytubePlayer(data, { autoplay });
+    const mount = (data) => {
+      const player = cytubePlayer(data);
       refreshCytubeBlockMeta(container, data);
       panel.textContent = '';
       panel.appendChild(player.note);
@@ -1008,9 +1060,9 @@ const thumbs = {
       cytubeRoomState.set(channel, data);
       refreshCytubeBlockMeta(container, data);
       if (!active) return; // collapsed: the header is the whole block
-      // The room switching item under a reader who is watching starts the next one
-      // by itself, the way the room does; opening a block by hand does not.
-      if (remount || changed) return mount(data, { autoplay: changed && !remount });
+      // A new item is mounted on the spot - a room switches video whenever it
+      // likes - but nothing starts playing until the reader presses play.
+      if (remount || changed) return mount(data);
       // Same item: the note catches up with the room (which is also what keeps the
       // clock it runs by itself (`runCytubeClock`) honest about the position),
       // and the player is pulled back only if it has drifted.
@@ -1044,6 +1096,44 @@ const thumbs = {
     parent.replaceChild(container, link);
     if (autoExpand) thumbLink.onclick({ which: 1 });
     watchCytubeBlock(channel, { alive: () => container.isConnected, update: apply });
+  },
+
+  // A Twitter/X or Bluesky link written in a post's text (see `postVideoBlock` in
+  // `be/lib/embeds.js`): the post's video is asked of FxEmbed when the reader opens
+  // the block, and mounted here with the poster the API hands out - paused, like
+  // every other player on the site. A post with no video, or an API that cannot be
+  // reached, leaves the plain link the block was rendered with.
+  mountPostVideoBlock(container) {
+    const postUrl = container.dataset.url;
+    if (!postUrl) return;
+    container.dataset.postVideoMounted = 'true';
+
+    const details = container.closest('details');
+    let asked = false;
+    const show = () => {
+      if (asked) return;
+      asked = true;
+      const resolve = container.dataset.provider === 'bluesky' ? blueskyVideoUrl : tweetVideoUrl;
+      resolve(postUrl).then((media) => {
+        if (!media || !media.url) return; // the link the block came with stays
+        const video = document.createElement('video');
+        video.controls = true;
+        video.preload = 'metadata';
+        if (media.thumb) video.poster = media.thumb;
+        const source = document.createElement('source');
+        source.src = media.url;
+        source.type = 'video/mp4';
+        video.appendChild(source);
+        container.textContent = '';
+        container.appendChild(video);
+      });
+    };
+
+    // Asked for when the block is opened rather than on page load: a thread can
+    // hold a lot of these, and the API is somebody else's to rate-limit.
+    if (!details) return show();
+    if (details.open) return show();
+    details.addEventListener('toggle', () => details.open && show(), { once: true });
   },
 
   processImageLink(link) {
@@ -1099,6 +1189,10 @@ window.initializeThumbnails = function () {
   // `fixTwitchFrames`).
   fixTwitchFrames(document);
 
+  // Then the players that must not be loaded until the reader opens the block they
+  // are in: bilibili's starts playing by itself (see `loadDeferredEmbeds`).
+  loadDeferredEmbeds(document);
+
   document.querySelectorAll('.image-container:not([data-initialized])').forEach((container) => {
     const link = container.querySelector('.media-toggle');
     if (!link) return;
@@ -1110,6 +1204,12 @@ window.initializeThumbnails = function () {
   // mount whatever it is playing now (see `mountCytubeBlock`).
   document.querySelectorAll('.cytube-stream:not([data-cytube-mounted])').forEach((container) => {
     if (container.querySelector('.cytube-play')) mountCytubeBlock(container);
+  });
+
+  // A Twitter/X or Bluesky link in a post's text: ask FxEmbed for the post's video
+  // when the block is opened (see `mountPostVideoBlock`).
+  document.querySelectorAll('.post-video:not([data-post-video-mounted])').forEach((container) => {
+    if (container.querySelector('.post-video-play')) thumbs.mountPostVideoBlock(container);
   });
 };
 

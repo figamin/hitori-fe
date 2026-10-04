@@ -82,10 +82,9 @@ document.getElementById('message-qr').addEventListener('input', function () {
   document.getElementById('qr-charCount').textContent = this.value.length;
 });
 
-// Mirror one form control onto the other. The main reply form no longer carries
-// every control the quick reply has (nonoko/fortune/sage are QR-only now), so a
-// missing side must not abort the script - everything after this point (the AJAX
-// submit handler included) would never be registered.
+// Mirror one form control onto the other. A missing side must not abort the script
+// - everything after this point (the AJAX submit handler included) would never be
+// registered.
 function syncText(a, b) {
   if (!a || !b) return;
   a.oninput = function () {
@@ -116,20 +115,12 @@ let qr_nm = document.getElementById('name-qr');
 let st_nm = document.getElementById('name');
 syncText(qr_nm, st_nm);
 
-// Sync nonokos
-let qr_nn = document.getElementById('nonoko-qr');
-let st_nn = document.getElementById('nonoko');
-syncClick(qr_nn, st_nn);
-
-// Sync fortunes
-let qr_fs = document.getElementById('fortune-qr');
-let st_fs = document.getElementById('fortune');
-syncClick(qr_fs, st_fs);
-
-// Sync sages
-let qr_sg = document.getElementById('sage-qr');
-let st_sg = document.getElementById('sage');
-syncClick(qr_sg, st_sg);
+// Sync the post options. Each is a checkbox in both forms (the reply form and the
+// quick reply), so they mirror one for one and a reader can combine them - sage and
+// fortune together, say. Both post `fortune`/`sage`/`nonoko` = "true".
+for (const name of ['fortune', 'sage', 'nonoko']) {
+  syncClick(document.getElementById(`${name}-qr`), document.getElementById(name));
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const mainDropZone = document.getElementById('drop-zone');

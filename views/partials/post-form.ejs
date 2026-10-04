@@ -37,16 +37,13 @@
             </td>
         </tr>
         <tr>
-            <td class="post-block"><label for="option_selectbox">Options</label></td>
+            <td class="post-block"><label>Options</label></td>
             <td class="postform-input-cell">
-                <select name="option" id="option_selectbox" autocomplete="off">
-                    <option value=""></option>
-                    <option value="fortune">Fortune</option>
-                    <% if (isThread) { %>
-                    <option value="sage">Sage (Do not bump)</option>
-                    <option value="nonoko">Nonoko</option>
-                    <% } %>
-                </select>
+                <label>Fortune <input type="checkbox" id="fortune" name="fortune" value="true" /></label>
+                <% if (isThread) { %>
+                <label>Sage (Do not bump) <input type="checkbox" id="sage" name="sage" value="true" /></label>
+                <label>Nonoko <input type="checkbox" id="nonoko" name="nonoko" value="true" /></label>
+                <% } %>
                 <% if (isThread) { %>
                 <button class="new-thread-btn" type="submit">New reply</button>
                 <% } %>
