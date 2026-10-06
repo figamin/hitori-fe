@@ -115,6 +115,11 @@ let qr_nm = document.getElementById('name-qr');
 let st_nm = document.getElementById('name');
 syncText(qr_nm, st_nm);
 
+// Sync the deletion password. The server pre-fills the same random password in both
+// forms, and whichever one is submitted becomes the post's password, so an edit to
+// either box has to show up in the other.
+syncText(document.getElementById('post-password-qr'), document.getElementById('post-password'));
+
 // Sync the post options. Each is a checkbox in both forms (the reply form and the
 // quick reply), so they mirror one for one and a reader can combine them - sage and
 // fortune together, say. Both post `fortune`/`sage`/`nonoko` = "true".

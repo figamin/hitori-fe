@@ -317,7 +317,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const formData = new FormData(mainReplyForm);
 
-      const postPassword = generateRandomPassword();
+      // The box is pre-filled with the reader's remembered password (see
+      // `post-password.js`), so post what is in it; only invent one if it is empty.
+      const typedPassword = String(formData.get('post-password') || '').trim();
+      const postPassword = typedPassword || generateRandomPassword();
       formData.set('post-password', postPassword);
 
       formData.delete('image');
