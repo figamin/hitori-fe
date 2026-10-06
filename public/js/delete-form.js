@@ -71,7 +71,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const formAction = deleteForm.getAttribute('action');
         fetch(formAction, {
           method: 'POST',
-          body: formData
+          // The endpoint parses urlencoded bodies (a plain form submit), not
+          // multipart - posting FormData directly made this fail with "No posts
+          // selected for deletion".
+          body: new URLSearchParams(formData)
         })
           .then((response) => {
             if (response.redirected) {

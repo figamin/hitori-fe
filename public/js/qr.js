@@ -283,7 +283,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const threadId = result.post.threadId;
             const postId = result.post.postId;
             const postKey = `${boardUri}/${threadId}/${postId}`;
-            savePostPassword(postKey, postPassword);
+            savePostPassword(postKey, formData.get('post-password') || '');
           }
 
           // Handle nonoko redirect

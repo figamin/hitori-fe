@@ -15,6 +15,7 @@
       <div class="qr-header">
         <div style="margin-bottom: 2px;">
           <input type="text" id="name-qr" name="name" placeholder="<%= anonymousName || 'Anonymous' %>" />
+          <input type="password" id="post-password-qr" name="post-password" value="<%= locals.formPassword %>" title="Password (for deletion)" style="width: 9em;" />
         </div>
         <div style="margin-bottom: 2px; padding: 5px 0">
           Fortune <input type="checkbox" id="fortune-qr" name="fortune" value="true" /> <% if (isThread) { %> Sage

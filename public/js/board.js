@@ -80,7 +80,13 @@ function savePostPasswords(passwords) {
 }
 
 function generateRandomPassword() {
-  return Math.random().toString(36).substring(2, 10);
+  // Only a fallback: the server pre-fills the password box (see `post-form.ejs`).
+  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  const bytes = new Uint8Array(8);
+  crypto.getRandomValues(bytes);
+  let password = '';
+  for (const byte of bytes) password += alphabet[byte % alphabet.length];
+  return password;
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -96,7 +102,11 @@ document.addEventListener('DOMContentLoaded', function () {
       try {
         const formData = new FormData(form);
         const boardUri = window.location.pathname.split('/')[1];
-        const postPassword = generateRandomPassword();
+        // The form comes pre-filled with a random 8 character password, and that is the
+        // value the reader can see, so it is the one that gets posted (and saved below
+        // for the delete menu). Only invent one if the box was emptied.
+        const typedPassword = String(formData.get('post-password') || '').trim();
+        const postPassword = typedPassword || generateRandomPassword();
 
         formData.delete('image');
         if (fileInput && fileInput.files && fileInput.files.length > 0) {
@@ -105,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
 
-        // Always set a new random password
+        // Keep the password the form was submitted with.
         formData.set('post-password', postPassword);
 
         const response = await fetch(form.getAttribute('action'), {
