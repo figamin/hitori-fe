@@ -256,6 +256,122 @@ input[type="text"] {
   margin-right: 0.4em;
 }
 
+/* The post editor (`public/js/edit-post.js`): a floating panel like the quick reply,
+   plus the live preview it injects right under the post being edited. */
+#editPost {
+  position: fixed;
+  right: 20px;
+  top: 126px;
+  z-index: 9;
+  display: none;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-alt);
+  border-radius: 5px;
+  width: 420px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  box-sizing: border-box;
+}
+
+#editPostHeader {
+  padding: 2px 5px;
+  background-color: var(--post-color);
+  border-top-left-radius: 10%;
+  border-top-right-radius: 10%;
+  cursor: move;
+  font-size: 14px;
+  font-weight: bold;
+  user-select: none;
+}
+
+#editPostHeader p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#editPostClose {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+#editPostBody {
+  padding: 6px;
+}
+
+#editPostMessage {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: monospace;
+  font-size: 13px;
+  resize: vertical;
+}
+
+#editPostTools {
+  margin-top: 4px;
+}
+
+#editPostMode {
+  background: none;
+  border: 1px solid var(--border-alt);
+  border-radius: 3px;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 2px 6px;
+}
+
+#editPostHint {
+  margin: 4px 0 0;
+  opacity: 0.7;
+}
+
+#editPostActions {
+  margin-top: 6px;
+  text-align: right;
+}
+
+#editPostActions button {
+  border: 1px solid var(--border-alt);
+  border-radius: 3px;
+  cursor: pointer;
+  margin-left: 4px;
+  padding: 2px 10px;
+}
+
+#editPostStatus {
+  margin: 4px 0 0;
+  min-height: 1em;
+}
+
+.edit-preview {
+  margin: 6px 0 6px 20px;
+  padding: 4px 8px 8px;
+  border: 1px dashed var(--border-alt);
+  border-radius: 4px;
+  opacity: 0.9;
+}
+
+.edit-preview-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* Nothing in the preview is a link: it is a picture of the post, not the post. */
+.edit-preview .post,
+.edit-preview .reply {
+  pointer-events: none;
+}
+
 .file-info details summary a {
   pointer-events: all;
 }

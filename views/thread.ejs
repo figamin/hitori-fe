@@ -77,5 +77,6 @@
   window.modBoardUri = '<%= boardUri %>';
   window.modThreadId = <%= thread.threadId %>;
 </script>
-<script src="/js/mod.js"></script>
+<script src="/js/mod.js?v=<%= locals.assetVersion('js/mod.js') %>"></script>
+<script src="/js/edit-post.js?v=<%= locals.assetVersion('js/edit-post.js') %>"></script>
 <% } %>

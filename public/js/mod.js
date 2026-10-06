@@ -168,33 +168,8 @@ document.getElementById('mod-ip-delete-thread')?.addEventListener('click', async
   }
 });
 
-document.addEventListener('click', async (e) => {
-  const target = e.target instanceof Element ? e.target : e.target.parentElement;
-  if (!target) return;
-
-  const edit = target.closest('.mod-edit-post');
-  if (edit) {
-    e.preventDefault();
-    const container = edit.closest('.reply, .op');
-    const contentEl = container?.querySelector('.reply-content, .thread-content');
-    const message = prompt('Edit message', contentEl?.textContent || '');
-    if (message == null) return;
-    try {
-      await modPost('/mod/api/edit', {
-        boardUri: edit.dataset.board,
-        threadId: Number(edit.dataset.thread),
-        postId: Number(edit.dataset.post),
-        message,
-        isThread: edit.dataset.threadPost === '1'
-      });
-      location.reload();
-    } catch (err) {
-      alert(err.message);
-    }
-    return;
-  }
-
-});
+// `[Edit]` is handled by `public/js/edit-post.js` (a popup with the post's markup, a
+// raw-HTML switch and a live preview under the post).
 
 document.getElementById('mod-save-settings')?.addEventListener('click', async () => {
   try {
