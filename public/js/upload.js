@@ -129,6 +129,22 @@ function visibleFileCount() {
   return currentFiles.filter((f) => !isTegakiReplayFile(f)).length;
 }
 
+// The name a preview card shows: at most `window.fileNameMaxLength` characters with
+// the extension kept - the same rule the server applies to a post's file names (see
+// `truncateFileName` in `be/lib/formatting.js`), so every card is the same shape
+// whatever the reader picked.
+function displayFileName(name) {
+  const value = String(name || '');
+  const max = Number(window.fileNameMaxLength);
+  if (!Number.isFinite(max) || max <= 0 || value.length <= max) return value;
+
+  const dot = value.lastIndexOf('.');
+  const ext = dot > 0 ? value.slice(dot) : '';
+  const stem = dot > 0 ? value.slice(0, dot) : value;
+  const room = Math.max(1, max - ext.length - 1);
+  return `${stem.slice(0, room)}…${ext}`;
+}
+
 function handleFilesUpload(files) {
   const incomingVisible = Array.from(files).filter((f) => !isTegakiReplayFile(f)).length;
   if (visibleFileCount() + incomingVisible > maxFilesLimit) {
@@ -168,7 +184,16 @@ function handleFilesUpload(files) {
 
     reader.readAsDataURL(file);
 
-    fileInfo.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+    // Name and size on a line each, with the name truncated (the full one stays in
+    // the tooltip), so cards in a row line up instead of each being its own height.
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'preview-name';
+    nameSpan.textContent = displayFileName(file.name);
+    nameSpan.title = file.name;
+    const sizeSpan = document.createElement('span');
+    sizeSpan.className = 'preview-size';
+    sizeSpan.textContent = `${(file.size / 1024 / 1024).toFixed(2)} MB`;
+    fileInfo.append(nameSpan, sizeSpan);
 
     // One radio group per file: the chosen value decides which placeholder image
     // replaces the thumbnail. Each group needs its own name, otherwise a single
@@ -197,7 +222,8 @@ function handleFilesUpload(files) {
     if (previewContainer_QR) {
       const qrAppend = document.createElement('div');
       qrAppend.className = 'preview-text';
-      qrAppend.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+      qrAppend.textContent = `${displayFileName(file.name)} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+      qrAppend.title = file.name;
       previewContainer_QR.appendChild(qrAppend);
     }
 

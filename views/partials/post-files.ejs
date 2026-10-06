@@ -10,6 +10,7 @@
   <%- include('./post-file', { file: visibleFiles[0], fileIndex: files.indexOf(visibleFiles[0]), files, imageClass, maxWidth, maxHeight, boardUri, threadId, postId, modView }) %>
 </span>
 <% } else { %>
+<div class="post-files">
 <% visibleFiles.forEach(function(file) { %>
 <div class="op-upload-cell">
   <span class="file-info">
@@ -17,5 +18,6 @@
   </span>
 </div>
 <% }); %>
+</div>
 <% } %>
 <% } %>

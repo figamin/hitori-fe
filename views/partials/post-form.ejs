@@ -39,12 +39,15 @@
         <tr>
             <td class="post-block"><label>Options</label></td>
             <td class="postform-input-cell">
-                <label>Fortune <input type="checkbox" id="fortune" name="fortune" value="true" /></label>
+                <label><input type="checkbox" id="fortune" name="fortune" value="true" /> Fortune</label>
                 <% if (isThread) { %>
-                <label>Sage (Do not bump) <input type="checkbox" id="sage" name="sage" value="true" /></label>
-                <label>Nonoko <input type="checkbox" id="nonoko" name="nonoko" value="true" /></label>
+                <br>
+                <label><input type="checkbox" id="sage" name="sage" value="true" /> Sage</label>
+                <br>
+                <label><input type="checkbox" id="nonoko" name="nonoko" value="true" /> Nonoko</label>
                 <% } %>
                 <% if (isThread) { %>
+                <br>
                 <button class="new-thread-btn" type="submit">New reply</button>
                 <% } %>
             </td>

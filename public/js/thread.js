@@ -9,6 +9,8 @@ function markPost(id) {
     markedPosting = null;
   }
 
+  if (document.querySelector(`.op[data-post-id="${id}"]`)) return;
+
   const container = document.querySelector(`.reply[data-post-id="${id}"]`);
   if (!container) return;
 
@@ -24,7 +26,10 @@ function scrollToHash() {
   const el =
     document.querySelector(`.reply[data-post-id="${postId}"], .op[data-post-id="${postId}"]`) ||
     document.getElementById('p' + postId);
-  if (el) el.scrollIntoView();
+  if (el) {
+    markPost(postId);
+    el.scrollIntoView();
+  }
 }
 
 window.markPost = markPost;

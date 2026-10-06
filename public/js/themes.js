@@ -1,8 +1,10 @@
 const themes = {
   list: [
+    { label: 'Hachune Classic', id: 'hachuneclassic20' },
     { label: 'Yotsuba', id: 'yotsuba' },
     { label: 'Yotsuba B', id: 'yotsuba-b' },
-    { label: 'Mikuchong', id: 'mikuchong20' }
+    { label: 'Mikuchong', id: 'mikuchong20' },
+    { label: 'Ritsundere', id: 'ritsundere20' }
   ],
   defaultId: 'hachunedark20',
 

@@ -1,0 +1,80 @@
+:root {
+    --background-color: #fad1d1;
+    --background-gradient: #fc8e8e;
+    --header-highlight: #da7660;
+    --text-color: #330000;
+    --border-color: #ca5050;
+    --border-alt: #d48181;
+    --post-color: #ffeee6;
+    --marked-color: #fff1c1;
+    --marked-border-color: #ffa1a1;
+    --link-color: #a40000;
+    --hover-link-color: #ff6537;
+    --name-color: #117743;
+    --file-info-color: #330000;
+    --input: #fff;
+    --subject-color: #990a00;
+    /* --small-button: #d1d5ee; */
+    --board-title-color: #790000;
+    /* --button-background: #d6daf0; */
+}
+
+body{
+    font-family: Verdana;
+    font-size: 12px;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+	bottom: 0;
+	right: 0;
+    width: 220px;
+    height: 180px;
+    opacity: 0.6;
+    background-image: url("img/ritsu2.png");
+    background-size: contain;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.reply{
+    border-width: 2px;
+    border-color: #ffa1a1;
+}
+
+.boxbar{
+    background: #bf6868;
+    color: #fff;
+}
+
+.post-block{
+    color: #790000;
+    font-weight: 700;
+}
+
+.box-outer {
+    border: 1px solid #330000;
+}
+
+.banner-img{
+    border-radius: 5px;
+}
+
+.board-list a{
+    text-shadow: #ab5050 1px 1px 1px, #dcb5b5 -1px -1px 1px;
+}
+
+.greenText{
+    color: #195100;
+}
+
+.quoteLink{
+    color: var(--link-color);
+}
+
+.quoteLink:hover{
+    color: var(--hover-link-color);
+}

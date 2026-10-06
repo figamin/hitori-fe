@@ -21,7 +21,7 @@
 
 body {
     background-image:
-        url("https://files.catbox.moe/oohcmp.png");
+        url("img/mikuchong.png");
     background-position: right 15%;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -54,7 +54,6 @@ body {
 
 .reply{
     border-radius: 0px 20px;
-    padding: 0px 10px 8px 0px; 
 }
 
 .reply:hover{

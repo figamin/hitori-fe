@@ -24,7 +24,7 @@
       <summary>
         <span class="hide-file-button"></span>
         <% if (!isEmbed(post.files[0].mime)) { %>
-        <a target="_blank" href="<%= post.files[0].path %>" class="file-link"><%= post.files[0].originalName %></a>
+        <a target="_blank" href="<%= post.files[0].path %>" class="file-link" title="<%= post.files[0].originalName %>"><%= locals.displayFileName ? locals.displayFileName(post.files[0].originalName) : post.files[0].originalName %></a>
         - <%= post.files[0].size ? (post.files[0].size / 1024).toFixed(2) : '0.00' %> KB
         <% if (post.files[0].width && post.files[0].height) { %>(<%= post.files[0].width %>x<%= post.files[0].height %>)<% } %>
         <a href="<%= post.files[0].path %>" download="<%= post.files[0].originalName %>" title="Download"><img src="/img/download.png" width="16" alt="Download"></a>
@@ -40,6 +40,7 @@
     </details>
   </span>
   <% } else { %>
+  <div class="post-files">
   <% post.files.forEach(function(file) { %>
   <div class="op-upload-cell">
     <span class="file-info">
@@ -47,7 +48,7 @@
         <summary>
           <span class="hide-file-button"></span>
           <% if (!isEmbed(file.mime)) { %>
-          <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.originalName %></a>
+          <a target="_blank" href="<%= file.path %>" class="file-link" title="<%= file.originalName %>"><%= locals.displayFileName ? locals.displayFileName(file.originalName) : file.originalName %></a>
           - <%= file.size ? (file.size / 1024).toFixed(2) : '0.00' %> KB
           <% if (file.width && file.height) { %>(<%= file.width %>x<%= file.height %>)<% } %>
           <a href="<%= file.path %>" download="<%= file.originalName %>" title="Download"><img src="/img/download.png" width="16" alt="Download"></a>
@@ -64,6 +65,7 @@
     </span>
   </div>
   <% }); %>
+  </div>
   <% } %>
   <% } %>
   <div class="reply-content"><%- post.markdown || post.message %><% if (post.warningMessage) { %><%- include('../partials/warning-message', { message: post.warningMessage }) %><% } else if (post.banMessage) { %><div class="ban-message"><%- post.banMessage %> <img src="/img/ban.gif" width="60"></div><% } %><% if (post.poll) { %><% if (typeof post.poll === 'string') { %><%- post.poll %><% } else { %><%- include('poll', { poll: post.poll }) %><% } %><% } %></div>

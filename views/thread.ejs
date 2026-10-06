@@ -24,7 +24,7 @@
 <div style="text-align: center"><%- boardMessage %></div>
 <% } %>
 <hr>
-<% if (!modView) { %>[<a href="#" id="gallery-btn">Gallery</a>] <% } %>[<a href="/<%= boardUri %>/">Return</a>] [<a href="/<%= boardUri %>/catalog">Catalog</a>] [<a href="#bottom">Bottom</a>] [<a href="#">Top</a>]
+<% if (!modView) { %>[<a href="#" id="gallery-btn">Gallery</a>] <% } %>[<a href="/<%= boardUri %>/">Return</a>] [<a href="/<%= boardUri %>/catalog">Catalog</a>] [<a href="#bottom">Bottom</a>]
 <hr>
 <div class="thread" id="<%= thread.threadId %>">
 <%- include('cells/op', { thread, boardUri, isThread: true, modView, showIp, globalStaff }) %>
@@ -35,8 +35,10 @@
 </div>
 </div>
 <hr>
+<div id="bottom">
 <% if (!modView) { %>[<a href="#" id="gallery-btn">Gallery</a>] <% } %>[<a href="/<%= boardUri %>/">Return</a>] [<a href="/<%= boardUri %>/catalog">Catalog</a>] [<a href="#">Top</a>]
 <span class="summary">There are <%= thread.totalReplies + 1 %> posts made by <%= thread.uniquePosters %> people with <%= thread.totalFiles %> files.</span>
+</div>
 <hr>
 <% if (!modView) { %>
 <span id="countdown" class="thread-refresh-controls">

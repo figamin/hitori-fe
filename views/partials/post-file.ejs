@@ -11,7 +11,7 @@
   <summary>
     <span class="hide-file-button"></span>
     <% if (!isEmbed) { %>
-    <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.originalName %></a>
+    <a target="_blank" href="<%= file.path %>" class="file-link" title="<%= file.originalName %>"><%= locals.displayFileName ? locals.displayFileName(file.originalName) : file.originalName %></a>
     - <%= (file.size / 1024).toFixed(2) %> KB
     <% if (file.width && file.height) { %>(<%= file.width %>x<%= file.height %>)<% } %>
     <a href="<%= file.path %>" download="<%= file.originalName %>" title="Download"><img src="/img/download.png" width="16" alt="Download"></a>

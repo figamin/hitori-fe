@@ -10,6 +10,7 @@
 </div>
 <% function pageHref(i) { return i === 1 ? '/all/' : '/all/?page=' + i; } %>
 <%- include('partials/pagelist', { page: currentPage, totalPages, href: pageHref }) %>
+<div style="clear: both"></div>
 
 <script src="/js/markdown-btn.js"></script>
 <script src="/js/expansion.js"></script>

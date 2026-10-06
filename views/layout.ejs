@@ -28,6 +28,9 @@
 <script>
 // Options for the report dialog's category dropdown (post-menu.js reads this).
 window.reportCategories = <%- JSON.stringify(locals.reportCategories || []).replace(/</g, '\\u003c') %>;
+// How many characters of a file name the upload preview shows (see upload.js); the
+// server truncates a post's file names the same way (`fileNameMaxLength`).
+window.fileNameMaxLength = <%- Number(locals.fileNameMaxLength) || 30 %>;
 </script>
 <% if (modUser) { %>
 <script>

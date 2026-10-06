@@ -1,0 +1,131 @@
+:root {
+    --header-highlight: #befff9;
+    --text-color: #137a7f;
+    --border-color: #aaa;
+    --border-alt: #137a7f;
+    --post-color: #befff9;
+    --marked-color: #e4fffe;
+    --marked-border-color: #137a7f;
+    --link-color: #008b88;
+    --hover-link-color: #005760;
+    --name-color: #e12885;
+    --file-info-color: #137a7f;
+    --input: #fff;
+    --subject-color: #00a0b1;
+    /*--small-button: #d1d5ee;*/
+    --board-title-color: #e12885;
+    /*--button-background: #d6daf0;*/
+}
+
+body {
+  background: #e1fffd url('img/fade-miku.png') repeat-x 50% 0%;
+  font-family: Tahoma;
+  font-size: 9pt;
+  padding-left: 0px;
+  padding-right: 0px;
+  cursor: url('img/hachune-cursor.ico'),auto;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+	bottom: 0;
+	right: 0;
+    width: 220px;
+    height: 180px;
+    opacity: 0.6;
+    background-image: url("img/miku2.png");
+    background-size: contain;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: -1;
+}
+
+
+.board-title,
+.board-description {
+    font-family: consolas;
+    text-shadow: #00ffa3 1px 1px 1px;
+}
+
+.banner-img{
+    border: 3px double #137a7f;
+    border-radius: 5px;
+}
+
+.post-block{
+    border-radius: 5px;
+}
+
+button,
+input[type="button"] {
+    background: #93e3d5;
+    border: 1px solid #137a7f;
+    color: #003d40;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover,
+input[type="button"]:hover{
+    background: #88ffeb;
+}
+
+
+input[type="text"], textarea {
+    background: #fff;
+    border: 1px solid #137a7f;
+    border-radius: 5px;
+}
+
+input[type="password"], textarea {
+    background: #fff;
+    border: 1px solid #137a7f;
+    border-radius: 5px;
+}
+
+#postformTable textarea#message {
+    border: 1px solid #137a7f;
+    border-radius: 5px;
+}
+
+div.post.reply {
+    border: 1px solid;
+}
+
+.announcement{
+     color: #e12885;
+}
+
+#drop-zone{
+    border: 1px solid;
+    background: inherit;
+}
+
+.pagelist {
+    color: #137a7f;
+    background: #befff9;
+    padding: 5px;
+    border: 1px solid #137a7f;
+    border-radius: 10px;
+    box-shadow: 0px 0px 18px -10px rgba(28, 55, 62, 0.75);
+}
+
+.current{
+    color: #e12885;
+    text-decoration: none !important;
+}
+
+.greenText{
+   color: #00640e;
+}
+
+.boxbar {
+    background: #00a590;
+    color: #fff;
+}
+
+.box-outer {
+    border: 1px solid #00a590;
+}

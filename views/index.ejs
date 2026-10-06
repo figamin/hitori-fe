@@ -357,7 +357,7 @@ var boardSections = [
                 <div class="box chan-activity-col">
                     <div class="box-title">RECENT POSTS</div>
                     <div class="box-body posts">
-                        <% (latestPosts || []).slice(0, 12).forEach(function (post) { %>
+                        <% (latestPosts || []).slice(0, 17).forEach(function (post) { %>
                         <div class="line"><a href="/<%= post.boardUri %>/" class="pboard"><%= boardLabel(post.boardUri) %></a> - <span class="snippet"><a href="<%= postUrl(post) %>" class="snippet-link"><%- post.message || 'No message' %></a></span></div>
                         <% }); %>
                     </div>

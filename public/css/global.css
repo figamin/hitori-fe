@@ -305,6 +305,29 @@ input[type="text"] {
   color: var(--hover-link-color);
 }
 
+.post-files {
+  align-items: start;
+  display: grid;
+  gap: 8px 14px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  margin-top: 4px;
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+/* Responsive post files thing */
+
+.post-files .op-upload-cell {
+  display: block;
+  min-width: 0;
+}
+
+@media (max-width: 600px) {
+    .post-files {
+        flex-direction: column;
+    }
+}
+
 .op-upload-cell {
   display: inline-block;
 }
@@ -1237,14 +1260,35 @@ details:not([open]) .hide-file-button::before {
 
 .preview-item img {
   display: block;
+  /* One box for every thumbnail, letterboxed rather than cropped, so the text below
+     starts at the same height in each card of a row. */
+  height: 100px;
   margin-bottom: 5px;
   max-width: 125px;
+  object-fit: contain;
+  width: 100%;
 }
 
 .preview-item {
   margin-bottom: 10px;
   position: relative;
   width: 125px;
+}
+
+/* The name gets a line of its own, the size the next one: the name is truncated to
+   the configured length (see upload.js), so the cards in a row line up. */
+.preview-text {
+  line-height: 1.25;
+}
+
+.preview-name,
+.preview-size {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.preview-size {
+  color: var(--file-info-color);
 }
 
 .remove-file {
@@ -2130,4 +2174,3 @@ code {
 #mod-ban-modal .modal-content {
   width: 400px;
 }
-

@@ -64,10 +64,10 @@ body::before {
     content: "";
     position: fixed;
     right: 20px;
-    bottom: 28px;
+    bottom: 0px;
     width: 220px;
     height: 180px;
-    background-image: url("https://files.catbox.moe/zf4ojx.png");
+    background-image: url("img/miku2.png");
     background-size: contain;
     background-position: bottom right;
     background-repeat: no-repeat;
