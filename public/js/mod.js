@@ -333,6 +333,69 @@ document.getElementById('board-create-form')?.addEventListener('submit', async (
   }
 });
 
+// Deleting a board takes every thread, post and uploaded file of it and cannot be
+// undone, so it goes through a popup that names the board first. The link is only
+// rendered for admins (`be/lib/mod/boards.js#deleteBoard`, the endpoint behind it is
+// `requireAdmin` too).
+let boardDeleteModal = null;
+let boardDeleteUri = null;
+
+function buildBoardDeleteModal() {
+  if (boardDeleteModal) return boardDeleteModal;
+
+  const modal = document.createElement('div');
+  modal.id = 'board-delete-modal';
+  modal.innerHTML =
+    '<div class="modal-content">' +
+    '<div class="box-outer">' +
+    '<div class="boxbar"><h2>Delete board</h2></div>' +
+    '<div class="boxcontent">' +
+    '<p><strong id="board-delete-question"></strong></p>' +
+    '<p class="file-info">Every thread, post, quote and uploaded file of this board is deleted. This cannot be undone.</p>' +
+    '<button type="button" id="board-delete-confirm">Delete board</button>' +
+    '<button type="button" id="board-delete-cancel">Cancel</button>' +
+    '<p class="file-info" id="board-delete-status"></p>' +
+    '</div></div></div>';
+
+  document.body.appendChild(modal);
+  modal.querySelector('#board-delete-cancel').addEventListener('click', () => {
+    modal.style.display = 'none';
+    boardDeleteUri = null;
+  });
+  modal.querySelector('#board-delete-confirm').addEventListener('click', async () => {
+    if (!boardDeleteUri) return;
+    const confirmButton = modal.querySelector('#board-delete-confirm');
+    const status = modal.querySelector('#board-delete-status');
+    confirmButton.disabled = true;
+    status.textContent = 'Deleting…';
+    try {
+      await modPost('/mod/api/board/delete', { boardUri: boardDeleteUri });
+      location.href = '/mod';
+    } catch (err) {
+      status.textContent = err.message;
+      confirmButton.disabled = false;
+    }
+  });
+
+  boardDeleteModal = modal;
+  return modal;
+}
+
+document.addEventListener('click', (e) => {
+  const target = e.target instanceof Element ? e.target : e.target.parentElement;
+  const link = target?.closest?.('.board-delete');
+  if (!link) return;
+  e.preventDefault();
+
+  const modal = buildBoardDeleteModal();
+  boardDeleteUri = link.dataset.board;
+  // textContent, not innerHTML: a board name is whatever somebody typed into it.
+  modal.querySelector('#board-delete-question').textContent = `Delete /${link.dataset.board}/ - ${link.dataset.name}?`;
+  modal.querySelector('#board-delete-status').textContent = '';
+  modal.querySelector('#board-delete-confirm').disabled = false;
+  modal.style.display = 'block';
+});
+
 document.getElementById('board-settings-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);

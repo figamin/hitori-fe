@@ -1241,7 +1241,8 @@ mark.search-hit {
 
 #delete-modal,
 #report-modal,
-#mod-ban-modal {
+#mod-ban-modal,
+#board-delete-modal {
   background: rgba(0, 0, 0, 0.4);
   display: none;
   height: 100%;

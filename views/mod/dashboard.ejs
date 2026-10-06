@@ -22,7 +22,7 @@
 <legend>Boards</legend>
 <ul>
 <% boards.forEach(b => { %>
-<li><a href="/<%= b.boardUri %>/">/<%= b.boardUri %>/</a> / <a href="/mod/board/<%= b.boardUri %>">Mod</a> / <a href="/mod/board/<%= b.boardUri %>/settings">Settings</a> / <a href="/mod/trash/<%= b.boardUri %>">Trash</a></li>
+<li><a href="/<%= b.boardUri %>/">/<%= b.boardUri %>/<% if (b.boardName) { %> - <%= b.boardName %><% } %></a> / <a href="/mod/board/<%= b.boardUri %>">Mod</a> / <a href="/mod/board/<%= b.boardUri %>/settings">Settings</a> / <a href="/mod/trash/<%= b.boardUri %>">Trash</a><% if (isAdmin) { %> / <a href="#" class="board-delete" data-board="<%= b.boardUri %>" data-name="<%= b.boardName || b.boardUri %>">Delete</a><% } %></li>
 <% }) %>
 </ul>
 </fieldset>
