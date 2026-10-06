@@ -256,6 +256,10 @@ function selectionKey(ctx) {
   return ctx.isThread ? `${ctx.boardUri}-${ctx.threadId}` : `${ctx.boardUri}-${ctx.threadId}-${ctx.postId}`;
 }
 
+function removeReplyFromDom(replyElement) {
+  (replyElement?.closest('.reply-container') || replyElement)?.remove();
+}
+
 function removePostFromDom(ctx) {
   if (ctx.isThread) {
     const threadContainer =
@@ -267,7 +271,7 @@ function removePostFromDom(ctx) {
       threadContainer.remove();
     }
   } else {
-    ctx.postEl?.remove();
+    removeReplyFromDom(ctx.postEl);
   }
 }
 
@@ -284,7 +288,7 @@ window.modStaffDeletePost = async function (postId, isThread, boardUri, threadId
         threadContainer.remove();
       }
     } else {
-      document.querySelector(`.reply[data-post-id="${postId}"]`)?.remove();
+      removeReplyFromDom(document.querySelector(`.reply[data-post-id="${postId}"]`));
     }
   } catch (err) {
     alert(err.message);
@@ -656,9 +660,7 @@ async function deletePost(postId, password, isThread, boardUri) {
         }
       } else {
         const replyElement = document.querySelector(`.reply[data-post-id="${postId}"]`);
-        if (replyElement) {
-          replyElement.remove();
-        }
+        removeReplyFromDom(replyElement);
       }
 
       const modal = document.getElementById('delete-modal');

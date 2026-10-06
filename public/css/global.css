@@ -247,6 +247,15 @@ input[type="text"] {
   font-weight: bold;
 }
 
+/* A post that was deleted while the thread was open, kept in place instead of being
+   removed (`deletedPostDisplay: "mark"` in the server config). The label is inserted
+   just before the post's name by `public/js/thread.js`. */
+.deleted-label {
+  color: #ff0000;
+  font-weight: bold;
+  margin-right: 0.4em;
+}
+
 .file-info details summary a {
   pointer-events: all;
 }
@@ -883,7 +892,19 @@ mark.search-hit {
   content: ']';
 }
 
-.greenText { color: #429406; }
+.greenText, .quote {
+  color: #429406;
+}
+
+.mikutext {
+  color: #00b585;
+}
+
+.redtext {
+  color: red;
+  text-shadow: rgba(112,0,0,1) 0px 0px 16px;
+  font-weight: bold;
+}
 
 .s1 { font-size: 70%; }
 

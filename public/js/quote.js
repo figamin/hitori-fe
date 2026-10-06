@@ -439,6 +439,13 @@ const backlinks = {
 
     const threadId = document.querySelector('.thread')?.getAttribute('data-thread-id') || document.querySelector('.op')?.getAttribute('data-post-id');
 
+    // Every block is emptied before the links are rebuilt from the quotes that are in
+    // the DOM right now: a post that nothing quotes any more (because the quoting post
+    // was deleted) has to lose the link it was showing, not keep it.
+    document.querySelectorAll('.backlinks').forEach((div) => {
+      div.textContent = '';
+    });
+
     quoteLinks.forEach((link) => {
       const fullUrl = link.getAttribute('href');
       const sourcePost = link.closest('[data-post-id]');
@@ -478,7 +485,6 @@ const backlinks = {
       });
 
       if (links.length) {
-        backlinksDiv.textContent = '';
         links.forEach((a, i) => {
           if (i) backlinksDiv.appendChild(document.createTextNode(' '));
           backlinksDiv.appendChild(a);

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><%= title %></title>
-<link rel="stylesheet" href="/css/global.css">
+<link rel="stylesheet" href="/css/global.css?v=<%= locals.assetVersion('css/global.css') %>">
 <link id="theme-css" rel="stylesheet" href="/css/hachunedark20.css">
 <script src="/js/dom.js"></script>
 <script src="/js/csrf.js"></script>
@@ -28,6 +28,9 @@
 <script>
 // Options for the report dialog's category dropdown (post-menu.js reads this).
 window.reportCategories = <%- JSON.stringify(locals.reportCategories || []).replace(/</g, '\\u003c') %>;
+// What an open thread does with a post that is deleted underneath the reader
+// (`deletedPostDisplay` in the server config): `remove` or `mark`.
+window.deletedPostDisplay = '<%= locals.deletedPostDisplay %>';
 // How many characters of a file name the upload preview shows (see upload.js); the
 // server truncates a post's file names the same way (`fileNameMaxLength`).
 window.fileNameMaxLength = <%- Number(locals.fileNameMaxLength) || 30 %>;

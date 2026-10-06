@@ -81,6 +81,11 @@ textarea {
     color: var(--text-color);
 }
 
+input {
+    background: #151515;
+    border: 1px solid #393939;
+}
+
 .announcement{
     color: #fff;
 }

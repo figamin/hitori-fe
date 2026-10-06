@@ -1,3 +1,6 @@
 <% if (post.ipDisplay) { %>
-<p>Ip: <% if (showIp && post.ipRaw) { %><%= post.ipDisplay %><% } else { %><%= post.ipDisplay %><% } %><% if (post.asn) { %> /ASN <%= post.asn %><% } %><% if (post.bypassDisplay) { %> /Bypass <%= post.bypassDisplay %><% } %></p>
+<%# The address links to its own page (hostname, ISP, country, its posts) - but only
+    when the reader may see the address itself: for anyone else the display is a
+    per-board hash, and there is nothing to look up. %>
+<p>Ip: <% if (showIp && post.ipRaw) { %><a href="/mod/ip/<%= encodeURIComponent(post.ipRaw) %>" title="IP information"><%= post.ipDisplay %></a><% } else { %><%= post.ipDisplay %><% } %><% if (post.asn) { %> /ASN <%= post.asn %><% } %><% if (post.bypassDisplay) { %> /Bypass <%= post.bypassDisplay %><% } %></p>
 <% } %>

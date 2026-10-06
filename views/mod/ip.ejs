@@ -1,0 +1,35 @@
+<% title = 'IP ' + ip; %>
+<h1>IP <%= ip %></h1>
+<p>
+IP address: <strong><%= ip %></strong><br>
+Hostname: <% if (info && info.hostname) { %><%= info.hostname %><% } else { %>(no reverse DNS)<% } %><br>
+ISP: <% if (info && info.isp) { %><%= info.isp %><% } else { %>(unknown)<% } %><br>
+Country: <% if (info && info.countryCode) { %><% if (info.countryName) { %><%= info.countryName %> <% } %>(<%= info.countryCode %>)<% } else { %>(unknown)<% } %><br>
+<% const asn = (info && info.asn) || storedAsn; %>
+ASN: <% if (asn) { %><%= asn %><% if (info && info.prefix) { %> <%= info.prefix %><% } %><% } else { %>(unknown)<% } %><br>
+Posts: <strong><%= total %></strong> from this IP
+</p>
+<p>
+[<a href="/mod/media?ip=<%= encodeURIComponent(ip) %>">File history</a>]
+<% if (globalStaff) { %>[<a href="/mod/offense?ip=<%= encodeURIComponent(ip) %>">Offense record</a>]<% } %>
+[<a href="/mod/latest?ip=<%= encodeURIComponent(ip) %>">Latest search</a>]
+</p>
+<hr>
+<h2>Posts from this IP</h2>
+<% if (!results.length) { %><p>No posts from this IP.</p><% } %>
+<% results.forEach((r, i) => { %>
+<div class="latest-entry">
+<p>/<%= r.boardUri %>/</p>
+<% if (r.isThread && r.thread.subject) { %><p><span class="subject"><%- r.thread.subject %></span></p><% } %>
+<% if (r.isTextBoard) { %>
+<%- include('../cells/textreply', { reply: r.reply, thread: r.thread, boardUri: r.boardUri, replyNumber: i + 1, modView: true, showIp, globalStaff }) %>
+<% } else { %>
+<%- include('../cells/reply', { reply: r.reply, thread: r.thread, boardUri: r.boardUri, replyNumber: i + 1, modView: true, showIp, globalStaff }) %>
+<% } %>
+</div>
+<% }) %>
+<% function pageHref(i) { return '?page=' + i; } %>
+<%- include('../partials/pagelist', { page: currentPage, totalPages, href: pageHref }) %>
+<div style="clear: both"></div>
+<%- include('/mod/partials/panels') %>
+<script src="/js/quote.js?v=<%= locals.assetVersion('js/quote.js') %>"></script>

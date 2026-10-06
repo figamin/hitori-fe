@@ -63,6 +63,58 @@ function nextReplyNumber() {
   return isTextBoardPage() ? count + 2 : count + 1;
 }
 
+// Does this link point at `postId` in *this* thread? A post can quote another thread
+// (`>>123` written there, which lands on that thread's page), and its id may match one
+// of ours by coincidence, so the path has to be checked as well as the fragment.
+function linksToPostHere(anchor, postId) {
+  const href = anchor.getAttribute('href') || '';
+  const [path, hash] = href.split('#');
+  if (hash !== String(postId)) return false;
+  if (!path) return true;
+  return new RegExp(`/thread/${threadAutoRefresh.threadId}(?:\\.html)?$`).test(path);
+}
+
+// A `>>123` pointing at a post that is no longer there can only lead to a 404, so the
+// anchor goes (text and all) - this is what a post that quoted a deleted post looks
+// like afterwards. Backlinks are not touched here: `backlinks.init()` rebuilds them
+// from the quotes that are left.
+function dropQuoteReferencesTo(postId) {
+  document.querySelectorAll('a.quoteLink, a.backlink').forEach((anchor) => {
+    if (linksToPostHere(anchor, postId)) anchor.remove();
+  });
+}
+
+// `deletedPostDisplay: "mark"`: the post is left exactly as it is and only gets a red
+// `[DELETED]` label immediately before its name (`global.css` styles `.deleted-label`).
+// Marked once, so a later refresh does not stack another label on top.
+function markPostDeleted(post) {
+  if (post.dataset.deleted === '1') return false;
+  post.dataset.deleted = '1';
+  post.classList.add('deleted-post');
+
+  const nameBlock = post.querySelector('.post-info .name-block') || post.querySelector('.name-block');
+  if (!nameBlock || !nameBlock.parentNode) return false;
+
+  const label = document.createElement('span');
+  label.className = 'deleted-label';
+  label.textContent = '[DELETED]';
+  nameBlock.parentNode.insertBefore(label, nameBlock);
+  return true;
+}
+
+// A text board labels every reply with its position (`cells/textreply.ejs`), and a
+// deletion shifts all the later ones - while a new reply is numbered from the same
+// count (`nextReplyNumber`), so leaving them would make two replies share a number.
+function renumberReplies() {
+  const start = isTextBoardPage() ? 2 : 1;
+  document.querySelectorAll('.reply[data-post-id]').forEach((reply, index) => {
+    const number = String(index + start);
+    reply.setAttribute('data-reply-number', number);
+    const label = reply.querySelector('.reply-number');
+    if (label) label.textContent = number;
+  });
+}
+
 const threadAutoRefresh = {
   autoRefresh: true,
   refreshTimer: null,
@@ -141,6 +193,45 @@ const threadAutoRefresh = {
     this.startTimer(this.manualRefresh || foundPosts ? 5 : this.lastRefresh * 2);
   },
 
+  // A post can be deleted while the thread is open. The refresh is where that is
+  // noticed: `/board/thread/<id>.json` answers with every post the thread still has, so
+  // a post the page is showing that is not in it has been deleted.
+  //
+  // What happens to it is the server's choice (`deletedPostDisplay` in the config):
+  //   remove - the post's whole container goes, together with the quotes other posts
+  //            wrote to it, and the backlinks are rebuilt from what is left
+  //   mark   - the post stays as it is and is labelled `[DELETED]` instead
+  applyDeletedPosts(liveIds) {
+    const mark = window.deletedPostDisplay === 'mark';
+    let handled = 0;
+
+    document.querySelectorAll('.post[data-post-id]').forEach((post) => {
+      const id = post.getAttribute('data-post-id');
+      if (!id || liveIds.has(String(id))) return;
+
+      if (mark) {
+        if (markPostDeleted(post)) handled += 1;
+        return;
+      }
+
+      // Removing a post above the reader's place makes the rest of the page jump up
+      // under them, so the scroll position is pulled back by what just went away.
+      const container = post.closest('.post-container') || post;
+      const { bottom, height } = container.getBoundingClientRect();
+      const aboveViewport = bottom < 0;
+
+      container.remove();
+      dropQuoteReferencesTo(id);
+      if (aboveViewport) window.scrollBy(0, -height);
+      handled += 1;
+    });
+
+    if (!handled || mark) return handled;
+    renumberReplies();
+    if (window.backlinks?.init) window.backlinks.init();
+    return handled;
+  },
+
   refreshPosts(manual) {
     if (this.refreshing) {
       if (manual) this.pendingRefresh = true;
@@ -161,6 +252,12 @@ const threadAutoRefresh = {
       })
       .then((data) => {
         const posts = data.posts || [];
+
+        // Anything the page shows that the server no longer lists was deleted while
+        // the reader had the thread open (the OP is listed as `threadId`).
+        const liveIds = new Set([String(data.threadId ?? data.thread?.threadId ?? this.threadId), ...posts.map((post) => String(post.postId))]);
+        this.applyDeletedPosts(liveIds);
+
         let foundPosts = false;
         // Only posts the reader did not write on this page are worth a sound; their
         // own reply landing is already handled by `lastPostedId` below.
@@ -337,7 +434,12 @@ document.addEventListener('DOMContentLoaded', () => {
           headers: {
             'X-Requested-With': 'XMLHttpRequest'
           },
-          credentials: 'omit'
+          // The session has to travel with this request: a logged-in moderator's reply
+          // is what carries their capcode (`#rs`), and the server refuses a `#rs` it
+          // cannot honour. `omit` dropped the login/hash cookies, so the post arrived
+          // anonymous - while every normal page load still sent them, which is why the
+          // reader looked logged in and still could not post a capcode.
+          credentials: 'same-origin'
         });
 
         // Check if response is JSON
