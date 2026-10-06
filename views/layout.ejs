@@ -21,7 +21,7 @@
 <%- body %>
 </main></div>
 <%- include('partials/footer', { boardFooter: boardFooter }) %>
-<% if (mod) { %><script src="/js/mod.js"></script><% } %>
+<% if (mod || locals.modControls) { %><script src="/js/mod.js"></script><% } %>
 <script src="/js/thumb.js"></script>
 <script src="/js/thread-watcher.js"></script>
 <script src="/js/settings.js"></script>

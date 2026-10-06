@@ -3,10 +3,9 @@
     <% if (post.subject) { %>
     <span class="subject"><%- post.subject %></span>
     <% } %>
-    <% if (post.signedRole === 'Admin') { %>
-    <span title="This user is the site administrator" class="admin-name"><a target="_blank" href="https://syrno.net">syrno<span style="font-weight: normal;">!!zmOAdD</span></a> ## Admin <img src="/img/admin.png"></span>
-    <% } else if (post.signedRole === 'Global volunteer' || post.signedRole === 'Global Volunteer' || post.signedRole === 'Global Moderator' || post.signedRole === 'Moderator') { %>
-    <span title="This user is a site moderator" class="mod-name"><%- post.name %> ## Moderator <img src="/img/modicon.gif"></span>
+    <% const cap = locals.capcodeFor(post.signedRole); %>
+    <% if (cap) { %>
+    <span<% if (cap.title) { %> title="<%= cap.title %>"<% } %> class="<%= cap.className %>" data-capcode="<%= cap.text %>"><%- post.name %><span class="capcode-label"> ## <%= cap.text %><% if (cap.icon) { %> <img src="<%= cap.icon %>"><% } %></span></span>
     <% } else { %>
     <span class="name"><%- post.name || 'Anonymous' %></span>
     <% } %>

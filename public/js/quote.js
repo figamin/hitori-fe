@@ -82,17 +82,27 @@ const tooltips = {
     const timeInfo = post.querySelector('.time-info');
     const dateText = timeInfo?.textContent?.trim();
     const contentEl = post.querySelector('.reply-content, .thread-content');
+    // The name span holds the capcode as well ("moth ## Admin <img>"); the preview draws
+    // the capcode itself from `signedRole`, so it is cut out of the name here - the
+    // cells keep it in its own `.capcode-label` element for exactly this.
+    const nameEl = post.querySelector('.name')?.cloneNode(true);
+    nameEl?.querySelectorAll('.capcode-label').forEach((el) => el.remove());
 
     return {
-      name: post.querySelector('.name')?.innerHTML,
+      name: nameEl?.innerHTML,
       subject: post.querySelector('.subject')?.innerHTML,
       postId: post.getAttribute('data-post-id'),
       creation: this.parsePostDate(dateText),
-      signedRole: post.querySelector('.admin-name')
-        ? 'Admin'
-        : post.querySelector('.mod-name')
-          ? 'Global volunteer'
-          : null,
+      // The cells mark the capcode label on the name span itself, which is the only way
+      // to carry an imported one ("Mod", "Owner", ...) through to the preview - the
+      // classes alone only say "a staff member of some kind".
+      signedRole:
+        post.querySelector('[data-capcode]')?.getAttribute('data-capcode') ??
+        (post.querySelector('.admin-name')
+          ? 'Admin'
+          : post.querySelector('.mod-name')
+            ? 'Global volunteer'
+            : null),
       message: this.trimPreviewMessage(contentEl?.innerHTML),
       files: Array.from(post.querySelectorAll('.file-info'))
         .map((fileInfo) => {
@@ -125,6 +135,7 @@ const tooltips = {
       creation: post.creation,
       postId: post.postId || post.threadId,
       subject: post.subject,
+      signedRole: post.signedRole ?? null,
       message: this.trimPreviewMessage(post.markdown || post.message || ''),
       files: post.files?.map((file) => ({
         path: file.path,

@@ -1,26 +1,33 @@
+<%
+// See cells/op.ejs: in the mod panel a link that opens the thread stays in the
+// panel, while the number link stays public because that is where the reply form is.
+var archivePrefix = locals.isArchive ? 'archive/' : '';
+var href = '/' + boardUri + '/' + archivePrefix + 'thread/' + thread.threadId;
+var threadHref = modView ? '/mod/thread/' + boardUri + '/' + thread.threadId : href;
+var controls = modView || locals.modControls;
+%>
 <div class="post-container reply-container" id="pc<%= reply.postId %>">
 <div class="side-arrows" id="sa<%= reply.postId %>"><% if (!modView) { %>&gt;&gt;<% } %></div>
 <div class="post reply" id="p<%= reply.postId %>" data-post-id="<%= reply.postId %>" data-thread-id="<%= thread.threadId %>" data-board="<%= boardUri %>">
 <div class="post-info" id="pi<%= reply.postId %>">
   <% if (!locals.isSearchResult) { %><input type="checkbox" class="<%= modView ? 'mod-select' : 'post-checkbox' %>" <% if (modView) { %>value="<%= boardUri %>-<%= thread.threadId %>-<%= reply.postId %>"<% } else { %>name="posts" form="delete-form" value="<%= reply.postId %>-false"<% } %>><% } %>
   <span class="name-block">
-    <% if (reply.signedRole === 'Admin' || reply.signedRole === 'Root') { %>
-    <span title="This user is the site administrator" class="admin-name name"><%- reply.name %> ## Admin <img src="/img/adminicon.gif"></span>
-    <% } else if (reply.signedRole === 'Global volunteer' || reply.signedRole === 'Global Volunteer' || reply.signedRole === 'Global Moderator' || reply.signedRole === 'Moderator') { %>
-    <span title="This user is a site moderator" class="mod-name name"><%- reply.name %> ## Moderator <img src="/img/modicon.gif"></span>
+    <% const cap = locals.capcodeFor(reply.signedRole); %>
+    <% if (cap) { %>
+    <span<% if (cap.title) { %> title="<%= cap.title %>"<% } %> class="<%= cap.className %> name" data-capcode="<%= cap.text %>"><%- reply.name %><span class="capcode-label"> ## <%= cap.text %><% if (cap.icon) { %> <img src="<%= cap.icon %>"><% } %></span></span>
     <% } else { %>
     <span class="name" data-post-id="<%= reply.postId %>" data-board="<%= boardUri %>" data-thread-id="<%= thread.threadId %>"><%- reply.name %></span>
     <% } %>
   </span>
   <%- include('../partials/time', { date: reply.creation }) %> 
   <span class="post-num">
-    <a class="linkQuote" title="Link to this post" href="/<%= boardUri %>/<%= locals.isArchive ? 'archive/' : '' %>thread/<%= thread.threadId %>#<%= reply.postId %>">No.</a><a class="linkQuote" title="Reply to this post" href="/<%= boardUri %>/<%= locals.isArchive ? 'archive/' : '' %>thread/<%= thread.threadId %>#q<%= reply.postId %>"><%= reply.postId %></a>
+    <a class="linkQuote" title="Link to this post" href="<%= threadHref %>#<%= reply.postId %>">No.</a><a class="linkQuote" title="Reply to this post" href="<%= href %>#q<%= reply.postId %>"><%= reply.postId %></a>
   </span>
-  <% if (modView) { %>
+  <% if (controls) { %>
   <%- include('/mod/partials/post-links', { boardUri, thread, postId: reply.postId, isThread: false, post: reply, showIp, globalStaff }) %>
   <% } %>
   <div class="backlinks"></div>
-  <% if (modView) { %>
+  <% if (controls) { %>
   <%- include('/mod/partials/staff-info', { post: reply, showIp }) %>
   <% } %>
 </div>

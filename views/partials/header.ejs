@@ -12,7 +12,7 @@
       <input type="text" name="general" class="header-search-input inputtext" placeholder="Search…" autocomplete="off" value="<%= locals.searchOpts && searchOpts.general ? searchOpts.general : '' %>" />
       <button type="submit" class="header-search-btn">Search</button>
     </form>
-    [<a href="/">Home</a>]
+    <% if (locals.user) { %>[Logged in as <%= locals.user.login %>] <% } %>[<a href="/">Home</a>]
     [<a href="#" id="watch-list-btn" class="watch-list-btn">Thread Watcher</a>]
     [<a href="#" id="settings-btn" class="settings-btn">Settings</a>]
     [<a href="/mod">Moderation</a>]

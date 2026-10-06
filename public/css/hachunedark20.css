@@ -75,6 +75,12 @@ body::before {
     z-index: -1;
 }
 
+textarea {
+    background: var(--input);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+}
+
 .announcement{
     color: #fff;
 }

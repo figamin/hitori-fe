@@ -124,6 +124,13 @@ input[type="text"] {
   font-size: 9pt;
 }
 
+/* The login form is the first thing on its page, and the default theme turns the board
+   list into a fixed bar across the top of the window - without this the bar sits over the
+   Login button and swallows the clicks aimed at it. */
+#mod-login-form {
+  margin-top: 20px;
+}
+
 .header-search-form {
   display: inline-flex;
   gap: 4px;
@@ -228,6 +235,14 @@ input[type="text"] {
 }
 
 .mod-name {
+  color: #800080;
+  font-weight: bold;
+}
+
+/* A capcode vichan stored that is not one of the site's own role labels - "## Mod",
+   "## Owner", "## Niceland" and the like. Shown as it was stored, as staff (the
+   stored label is what vichan printed after ##). */
+.capcode-name {
   color: #800080;
   font-weight: bold;
 }

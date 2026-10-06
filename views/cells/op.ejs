@@ -5,6 +5,12 @@ var msg = thread.markdown;
 if (locals.isArchive) msg = msg.replace(/href=["']\/([\w-]+)\/thread\/(\d+)(?:#(\d+))?["']/gi, function(_, b, t, p) { return 'href="/' + b + '/archive/thread/' + t + (p ? '#' + p : '') + '"'; });
 var omitted = thread.omittedReplies ?? thread.totalReplies - 5;
 var role = thread.signedRole;
+// Opening the thread from the mod panel should keep the moderator there (that is
+// how the panel's own pagination already behaves). The number link is left on the
+// public thread, since that is where the reply form the "reply to this post" link
+// fills in lives - the moderator thread view has none.
+var threadHref = modView ? '/mod/thread/' + boardUri + '/' + id : href;
+var controls = modView || locals.modControls;
 %>
 <div class="post-container op-container" id="pc<%= id %>">
 <div class="post op" id="p<%= id %>" data-post-id="<%= id %>" data-board="<%= boardUri %>" data-thread-id="<%= id %>" data-pinned="<%= thread.pinned ? 1 : 0 %>" data-locked="<%= thread.locked ? 1 : 0 %>" data-autosage="<%= thread.autoSage ? 1 : 0 %>" data-cyclic="<%= thread.cyclic ? 1 : 0 %>">
@@ -15,27 +21,26 @@ var role = thread.signedRole;
   <% if (!locals.isSearchResult) { %><% if (modView) { %><input type="checkbox" class="mod-select" value="<%= boardUri %>-<%= id %>"><% } else { %><input type="checkbox" class="post-checkbox" name="posts" form="delete-form" value="<%= id %>-true"><% } %><% } %>
   <% if (thread.subject) { %><span class="subject"><%- thread.subject %></span> <% } %>
   <span class="name-block">
-    <% if (role === 'Admin' || role === 'Root') { %>
-    <span title="This user is the site administrator" class="admin-name name"><%- thread.name %> ## Admin <img src="/img/adminicon.gif"></span>
-    <% } else if (role === 'Global volunteer' || role === 'Global Volunteer' || role === 'Global Moderator' || role === 'Moderator') { %>
-    <span title="This user is a site moderator" class="mod-name name"><%- thread.name %> ## Moderator <img src="/img/modicon.gif"></span>
+    <% const cap = locals.capcodeFor(role); %>
+    <% if (cap) { %>
+    <span<% if (cap.title) { %> title="<%= cap.title %>"<% } %> class="<%= cap.className %> name" data-capcode="<%= cap.text %>"><%- thread.name %><span class="capcode-label"> ## <%= cap.text %><% if (cap.icon) { %> <img src="<%= cap.icon %>"><% } %></span></span>
     <% } else { %>
     <span class="name" data-post-id="<%= id %>" data-board="<%= boardUri %>"><%- thread.name %></span>
     <% } %>
   </span>
   <%- include('../partials/time', { date: thread.creation }) %> 
   <span class="post-num">
-    <a class="linkQuote" title="Link to this post" href="<%= href %>#<%= id %>">No.</a><a class="linkQuote" title="Reply to this post" href="<%= href %>#q<%= id %>"><%= id %></a>
-    <% if (!locals.isThread) { %> <span>[<a href="/<%= boardUri %>/thread/<%= id %>" class="reply-link">Reply</a>]</span><% } %>
+    <a class="linkQuote" title="Link to this post" href="<%= threadHref %>#<%= id %>">No.</a><a class="linkQuote" title="Reply to this post" href="<%= href %>#q<%= id %>"><%= id %></a>
+    <% if (!locals.isThread) { %> <span>[<a href="<%= href %>" class="reply-link">Reply</a>]</span><% } %>
   </span>
-  <% if (modView) { %>
+  <% if (controls) { %>
   <%- include('/mod/partials/post-links', { boardUri, thread, postId: id, isThread: true, post: thread, showIp, globalStaff }) %>
   <% } %>
   <% if (thread.pinned) { %><span title="Sticky"><img src="/img/sticky.gif"></span><% } %>
   <% if (thread.locked) { %><span title="Locked"><img src="/img/locked.gif"></span><% } %>
   <% if (thread.autoSage) { %><span title="Bumplocked">⚓</span><% } %>
   <div class="backlinks"></div>
-  <% if (modView) { %>
+  <% if (controls) { %>
   <%- include('/mod/partials/staff-info', { post: thread, showIp }) %>
   <% } %>
   <% if (!locals.isThread && locals.threadIndex != null) { %>
@@ -58,7 +63,7 @@ var role = thread.signedRole;
 </div>
 <% if (!locals.isThread && thread.totalReplies > 5) { %>
 <span class="summary thread-footer" data-thread-id="<%= id %>">
-  <span class="omitted-posts"><a href="#" class="expand-thread" title="Expand thread"><%= omitted %> repl<%= omitted !== 1 ? 'ies' : 'y' %><% if (thread.omittedImages > 0) { %> and <%= thread.omittedImages %> image<%= thread.omittedImages !== 1 ? 's' : '' %><% } %> omitted.</a> Click <a href="/<%= boardUri %>/thread/<%= id %>">here</a> to view.</span>
+  <span class="omitted-posts"><a href="#" class="expand-thread" title="Expand thread"><%= omitted %> repl<%= omitted !== 1 ? 'ies' : 'y' %><% if (thread.omittedImages > 0) { %> and <%= thread.omittedImages %> image<%= thread.omittedImages !== 1 ? 's' : '' %><% } %> omitted.</a> Click <a href="<%= threadHref %>">here</a> to view.</span>
   <span class="expanded-posts" style="display: none"><a href="#" class="collapse-thread reply-link">Collapse thread</a></span>
 </span>
 <div class="additional-replies" style="display: none;"></div>

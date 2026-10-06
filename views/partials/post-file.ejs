@@ -1,4 +1,5 @@
 <% var site = siteUrl || ''; %>
+<% var modControls = modView || locals.modControls; %>
 <% var maxW = locals.maxWidth || 235; %>
 <% var maxH = locals.maxHeight || 235; %>
 <% var imgClass = locals.imageClass || 'thread-image'; %>
@@ -25,7 +26,7 @@
     <a target="_blank" style="text-decoration: underline;" title="IQDB" href="https://iqdb.org/?url=<%= encodeURIComponent(fileUrl) %>"><img src="/img/iqdb.jpg" width="16" alt="IQDB"></a>
     <a target="_blank" style="text-decoration: underline;" title="Yandex" href="https://yandex.com/images/search?rpt=imageview&url=<%= encodeURIComponent(fileUrl) %>"><img src="/img/yandex.png" width="16" alt="Yandex"></a>
     <% } %>
-    <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
+      <% if (modControls) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } else { %>
     <a target="_blank" href="<%= file.path %>" class="file-link"><%= file.path %></a>
     <% var embedIcon = EMBED_ICONS[file.mime]; %>
@@ -35,7 +36,7 @@
     <% if (file.mime === 'cytube/stream') { %>
     <span class="cytube-now-playing" title="This is a CyTube room, not a video: the player follows whatever the room is showing"><%= file.originalName %></span>
     <% } %>
-    <% if (modView) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
+    <% if (modControls) { %><%- include('/mod/partials/file-actions', { boardUri, threadId, postId, fileIndex }) %><% } %>
     <% } %>
   </summary>
   <% if (file.mime !== 'tegaki/replay') { %>
