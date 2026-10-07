@@ -1,0 +1,30 @@
+<%# The captcha widget: rendered when the visitor has to solve one, and when they already have
+    (`locals.captcha.solved`, decided in be/server.js after the staff session is known) - then it
+    only says so, because one solve covers `config.captcha.sessionMinutes`.
+    The picture itself is fetched by public/js/captcha.js (so a page with a form does not
+    generate a puzzle for every reader), one challenge for the whole page, and solving it leaves
+    a cookie behind - the answer never travels with the post. The guard lives here, so both forms
+    can include it blindly.
+    The puzzle is closed until the reader opens it, which the script does (`captcha-collapsed`);
+    without it the markup is simply open, which is what a reader who cannot solve it anyway
+    would see. %>
+<% if (locals.captcha && (locals.captcha.required || locals.captcha.solved)) { %>
+<div class="captcha<%= locals.captcha.solved ? ' captcha-verified' : '' %>" data-captcha data-verified="<%= locals.captcha.solved ? 1 : 0 %>">
+  <p class="captcha-verified-line"><span class="captcha-tick" aria-hidden="true">&#10004;</span> Verified &mdash; you can post.</p>
+  <% if (locals.captcha.required) { %>
+  <p class="captcha-actions captcha-actions-open"><button type="button" class="captcha-open">Solve the captcha</button></p>
+  <div class="captcha-puzzle">
+    <p class="captcha-title">Not a robot? Name the character in the picture.</p>
+    <img class="captcha-image" alt="captcha" />
+    <p class="captcha-controls">
+      <input type="text" class="input-text captcha-answer" autocomplete="off" spellcheck="false" placeholder="Character name" />
+      <button type="button" class="captcha-check">Check</button>
+      <button type="button" class="captcha-refresh" title="Another picture">&#8635;</button>
+    </p>
+    <p class="captcha-message">Loading a picture&hellip;</p>
+    <noscript><p class="captcha-message captcha-bad">The captcha needs JavaScript - without it you cannot post while it is on.</p></noscript>
+  </div>
+  <p class="captcha-actions captcha-actions-hide"><button type="button" class="captcha-hide">Hide the captcha</button></p>
+  <% } %>
+</div>
+<% } %>

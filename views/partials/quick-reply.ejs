@@ -66,6 +66,8 @@
 
       <div id="qr-file-section"></div>
 
+      <div class="captcha-cell"><%- include('captcha') %></div>
+
       <div style="text-align: right; margin-top: 10px;">
         <button class="new-thread-btn" type="submit">Submit Reply</button>
       </div>
@@ -152,6 +154,10 @@
     min-width: 0;
     width: 100%;
   }
+
+  /* Every input is full width here, but the captcha's answer box is not one of them: it shares
+     its row with the Check and refresh buttons, and it is sized in global.css so that it comes
+     out exactly the same in this form as it does in the reply form. */
 
   #quickReply .qr-textarea {
     font-family: Arial, serif;

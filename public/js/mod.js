@@ -543,6 +543,20 @@ document.getElementById('clear-ip-role-form')?.addEventListener('submit', async 
   }
 });
 
+// The captcha switch lives here as well as on its own page (Mod -> Captcha), where the
+// picture, the character names and the ImageMagick settings are.
+document.getElementById('captcha-global-form')?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const fd = new FormData(e.target);
+  try {
+    const data = await modPost('/mod/api/captcha/settings', { enabled: fd.get('enabled') === 'true' });
+    alert(data.message || 'Saved.');
+    location.reload();
+  } catch (err) {
+    alert(err.message);
+  }
+});
+
 document.getElementById('site-announcement-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target);

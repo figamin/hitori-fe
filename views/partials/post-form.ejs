@@ -162,6 +162,12 @@
                 <% } %>
             </td>
         </tr>
+<% if (locals.captcha && (locals.captcha.required || locals.captcha.solved)) { %>
+        <tr class="captcha-row">
+            <td class="post-block"><label>Captcha</label></td>
+            <td class="postform-input-cell"><%- include('captcha') %></td>
+        </tr>
+        <% } %>
         <tr>
             <td class="post-block"><label for="post-password">Password</label></td>
             <td class="postform-input-cell">

@@ -33,3 +33,12 @@ Unhashed IPs visible to
 <button type="submit">Save</button>
 </p>
 </form>
+<form id="captcha-global-form">
+<p>
+<label><input type="checkbox" name="enabled" value="true"<%= captcha && captcha.enabled ? ' checked' : '' %> />
+Require a captcha before posting (all boards)</label>
+<button type="submit">Save</button>
+</p>
+<p class="mod-hint">The picture, the character names and the ImageMagick settings live on
+<a href="/mod/captcha">the captcha page</a>.</p>
+</form>

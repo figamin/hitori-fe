@@ -7,7 +7,8 @@
 <a href="/mod/logs">Logs</a> /
 <a href="/mod/media">Media</a>
 <% if (Number(user.globalRole) <= 1) { %> /
-<a href="/mod/global">Global Management</a><% } %>
+<a href="/mod/global">Global Management</a>
+ / <a href="/mod/captcha">Captcha</a><% } %>
 <% } %> /
 <a href="/mod/account">Account</a>
 <span class="user"><%= user.login %> /<button type="button" id="mod-logout">Logout</button></span>

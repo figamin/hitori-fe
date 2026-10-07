@@ -2263,7 +2263,7 @@ details:not([open]) .hide-file-button::before {
   max-height: 200px;
   overflow: scroll;
 }
-
+/*
 .codeblock,
 code {
   background: #181a1b;
@@ -2280,7 +2280,7 @@ code {
   overflow-x: auto;
   padding: 0 0.25em;
 }
-
+*/
 .archive-table {
   background: var(--post-color);
   border-collapse: collapse;
@@ -2387,6 +2387,7 @@ code {
 }
 
 .mod-nav {
+  margin-top: 10px;
   margin-bottom: 12px;
 }
 
@@ -2420,4 +2421,204 @@ code {
 
 #mod-ban-modal .modal-content {
   width: 400px;
+}
+
+/* ---------------------------------------------------------------------------
+   Captcha (`be/lib/captchaService.js`, `public/js/captcha.js`)
+   The widget sits in the post forms; the rest of the block is the mod panel.
+   --------------------------------------------------------------------------- */
+
+.captcha {
+  border: 1px solid var(--border-alt);
+  border-left: 3px solid var(--hover-link-color);
+  border-radius: 3px;
+  /* Both forms show the same widget - the reply form puts it in a table cell (317px), the
+     quick reply in its floating panel (300px) - so it is sized by itself: the same width in
+     both, and its own box model rather than whatever rule the theme applies in that context. */
+  box-sizing: border-box;
+  margin: 4px 0;
+  max-width: 300px;
+  padding: 6px 8px;
+  width: 100%;
+}
+
+.captcha * {
+  box-sizing: border-box;
+}
+
+.captcha-puzzle {
+  margin: 0;
+}
+
+/* Opening and closing the puzzle. Both buttons are for the script only: a reader without it
+   cannot solve the captcha either, so they are simply shown the puzzle (`captcha-scripted` is
+   set by public/js/captcha.js when it takes over). The state is one state for the whole page -
+   see the script - so the reply form and the quick reply open and close together. */
+.captcha-actions {
+  margin: 0;
+}
+
+.captcha-open,
+.captcha-hide {
+  background: var(--background-gradient);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-color);
+  cursor: pointer;
+  display: none;
+  font: inherit;
+  padding: 2px 8px;
+}
+
+.captcha-open:hover,
+.captcha-hide:hover {
+  color: var(--hover-link-color);
+}
+
+.captcha-scripted .captcha-open,
+.captcha-scripted .captcha-hide {
+  display: inline-block;
+}
+
+/* Open: the button that would open it is pointless. */
+.captcha:not(.captcha-collapsed) .captcha-actions-open {
+  display: none;
+}
+
+/* Closed: only the button. */
+.captcha-collapsed .captcha-puzzle,
+.captcha-collapsed .captcha-actions-hide {
+  display: none;
+}
+
+/* Solved (this visit, or the pass cookie from an earlier one): the widget says so and asks
+   nothing - one solve covers the whole session. */
+.captcha-verified {
+  border-left-color: #6fdc8c;
+}
+
+.captcha-verified-line {
+  color: #6fdc8c;
+  display: none;
+  font-weight: bold;
+  margin: 0;
+}
+
+.captcha-verified .captcha-verified-line {
+  display: block;
+}
+
+/* Kept as a guard for the puzzle markup of a widget that was verified while the page was open
+   (the script removes it; a page the server rendered for a solved visitor never had one). */
+.captcha-verified .captcha-puzzle {
+  display: none;
+}
+
+.captcha-tick {
+  margin-right: 4px;
+}
+
+.captcha-title {
+  color: var(--text-color);
+  font-weight: bold;
+  margin: 0 0 4px;
+}
+
+.captcha-image {
+  background: #fff;
+  border: 1px solid var(--border-alt);
+  display: block;
+  margin: 0 0 4px;
+  max-height: 200px;
+  max-width: 200px;
+}
+
+.captcha-controls {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  margin: 0;
+}
+
+/* The theme sizes a text input for the form it is in (`#postformTable input.input-text` is
+   180px), the quick reply's own style block makes every input in that panel full width
+   (`#quickReply input[type="text"]`, in views/partials/quick-reply.ejs, which loads after this
+   file), and their box models differed too - so the same widget came out a different width in
+   each form. This holds both: one published width, whatever is around it. */
+.captcha .captcha-answer,
+#postformTable input.captcha-answer,
+#quickReply input.captcha-answer,
+#quickReply #quick-reply-form input.captcha-answer {
+  flex: 0 0 auto;
+  font: inherit;
+  width: 160px;
+}
+
+.captcha-message {
+  font-size: 11px;
+  margin: 4px 0 0;
+  opacity: 0.8;
+}
+
+.captcha-message.captcha-bad,
+.captcha-error,
+.captcha-bad {
+  color: #ff6b6b;
+  opacity: 1;
+}
+
+.captcha-hint,
+.captcha-intro {
+  font-size: 12px;
+  max-width: 80ch;
+  opacity: 0.85;
+}
+
+.captcha-status td:first-child {
+  padding-right: 12px;
+}
+
+.captcha-grid td:first-child {
+  padding-right: 12px;
+}
+
+.captcha-grid input[type='number'] {
+  width: 6em;
+}
+
+.captcha-images td,
+.captcha-images th {
+  padding: 2px 10px 2px 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.captcha-files {
+  border-left: 2px solid var(--border-alt);
+  font-size: 11px;
+  margin-top: 4px;
+  padding-left: 6px;
+}
+
+.captcha-file {
+  display: block;
+}
+
+.captcha-file-size {
+  opacity: 0.7;
+}
+
+.captcha-none {
+  opacity: 0.6;
+}
+
+#captcha-log {
+  background: var(--background-color);
+  border: 1px solid var(--border-alt);
+  font-size: 11px;
+  max-height: 260px;
+  max-width: 100%;
+  overflow: auto;
+  padding: 6px;
+  white-space: pre-wrap;
 }
