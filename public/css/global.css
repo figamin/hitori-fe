@@ -1845,6 +1845,100 @@ details:not([open]) .hide-file-button::before {
   background: var(--marked-color);
 }
 
+/* An inlined post (`public/js/post-inline.js`): the post a quote link or backlink points
+   at, rendered inside the post that mentions it - 4chanX's inline quotes. The boxes nest,
+   so each level steps in (border + padding + the margins below) and carries its own accent
+   edge; apart from that the box is shaped exactly like a regular reply - the same 1px
+   border, 5px padding and 5px margin the theme gives `div.post.reply` - so it sizes and
+   spaces like the posts around it. */
+.post-inline {
+  background: var(--background-color);
+  border: 1px solid var(--border-alt);
+  border-left: 4px solid var(--hover-link-color);
+  border-radius: 3px;
+  margin: 5px;
+  padding: 5px;
+  /* A post's file block is floated, and a box that is not a formatting context of its own
+     lets the picture hang out of its bottom border onto whatever follows. `flow-root`
+     contains the float without clipping what is inside, which `overflow: hidden` would. */
+  display: flow-root;
+  /* A quote link sits inside the post's `.reply-content`, which is `pre-wrap`; without
+     this the indentation of the preview markup would break its header onto four lines.
+     The inlined post's own text keeps `pre-wrap` from `.reply-content` further down. */
+  white-space: normal;
+  /* `.reply` is a shrink-to-fit table, so a box that only inherited its parent's width
+     would lose a hundred pixels with every nesting level: a minimum keeps each level
+     readable, and the table it opens in grows to fit it. On a phone there is no room to
+     grow into - the post's own margins already use the screen - so the minimum is dropped
+     and the box stays inside the width it is given. */
+  min-width: 400px;
+}
+
+@media (max-width: 640px) {
+  .post-inline {
+    min-width: 0;
+  }
+}
+
+/* The file block inside a box, sized the way the hover preview sizes it: a post's own
+   picture (an OP's is up to 250px, the gallery's margins 20px a side) is what used to
+   stick out of a box a third that wide and leave nothing for the text. */
+.post-inline .image-container {
+  float: left;
+  margin: 0 8px 4px 0;
+}
+
+.post-inline .thread-image,
+.post-inline .reply-image {
+  max-height: 150px;
+  max-width: 150px;
+  object-fit: contain;
+}
+
+/* Nothing an inlined post renders may be wider than the box it is drawn in - a nested box
+   is narrower than the one around it, and an embedded player or a long `<details>` header
+   would otherwise run out of the border. */
+.post-inline img,
+.post-inline video,
+.post-inline iframe {
+  max-width: 100%;
+}
+
+.post-inline .reply-content,
+.post-inline .thread-content {
+  margin: 0;
+}
+
+/* The page's post header is `width: 100%` on a content box, so with its own padding it is
+   a few pixels wider than whatever holds it - a table cell absorbs that, a box's border
+   does not, and the header poked out of the right edge. A block already fills the width it
+   is given, so that rule is simply dropped inside a box (the hover preview does the same). */
+.post-inline .post-info {
+  width: auto;
+}
+
+/* The number of an inlined post is its switch: a different shade from a real post's
+   number, and the thing that closes or reopens the posts opened inside it. */
+.post-inline .post-num {
+  color: var(--hover-link-color);
+  cursor: pointer;
+  user-select: none;
+}
+
+.post-inline.inline-collapsed .post-num {
+  opacity: 0.6;
+}
+
+/* Who replied to the inlined post, shown above its text the way a real post shows its
+   backlinks. */
+.post-inline .inline-backlinks {
+  margin: 0 0 4px;
+}
+
+.post-inline .inline-note {
+  opacity: 0.7;
+}
+
 .backlinks {
   display: inline;
 }

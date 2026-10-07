@@ -186,11 +186,28 @@ const settings = {
     newPostSoundOption.appendChild(newPostSoundCheckbox);
     newPostSoundOption.appendChild(newPostSoundLabel);
 
+    // On by default: absent means enabled, only an explicit "true" turns it off.
+    const postInliningOption = document.createElement('div');
+    postInliningOption.className = 'option-item';
+
+    const postInliningCheckbox = document.createElement('input');
+    postInliningCheckbox.type = 'checkbox';
+    postInliningCheckbox.id = 'post-inlining';
+    postInliningCheckbox.checked = localStorage.getItem('disablePostInlining') !== 'true';
+
+    const postInliningLabel = document.createElement('label');
+    postInliningLabel.htmlFor = 'post-inlining';
+    postInliningLabel.textContent = 'Open quoted posts inside the post when clicked';
+
+    postInliningOption.appendChild(postInliningCheckbox);
+    postInliningOption.appendChild(postInliningLabel);
+
     optionsList.appendChild(disableYouOption);
     optionsList.appendChild(imagePreviewOption);
     optionsList.appendChild(disableAutoWatchOption);
     optionsList.appendChild(hideFortunesOption);
     optionsList.appendChild(newPostSoundOption);
+    optionsList.appendChild(postInliningOption);
 
     otherContent.appendChild(optionsList);
 
@@ -327,6 +344,11 @@ const settings = {
     // Nothing has to be applied for this one: `thread.js` reads it when a new post
     // actually arrives.
     const newPostSound = document.getElementById('new-post-sound').checked;
+    // The inliner (`post-inline.js`) reads this when a quote is clicked, so nothing has to
+    // be applied here either - but a reader who turns it off sees the boxes that are open
+    // right now go away, rather than a mix of both behaviours.
+    const postInlining = document.getElementById('post-inlining').checked;
+    if (!postInlining) window.postInline?.closeAll();
 
     localStorage.setItem('customCSS', customCSS);
     localStorage.setItem('customJS', customJS);
@@ -336,6 +358,7 @@ const settings = {
     localStorage.setItem('disableAutoWatch', disableAutoWatch);
     localStorage.setItem('hideFortunes', hideFortunes);
     localStorage.setItem('newPostSound', newPostSound);
+    localStorage.setItem('disablePostInlining', String(!postInlining));
 
     this.applySettings();
     this.hide();

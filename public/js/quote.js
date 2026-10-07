@@ -374,14 +374,9 @@ const tooltips = {
       this.activeQuote = null;
     };
 
-    if (document.querySelector('.thread') && !isCrossboardQuote(quote)) {
-      const matches = quote.href.match(/#(\d+)/);
-      if (matches) {
-        quote.onclick = () => {
-          if (window.markPost) window.markPost(matches[1]);
-        };
-      }
-    }
+    // Clicks are not this file's business: `public/js/post-inline.js` opens the quoted post
+    // inside this one when the reader wants that, and marks (jumps to) the post when they
+    // do not. What stays here is the hover preview.
   }
 };
 
@@ -459,6 +454,14 @@ const backlinks = {
       const sourceId = sourcePost.getAttribute('data-post-id');
       const quotedId = fullUrl.split('#')[1];
 
+      // Quotes written by a post that is currently inlined (`post-inline.js`) are not the
+      // page's: they are the text of a *preview*. Counting them here credited them to the
+      // post the box is drawn in (wrong) or, once they were credited to the post the box
+      // shows, moved its entry up the row - a box sits earlier in the document than the
+      // posts it came from, so merely opening one used to reorder the page's backlink rows.
+      // A box builds its own row (`quotedBy` in `post-inline.js`).
+      if (link.closest('.post-inline')) return;
+
       if (userPostIds.has(quotedId)) link.classList.add('you');
       if (quotedId === threadId) link.classList.add('opReply');
 
@@ -534,6 +537,12 @@ document.addEventListener('DOMContentLoaded', () => {
     observer.observe(thread.parentNode, { childList: true, subtree: true });
   }
 });
+
+// Other scripts use these: `post-inline.js` inlines the very post a hover preview would
+// show, so it reads the same url parser and shares the same cache of post data (`const` at
+// the top of a classic script is not on `window`, hence this).
+window.tooltips = tooltips;
+window.backlinks = backlinks;
 
 function getPostPasswords() {
   try {
