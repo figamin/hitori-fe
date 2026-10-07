@@ -1,6 +1,7 @@
 <% title = 'Latest'; %>
 <h1>Latest</h1>
-<form method="get">
+<div class="mod-latest">
+<form method="get" class="mod-inline-form mod-latest-search">
 <% if (showIp) { %><input name="ip" placeholder="IP" value="<%= query.ip || '' %>"><% } %>
 <input name="banId" placeholder="Ban ID" value="<%= query.banId || '' %>">
 <input name="boardUri" placeholder="Board" value="<%= query.boardUri || '' %>">
@@ -10,7 +11,7 @@
 </form>
 <% results.forEach((r, i) => { %>
 <div class="latest-entry">
-<p>/<%= r.boardUri %>/</p>
+<p class="latest-board"><a href="/mod/thread/<%= r.boardUri %>/<%= r.thread.threadId %>#<%= r.reply.postId %>">/<%= r.boardUri %>/<%= r.reply.postId %></a></p>
 <% if (r.isThread && r.thread.subject) { %><p><span class="subject"><%- r.thread.subject %></span></p><% } %>
 <% if (r.isTextBoard) { %>
 <%- include('../cells/textreply', { reply: r.reply, thread: r.thread, boardUri: r.boardUri, replyNumber: i + 1, modView: true, showIp, globalStaff }) %>
@@ -19,6 +20,7 @@
 <% } %>
 </div>
 <% }) %>
+</div>
 <% function pageHref(i) { return '?' + (queryString ? queryString + '&' : '') + 'page=' + i; } %>
 <%- include('../partials/pagelist', { page: currentPage, totalPages, href: pageHref }) %>
 <div style="clear: both"></div>

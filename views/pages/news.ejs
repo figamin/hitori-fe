@@ -4,7 +4,7 @@
     <div class="boxbar"><h2>News</h2></div>
     <div class="boxcontent">
       <% newsPosts.forEach((post) => { %>
-          <div class="news-title"><span style="text-transform: uppercase;"><%= post.title %></span> by <a href="mailto:<%= post.authorEmail %>"><%= post.author %></a> - <%= new Date(post.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' }) %> @ <%= new Date(post.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %> (UTC) <a href="#<%= post.newsId %>" style="float: right;">#</a></div>
+          <div class="news-title" id="<%= post.newsId %>"><span style="text-transform: uppercase;"><%= post.title %></span> by <a href="mailto:<%= post.authorEmail %>"><%= post.author %></a> - <%= new Date(post.date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: '2-digit' }) %> @ <%= new Date(post.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) %> (UTC) <a href="#<%= post.newsId %>" style="float: right;">#</a></div>
           <div class="news-content">
             <%- post.contents %>
           </div>

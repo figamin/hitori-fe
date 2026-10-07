@@ -1,5 +1,6 @@
-<p class="mod-nav">
-<a href="/mod">Mod</a> /
+<nav class="mod-nav">
+<span class="mod-nav-links">
+<a href="/mod">Dashboard</a> /
 <a href="/mod/reports">Reports</a> /
 <a href="/mod/bans">Bans</a>
 <% if (globalStaff) { %> /
@@ -11,5 +12,6 @@
  / <a href="/mod/captcha">Captcha</a><% } %>
 <% } %> /
 <a href="/mod/account">Account</a>
-<span class="user"><%= user.login %> /<button type="button" id="mod-logout">Logout</button></span>
-</p>
+</span>
+<span class="user">Logged in as <strong><%= user.login %></strong> <button type="button" id="mod-logout">Logout</button></span>
+</nav>

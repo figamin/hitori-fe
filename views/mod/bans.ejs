@@ -1,35 +1,54 @@
 <% title = 'Bans'; %>
-<h1>Bans</h1>
+<h1><%= boardUri ? 'Bans on /' + boardUri + '/' : 'Bans' %></h1>
 <%- include('partials/board-nav') %>
-<% if (!boardUri) { %>
-<form method="get">
-<input name="board" placeholder="Board" value="">
-<button type="submit">View</button>
-</form>
-<% } %>
-<p>
+<p class="mod-subnav">
 <% if (boardUri) { %><a href="/mod/bans?board=<%= boardUri %>">Bans</a> / <% } else { %><a href="/mod/bans">Global</a> / <% } %>
 <a href="/mod/bans/appeals<%= boardUri ? '?board=' + boardUri : '' %>">Appeals</a> /
 <a href="/mod/bans/range<%= boardUri ? '?board=' + boardUri : '' %>">Range</a> /
 <a href="/mod/bans/hash<%= boardUri ? '?board=' + boardUri : '' %>">Hash</a> /
 <a href="/mod/bans/asn<%= boardUri ? '?board=' + boardUri : '' %>">ASN</a>
 </p>
-<% bans.forEach((b, i) => { %>
-<% if (i) { %><hr><% } %>
-<p<%= b.expired ? ' class="expired"' : '' %>>
-<%= b.idStr %><br>
-<%= b.displayTarget %><br>
-<% if (b.hasIp) { %><a href="/mod/latest?banId=<%= b.idStr %>">Posts</a> / <a href="/mod/offense?banId=<%= b.idStr %>">Offenses</a> / <a href="/mod/media?banId=<%= b.idStr %>">Files</a><br><% } %>
-<%= b.appliedBy || '' %><% if (b.isWarning) { %> /Warning<% } %><% if (b.reason) { %> /<%= b.reason %><% } %><% if (b.boardUri) { %> /<%= b.boardUri %>/<% } %> /<%= b.expiration ? new Date(b.expiration).toLocaleString() : 'perm' %>
-<button type="button" class="lift-ban" data-id="<%= b._id %>">Lift</button>
-</p>
+<% if (!boardUri) { %>
+<form method="get" class="mod-inline-form mod-board-filter">
+<label for="ban-board-filter">Show a board's bans:</label>
+<input id="ban-board-filter" name="board" placeholder="Board" value="">
+<button type="submit">View</button>
+</form>
+<% } %>
+<fieldset>
+<legend>Active Bans</legend>
+<% if (bans.length) { %>
+<table class="mod-table mod-bans">
+<tr><th>Target</th><th>Reason</th><th>Board</th><th>Set by</th><th>Expires</th><th></th></tr>
+<% bans.forEach(b => { %>
+<tr<%= b.expired ? ' class="expired"' : '' %>>
+<td>
+<span class="mod-ban-target"><%= b.displayTarget || '-' %></span><% if (b.isWarning) { %> <span class="mod-tag">Warning</span><% } %>
+<div class="mod-unit">#<%= b.idStr %></div>
+<% if (b.hasIp) { %><div class="mod-ban-links"><a href="/mod/latest?banId=<%= b.idStr %>">Posts</a> / <a href="/mod/offense?banId=<%= b.idStr %>">Offenses</a> / <a href="/mod/media?banId=<%= b.idStr %>">Files</a></div><% } %>
+</td>
+<td class="mod-ban-reason"><%= b.reason || '' %><% if (!b.reason) { %><span class="mod-unit">no reason given</span><% } %></td>
+<td><%= b.boardUri ? '/' + b.boardUri + '/' : 'all' %></td>
+<td><%= b.appliedBy || '' %></td>
+<td class="mod-nowrap"><%= b.expiration ? new Date(b.expiration).toLocaleString() : 'never' %><% if (b.expired) { %> <span class="mod-unit">(expired)</span><% } %></td>
+<td class="mod-cell-action"><button type="button" class="lift-ban" data-id="<%= b._id %>">Lift</button></td>
+</tr>
 <% }) %>
-<% if (!bans.length) { %><p>None</p><% } %>
+</table>
+<% } else { %>
+<p class="mod-hint">No bans.</p>
+<% } %>
+</fieldset>
 <% if (showIp) { %>
-<h2>Mass ban</h2>
+<fieldset>
+<legend>Mass Ban</legend>
 <form id="mass-ban-form">
-<textarea name="ips" rows="4" placeholder="IPs"></textarea>
+<p class="mod-hint">One IP per line.</p>
+<textarea name="ips" rows="4" placeholder="IPs" class="mod-wide"></textarea>
+<div class="mod-inline-form">
 <input name="reason" placeholder="Reason">
 <button type="submit">Ban</button>
+</div>
 </form>
+</fieldset>
 <% } %>

@@ -231,7 +231,7 @@ var boardSections = [
                     <% newsList.forEach(function (article) { %>
                     <li>
                         <div class="blog-info">
-                            <a href="/news" class="blog-title"><%= article.title %></a>
+                            <a href="/news<%= article.newsId != null ? '#' + article.newsId : '' %>" class="blog-title"><%= article.title %></a>
                             <span class="blog-meta"><%= new Date(article.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %> &bull; by <%= article.author %></span>
                         </div>
                     </li>

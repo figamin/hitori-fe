@@ -1,4 +1,6 @@
 <%
+    // Pass these from your route to override, e.g. res.render('rules', { activePage: 'contact' })
+    const activePage = locals.activePage || 'contact';
     const navLinks = [
         { href: '/',                              icon: 'fa-home',            label: 'Home',       mobile: true  },
         { href: 'blog.html',                      icon: 'fa-newspaper',       label: 'Blog',       mobile: true  },
@@ -29,7 +31,7 @@
     <meta name="robots" content="index, follow">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="frontpage.css">
+    <link rel="stylesheet" href="/frontpage.css">
 </head>
 <body>
 
@@ -62,7 +64,7 @@
     <nav class="forumnav">
         <div class="tabs">
             <% navLinks.forEach(link => { %>
-            <a href="<%= link.href %>" class="tab<%= link.href === currentPage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+            <a href="<%= link.href %>" class="tab<%= link.id === activePage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
             <% }) %>
         </div>
     </nav>
@@ -76,7 +78,7 @@
                 <div class="box-title">SITE NAVIGATION</div>
                 <div class="box-body mobtabs">
                     <% navLinks.filter(link => link.mobile).forEach(link => { %>
-                    <a href="<%= link.href %>" class="mobtab<%= link.href === currentPage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
+                    <a href="<%= link.href %>" class="mobtab<%= link.href === activePage ? ' active' : '' %>"><i class="fas <%= link.icon %>"></i> <%= link.label %></a>
                     <% }) %>
                 </div>
             </div>

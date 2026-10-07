@@ -1,44 +1,61 @@
 <% title = 'Global Management'; %>
-<hr>
-<p>
-<a href="/mod/global/filters">Global filters</a><br>
-<a href="/mod/global/banners">Global banners</a><br>
-<a href="/mod/global/staff">Global staff</a><br>
-<a href="/mod/news">News</a><br>
-<a href="/mod/bans">Bans</a><br>
-<a href="/mod/bans/range">Range bans</a><br>
-<a href="/mod/bans/asn">ASN bans</a><br>
-<a href="/mod/bans/hash">Hash bans</a><br>
-<a href="/mod/bans/appeals">Appealed bans</a><br>
-<a href="/mod/reports">Open reports</a><br>
-<a href="/mod/reports/closed">Closed reports</a><br>
-<a href="/mod/media">Media management</a><br>
-<a href="/mod/thumbs">Custom thumbs</a>
-</p>
+<h1>Global Management</h1>
+<fieldset>
+<legend>Administration</legend>
+<div class="mod-link-columns">
+<ul>
+<li><a href="/mod/global/filters">Global filters</a></li>
+<li><a href="/mod/global/banners">Global banners</a></li>
+<li><a href="/mod/global/staff">Global staff</a></li>
+<li><a href="/mod/news">News</a></li>
+<li><a href="/mod/media">Media management</a></li>
+<li><a href="/mod/thumbs">Custom thumbs</a></li>
+</ul>
+<ul>
+<li><a href="/mod/bans">Bans</a></li>
+<li><a href="/mod/bans/range">Range bans</a></li>
+<li><a href="/mod/bans/asn">ASN bans</a></li>
+<li><a href="/mod/bans/hash">Hash bans</a></li>
+<li><a href="/mod/bans/appeals">Appealed bans</a></li>
+</ul>
+<ul>
+<li><a href="/mod/reports">Open reports</a></li>
+<li><a href="/mod/reports/closed">Closed reports</a></li>
+</ul>
+</div>
+</fieldset>
+<fieldset>
+<legend>Site Announcement</legend>
 <form id="site-announcement-form">
-<p>Site announcement (HTML, shown sitewide):</p>
-<p><textarea name="announcement" rows="6" cols="60" maxlength="10000"><%= announcement || '' %></textarea></p>
-<p>Max Length: 10000</p>
-<p><button type="submit">Save announcement</button></p>
+<p class="mod-hint">HTML, shown sitewide. Max length: 10000.</p>
+<textarea name="announcement" rows="6" maxlength="10000" class="mod-wide"><%= announcement || '' %></textarea>
+<div class="mod-actions"><button type="submit">Save announcement</button></div>
 </form>
+</fieldset>
+<fieldset>
+<legend>Site Settings</legend>
 <form id="clear-ip-role-form">
-<p>
-Unhashed IPs visible to
-<select name="clearIpMinRole">
+<table class="mod-settings">
+<tr><th><label for="clear-ip-min-role">Unhashed IPs visible to</label></th><td>
+<select id="clear-ip-min-role" name="clearIpMinRole">
 <option value="0"<%= Number(clearIpMinRole) === 0 ? ' selected' : '' %>>Root</option>
 <option value="1"<%= Number(clearIpMinRole) === 1 ? ' selected' : '' %>>Admin and above</option>
 <option value="2"<%= Number(clearIpMinRole) === 2 ? ' selected' : '' %>>Moderator and above</option>
 <option value="3"<%= Number(clearIpMinRole) === 3 ? ' selected' : '' %>>Janitor and above</option>
 </select>
 <button type="submit">Save</button>
-</p>
+</td></tr>
+</table>
 </form>
 <form id="captcha-global-form">
-<p>
+<table class="mod-settings">
+<tr><th>Captcha</th><td>
 <label><input type="checkbox" name="enabled" value="true"<%= captcha && captcha.enabled ? ' checked' : '' %> />
 Require a captcha before posting (all boards)</label>
 <button type="submit">Save</button>
-</p>
 <p class="mod-hint">The picture, the character names and the ImageMagick settings live on
 <a href="/mod/captcha">the captcha page</a>.</p>
+</td></tr>
+</table>
 </form>
+</fieldset>

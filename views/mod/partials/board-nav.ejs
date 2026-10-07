@@ -1,4 +1,5 @@
 <% if (board && stats) { %>
+<div class="mod-board-nav">
 <p>
 <a href="/mod">Dashboard</a> /
 <a href="/<%= boardUri %>/"><%= board.preferredLanguage || 'en-us' %> - <%= board.boardName %> (Index)</a> /
@@ -16,4 +17,5 @@
 <a href="/mod/reports?board=<%= boardUri %>">Reports Open (<%= stats.openReports %>)</a> /
 <a href="/mod/board/<%= boardUri %>/settings">Board Settings</a>
 </p>
+</div>
 <% } %>

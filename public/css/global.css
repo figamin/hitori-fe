@@ -1206,6 +1206,17 @@ mark.search-hit {
   padding: 5px;
 }
 
+/* An article opened from the front page (/news#<id>): clear of the fixed board bar,
+   and picked out from the others. */
+.news-title {
+  scroll-margin-top: 30px;
+}
+
+.news-title:target {
+  border-color: var(--hover-link-color);
+  outline: 1px solid var(--hover-link-color);
+}
+
 .list-empty {
   color: #4d4d4d;
 }
@@ -1289,40 +1300,6 @@ mark.search-hit {
   width: 100%;
 }
 
-#settings-modal button {
-  background: none;
-  border: none;
-  color: var(--text-color);
-  cursor: pointer;
-  padding: 5px 20px;
-}
-
-#settings-modal button.active {
-  border-bottom: 2px solid var(--header-highlight);
-}
-
-#settings-modal textarea {
-  box-sizing: border-box;
-  height: 300px;
-  padding: 10px;
-  width: 100%;
-}
-
-#settings-modal .modal-content {
-  background: var(--post-color);
-  box-sizing: border-box;
-  margin: 0;
-  max-height: calc(100% - 50px);
-  max-width: calc(100% - 10px);
-  overflow: auto;
-  padding: 5px;
-  position: relative;
-  width: 400px;
-  z-index: 1001;
-  border-right: 1px solid var(--border-alt);
-  border-bottom: 1px solid var(--border-alt);
-}
-
 #settings-modal {
   align-items: center;
   background-color: rgba(0, 0, 0, 0.5);
@@ -1336,17 +1313,173 @@ mark.search-hit {
   z-index: 1000;
 }
 
-#settings-modal .tabs {
-  border-bottom: 1px solid var(--border-alt);
+/* The panel: a title bar, the sections (each a <details> that opens on its own), and
+   the Save button at the bottom. Buttons inside keep the theme's own button look. */
+#settings-modal .settings-panel {
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
   display: flex;
-  margin-bottom: 10px;
+  flex-direction: column;
+  margin: 0;
+  max-height: calc(100% - 40px);
+  max-width: calc(100% - 10px);
+  padding: 0;
+  position: relative;
+  width: 420px;
+  z-index: 1001;
+}
+
+#settings-modal .settings-header {
+  align-items: center;
+  background: rgba(128, 128, 128, 0.12);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  padding: 5px 30px;
+  position: relative;
+}
+
+#settings-modal .settings-title {
+  color: var(--subject-color);
+  font-size: 14px;
+  font-weight: bold;
 }
 
 #settings-modal .modal-close {
+  align-items: center;
   background: none;
-  border: none;
+  border: 1px solid var(--text-color);
+  color: var(--text-color);
   cursor: pointer;
-  float: right;
+  display: flex;
+  font-size: 14px;
+  height: 16px;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  position: absolute;
+  right: 6px;
+  width: 16px;
+}
+
+#settings-modal .modal-close:hover {
+  border-color: var(--hover-link-color);
+  color: var(--hover-link-color);
+}
+
+#settings-modal .settings-expand-all {
+  padding: 5px 0 2px;
+  text-align: center;
+}
+
+#settings-modal .settings-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 10px 6px;
+}
+
+#settings-modal .settings-section > summary {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-size: 13px;
+  font-weight: bold;
+  gap: 7px;
+  list-style: none;
+  padding: 5px 0;
+  user-select: none;
+}
+
+#settings-modal .settings-section > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* The [+] / [-] box in front of each section's name. */
+#settings-modal .settings-section > summary::before {
+  align-items: center;
+  border: 1px solid var(--text-color);
+  content: '+';
+  display: inline-flex;
+  flex: none;
+  font-size: 12px;
+  height: 12px;
+  justify-content: center;
+  line-height: 1;
+  width: 12px;
+}
+
+#settings-modal .settings-section[open] > summary::before {
+  content: '\2212';
+}
+
+#settings-modal .settings-section > summary:hover {
+  color: var(--hover-link-color);
+}
+
+#settings-modal .settings-section-body {
+  padding: 0 0 6px 19px;
+}
+
+#settings-modal .settings-option {
+  cursor: pointer;
+  display: grid;
+  gap: 1px 5px;
+  grid-template-columns: auto 1fr;
+  padding: 4px 0;
+}
+
+#settings-modal .settings-option input {
+  grid-row: 1;
+  margin: 0;
+}
+
+#settings-modal .settings-option-name {
+  font-size: 12px;
+}
+
+#settings-modal .settings-option-desc {
+  font-size: 10px;
+  grid-column: 2;
+  opacity: 0.75;
+}
+
+#settings-modal p.settings-option-desc {
+  margin: 0 0 4px;
+}
+
+#settings-modal .filter-controls {
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+#settings-modal .filters-list {
+  margin-top: 0;
+}
+
+#settings-modal .filter-item {
+  gap: 8px;
+  overflow-wrap: anywhere;
+}
+
+#settings-modal textarea.settings-code {
+  background: var(--input);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+  color: var(--text-color);
+  font-family: monospace;
+  height: 200px;
+  padding: 6px;
+  resize: vertical;
+  width: 100%;
+}
+
+#settings-modal .settings-footer {
+  border-top: 1px solid var(--border-color);
+  padding: 7px;
+  text-align: center;
 }
 
 details:not([open]) .hide-file-button::before {
@@ -1852,9 +1985,7 @@ details:not([open]) .hide-file-button::before {
    border, 5px padding and 5px margin the theme gives `div.post.reply` - so it sizes and
    spaces like the posts around it. */
 .post-inline {
-  background: var(--background-color);
   border: 1px solid var(--border-alt);
-  border-left: 4px solid var(--hover-link-color);
   border-radius: 3px;
   margin: 5px;
   padding: 5px;
@@ -2429,16 +2560,8 @@ code {
    --------------------------------------------------------------------------- */
 
 .captcha {
-  border: 1px solid var(--border-alt);
-  border-left: 3px solid var(--hover-link-color);
-  border-radius: 3px;
-  /* Both forms show the same widget - the reply form puts it in a table cell (317px), the
-     quick reply in its floating panel (300px) - so it is sized by itself: the same width in
-     both, and its own box model rather than whatever rule the theme applies in that context. */
   box-sizing: border-box;
-  margin: 4px 0;
-  max-width: 300px;
-  padding: 6px 8px;
+  max-width: 340px;
   width: 100%;
 }
 
@@ -2462,7 +2585,6 @@ code {
 .captcha-hide {
   background: var(--background-gradient);
   border: 1px solid var(--border-color);
-  border-radius: 3px;
   color: var(--text-color);
   cursor: pointer;
   display: none;
@@ -2621,4 +2743,681 @@ code {
   overflow: auto;
   padding: 6px;
   white-space: pre-wrap;
+}
+
+/* ---------------------------------------------------------------------------
+   Moderation pages (views/mod/*, which the layout marks with `mod-page`)
+   The look of vichan's panel - a title, a nav strip, and everything else in boxes
+   with a legend - drawn in the theme's own colours. The moderator views of a board
+   or a thread are the public templates and are not touched by any of this.
+   --------------------------------------------------------------------------- */
+
+.mod-page {
+  margin: 0 auto;
+  max-width: 960px;
+}
+
+.mod-page h1 {
+  color: var(--board-title-color);
+  font: bold 26px Tahoma, sans-serif;
+  letter-spacing: -1px;
+  margin: 14px 0 6px;
+  text-align: center;
+}
+
+.mod-page h2 {
+  border-bottom: 1px solid var(--border-color);
+  color: var(--subject-color);
+  font-size: 15px;
+  margin: 18px 0 8px;
+  padding-bottom: 3px;
+}
+
+.mod-page .mod-nav {
+  align-items: center;
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  justify-content: space-between;
+  margin: 10px 0 12px;
+  padding: 6px 10px;
+}
+
+.mod-page .mod-nav a {
+  font-weight: bold;
+}
+
+.mod-page .mod-nav .user {
+  float: none;
+  white-space: nowrap;
+}
+
+.mod-page .mod-subnav {
+  margin: 0 0 12px;
+  text-align: center;
+}
+
+.mod-page .mod-board-nav {
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  line-height: 1.7;
+  margin: 0 0 8px;
+  padding: 5px 10px;
+  text-align: center;
+}
+
+.mod-page fieldset {
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  margin: 0 0 14px;
+  min-width: 0;
+  padding: 8px 12px 10px;
+}
+
+.mod-page legend {
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  color: var(--subject-color);
+  font-weight: bold;
+  padding: 2px 8px;
+}
+
+.mod-page fieldset > ul {
+  line-height: 1.7;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.mod-page .mod-hint,
+.mod-page .mod-unit {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.mod-page p.mod-hint {
+  margin: 2px 0 6px;
+}
+
+.mod-page .mod-error {
+  border: 1px solid #c33;
+  color: #f44;
+  font-weight: bold;
+  margin: 0 0 8px;
+  padding: 4px 8px;
+}
+
+.mod-page .mod-actions {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.mod-page .mod-actions button {
+  min-width: 110px;
+}
+
+/* Label | field rows, labels right-aligned against the fields. */
+.mod-page .mod-settings {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.mod-page .mod-settings th {
+  font-weight: bold;
+  padding: 5px 12px 5px 0;
+  text-align: right;
+  vertical-align: middle;
+  white-space: nowrap;
+  width: 35%;
+}
+
+.mod-page .mod-settings td {
+  padding: 5px 0;
+  vertical-align: middle;
+}
+
+.mod-page .mod-settings tr + tr > * {
+  border-top: 1px dashed var(--border-color);
+}
+
+.mod-page .mod-settings input[type="text"],
+.mod-page .mod-settings input:not([type]),
+.mod-page .mod-settings input[type="password"] {
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 260px;
+}
+
+.mod-page .mod-settings input[type="number"] {
+  width: 80px;
+}
+
+.mod-page .mod-settings input.mod-uri {
+  width: 110px;
+}
+
+.mod-page .mod-checks label {
+  display: block;
+  padding: 1px 0;
+}
+
+.mod-page .mod-inline-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 4px 0 8px;
+}
+
+.mod-page .mod-wide {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.mod-page .mod-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 24px;
+  list-style: none;
+  padding: 0;
+}
+
+.mod-page .mod-emergency {
+  margin: 8px 0 0;
+}
+
+.mod-page .mod-link-columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 40px;
+}
+
+.mod-page .mod-link-columns ul {
+  line-height: 1.7;
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* Data tables: a header row in a tint of the post colour, rows that light up. */
+.mod-page .mod-table,
+.mod-page .logs-table {
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.mod-page .mod-table th,
+.mod-page .logs-table th {
+  background: rgba(128, 128, 128, 0.14);
+  border-bottom: 1px solid var(--border-color);
+  font-weight: bold;
+  padding: 4px 6px;
+  text-align: left;
+}
+
+.mod-page .mod-table td,
+.mod-page .logs-table td {
+  padding: 4px 6px;
+}
+
+.mod-page .mod-table tr:hover > td,
+.mod-page .logs-table tr:hover > td {
+  background: rgba(128, 128, 128, 0.07);
+}
+
+.mod-page fieldset .mod-table {
+  margin-top: 4px;
+}
+
+.mod-page .mod-cell-action {
+  text-align: right;
+  width: 1%;
+}
+
+/* Bans list */
+.mod-page .mod-board-filter {
+  justify-content: center;
+  margin: 0 0 12px;
+}
+
+.mod-page .mod-bans td {
+  border-top: 1px solid var(--border-color);
+  vertical-align: top;
+}
+
+.mod-page .mod-ban-target {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.mod-page .mod-ban-links {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.mod-page .mod-ban-reason {
+  overflow-wrap: anywhere;
+}
+
+.mod-page .mod-nowrap {
+  white-space: nowrap;
+}
+
+.mod-page .mod-tag {
+  border: 1px solid #d90;
+  color: #d90;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 0 3px;
+  text-transform: uppercase;
+}
+
+/* Captcha page */
+.mod-page .mod-intro {
+  margin: 0 auto 14px;
+  max-width: 80ch;
+  text-align: center;
+}
+
+.mod-page .mod-settings input.mod-wide {
+  width: 100%;
+}
+
+.mod-page .mod-block {
+  display: block;
+  margin-top: 4px;
+}
+
+.mod-page textarea.mod-code {
+  font-family: monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+.mod-page .captcha-images td {
+  border-top: 1px solid var(--border-color);
+}
+
+/* Latest posts: the posts run from the left edge of the page, as on vichan, rather
+   than in the centred column the other mod pages use. */
+.mod-page:has(> .mod-latest) {
+  max-width: none;
+}
+
+.mod-page .mod-latest-search {
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.mod-page .latest-entry {
+  margin: 0 0 12px;
+  overflow: visible;
+}
+
+.mod-page .latest-board {
+  border-top: 1px solid var(--border-color);
+  margin: 0 0 2px;
+  padding-top: 6px;
+}
+
+.mod-page .latest-board a {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Login: one small box in the middle of the page. */
+.mod-login {
+  margin: 30px auto 0;
+  max-width: 380px;
+}
+
+.mod-login .mod-settings th {
+  width: 30%;
+}
+
+@media (max-width: 600px) {
+  .mod-page .mod-settings th,
+  .mod-page .mod-settings td {
+    display: block;
+    text-align: left;
+    width: auto;
+  }
+
+  .mod-page .mod-settings th {
+    padding-bottom: 0;
+  }
+
+  .mod-page .mod-settings tr + tr > td {
+    border-top: none;
+  }
+
+  .mod-page .mod-nav {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Phones and narrow windows
+   Layout only: colours, borders and fonts stay the theme's. The 768px line is the
+   one the default theme already splits on (its page list is a fixed bar above it).
+   Some rules need !important because a script sets the same property inline: the
+   quick reply's left/top (qr.js), the watcher's transform (thread-watcher.js).
+   --------------------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 0 4px;
+  }
+
+  /* Header: the board bar wraps, centred, onto as many lines as it needs. A fixed bar
+     of unknown height would cover the links under it, so here it sits at the top of
+     the page instead of following the scroll. The links under it are centred too. */
+  .board-list {
+    margin: -5px -4px 0;
+    position: static;
+    text-align: center;
+  }
+
+  .navtopright {
+    float: none;
+    line-height: 1.9;
+    margin-top: 6px;
+    text-align: center;
+  }
+
+  /* Its own row, centred above the links; the input keeps its normal width. */
+  .header-search-form {
+    display: flex;
+    margin: 0 auto 2px;
+    width: fit-content;
+  }
+
+  .banner-img {
+    height: auto;
+    max-width: 100%;
+  }
+
+  hr.above-post-form {
+    width: 100%;
+  }
+
+  /* Post form */
+  #postformTable {
+    max-width: 100%;
+  }
+
+  #postformTable .post-block {
+    width: 1%;
+  }
+
+  #postformTable textarea#message {
+    min-width: 0;
+  }
+
+  #emo,
+  #emotebox {
+    max-width: 100%;
+    width: auto;
+  }
+
+  #emo[open] {
+    height: auto;
+    max-height: 200px;
+  }
+
+  /* Threads and posts: full width, with the side gutters taken back. */
+  .thread {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* The OP is inline on desktop, so its floated picture hangs down beside the first
+     replies. Here the OP holds its own picture and the replies start below it. */
+  .op-container,
+  .op {
+    display: flow-root;
+  }
+
+  .thread > .replies,
+  .thread > .summary,
+  .thread > .additional-replies {
+    clear: both;
+  }
+
+  .side-arrows {
+    display: none;
+  }
+
+  .reply,
+  .post-container > div.post.reply {
+    box-sizing: border-box;
+    display: flow-root;
+    margin-left: 0;
+    margin-right: 0;
+    max-width: 100%;
+  }
+
+  .post-info,
+  .thread-header {
+    box-sizing: border-box;
+  }
+
+  .image-container {
+    margin: 3px 10px 5px 0;
+  }
+
+  .thread-image:not(.expanded) {
+    height: auto;
+    max-width: 40vw;
+  }
+
+  .reply-image:not(.expanded) {
+    max-width: 30vw;
+  }
+
+  .thread-image.expanded,
+  .reply-image.expanded,
+  .img-expanded {
+    height: auto;
+    max-height: none;
+  }
+
+  .image-container:has(.expanded) {
+    float: none;
+    margin-right: 0;
+  }
+
+  .file-info,
+  .file-text {
+    margin-left: 0;
+    max-width: 100%;
+  }
+
+  .file-link {
+    max-width: 45vw;
+  }
+
+  .poll-wrapper {
+    margin: 0 0 12px;
+  }
+
+  .poll-container {
+    min-width: 0;
+  }
+
+  /* Page list and the forms at the bottom of a board or thread */
+  .pagination {
+    margin: 5px 0;
+    max-width: 100%;
+  }
+
+  .pagelist {
+    flex-wrap: wrap;
+    float: none;
+    justify-content: center;
+    row-gap: 4px;
+  }
+
+  .pagelist .catalog-link {
+    margin-left: 4px;
+    padding-left: 8px;
+  }
+
+  #delete-form {
+    float: none !important;
+    margin: 10px 0 0 !important;
+    text-align: right;
+  }
+
+  .footer-board-list,
+  .footer-nav-tools {
+    text-align: center;
+  }
+
+  .footer-board-list {
+    word-spacing: 2px;
+  }
+
+  /* Catalog: a grid of cards that fills the width, two or more to a row. */
+  .catalog-search {
+    align-items: center;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .catalog-sort {
+    flex-wrap: wrap;
+    gap: 8px 15px;
+    justify-content: center;
+    margin-bottom: 0;
+  }
+
+  .catalog-threads {
+    gap: 8px;
+    padding: 5px 0;
+  }
+
+  .catalog-thread {
+    box-sizing: border-box;
+    width: 150px;
+  }
+
+  .catalog-thread.size-large {
+    box-sizing: border-box;
+    width: 170px;
+  }
+
+  .catalog-content {
+    width: 100%;
+  }
+
+  .catalog-image,
+  .size-large .catalog-image {
+    max-width: 100%;
+  }
+
+  /* Floating panels become sheets across the bottom (quick reply, post editor) or
+     the top (thread watcher) of the screen. Dragging is a mouse thing, so the
+     handles stop looking draggable. */
+  #quickReply,
+  #editPost {
+    border-bottom: none !important;
+    bottom: 0;
+    left: 0 !important;
+    max-height: 75vh;
+    max-height: 75dvh;
+    min-height: 0;
+    overflow-y: auto;
+    right: 0 !important;
+    top: auto !important;
+    width: 100%;
+    z-index: 1001;
+  }
+
+  #quickReplyHeader,
+  #editPostHeader {
+    cursor: default;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+  }
+
+  .watch-list-modal {
+    left: 5px;
+    max-height: 60vh;
+    right: 5px;
+    top: 30px;
+    transform: none !important;
+    width: auto;
+  }
+
+  .watch-list-header {
+    cursor: default;
+  }
+
+  .modal-content,
+  #mod-ban-modal .modal-content {
+    box-sizing: border-box;
+    margin: 20vh auto 0;
+    max-width: calc(100% - 20px);
+    width: 400px;
+  }
+
+  .side-catalog {
+    max-width: 85vw;
+  }
+
+  .quote-preview {
+    max-width: calc(100vw - 16px) !important;
+    width: auto;
+  }
+
+  /* Text pages, archive and staff pages */
+  .box-layout {
+    margin-top: 10px;
+  }
+
+  .box-layout .left-col,
+  .box-layout .right-col {
+    display: block;
+    padding-right: 0;
+    width: auto;
+  }
+
+  .posts-list {
+    width: 100%;
+  }
+
+  .archive-table {
+    margin: 10px 0;
+    width: 100%;
+  }
+
+  .archive-col-content {
+    max-width: none;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .mod-table,
+  .logs-table {
+    display: block;
+    overflow-x: auto;
+  }
+
+  .mod-nav .user {
+    float: none;
+    display: block;
+    margin-top: 4px;
+  }
 }

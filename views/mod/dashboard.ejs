@@ -1,28 +1,44 @@
 <% title = 'Mod'; %>
-<h1>Logged in as: <%= user.login %></h1>
+<h1>Dashboard</h1>
+<p class="mod-subnav">Logged in as <strong><%= user.login %></strong><% if (locals.roleLabel) { %> (<%= roleLabel %>)<% } %></p>
 <fieldset class="reportFieldset">
 <legend>Status</legend>
-<p><a href="/mod/reports"><%= openReports %> reports</a> / <a href="/mod/bans/appeals"><%= appealedBans %> appeals</a> / <% if (boards.length) { %><a href="/mod/trash/<%= boards[0].boardUri %>"><%= trashCount %> trashed</a><% } else { %><%= trashCount %> trashed<% } %></p>
+<ul class="mod-stats">
+<li><a href="/mod/reports"><strong><%= openReports %></strong> open reports</a></li>
+<li><a href="/mod/bans/appeals"><strong><%= appealedBans %></strong> ban appeals</a></li>
+<li><% if (boards.length) { %><a href="/mod/trash/<%= boards[0].boardUri %>"><strong><%= trashCount %></strong> trashed posts</a><% } else { %><strong><%= trashCount %></strong> trashed posts<% } %></li>
+</ul>
 <% if (isAdmin) { %>
-<p>Emergency <%= emergencyMode ? 'on' : 'off' %> <button type="button" id="emergency-toggle"><%= emergencyMode ? 'Off' : 'On' %></button></p>
+<p class="mod-emergency">Emergency mode is <strong><%= emergencyMode ? 'on' : 'off' %></strong> <button type="button" id="emergency-toggle">Turn <%= emergencyMode ? 'off' : 'on' %></button></p>
+<% } %>
+</fieldset>
+<fieldset class="reportFieldset">
+<legend>Boards</legend>
+<% if (boards.length) { %>
+<table class="mod-table">
+<tr><th>Board</th><th>Name</th><th>Actions</th></tr>
+<% boards.forEach(b => { %>
+<tr>
+<td><a href="/<%= b.boardUri %>/">/<%= b.boardUri %>/</a></td>
+<td><%= b.boardName || '' %></td>
+<td class="mod-links"><a href="/mod/board/<%= b.boardUri %>">Moderate</a> / <a href="/mod/board/<%= b.boardUri %>/settings">Settings</a> / <a href="/mod/trash/<%= b.boardUri %>">Trash</a><% if (isAdmin) { %> / <a href="#" class="board-delete" data-board="<%= b.boardUri %>" data-name="<%= b.boardName || b.boardUri %>">Delete</a><% } %></td>
+</tr>
+<% }) %>
+</table>
+<% } else { %>
+<p class="mod-hint">No boards.</p>
 <% } %>
 </fieldset>
 <% if (canCreateBoard) { %>
 <fieldset class="reportFieldset">
 <legend>Create Board</legend>
 <form id="board-create-form">
-<p>URI: /<input name="boardUri" pattern="[a-z0-9]{1,16}" maxlength="16" required>/</p>
-<p>Name: <input name="boardName" maxlength="32" required></p>
-<p>Description: <input name="boardDescription" maxlength="128"></p>
-<button type="submit">Create Board</button>
+<table class="mod-settings">
+<tr><th><label for="new-board-uri">URI</label></th><td>/<input id="new-board-uri" name="boardUri" pattern="[a-z0-9]{1,16}" maxlength="16" required class="mod-uri">/</td></tr>
+<tr><th><label for="new-board-name">Name</label></th><td><input id="new-board-name" name="boardName" maxlength="32" required></td></tr>
+<tr><th><label for="new-board-desc">Description</label></th><td><input id="new-board-desc" name="boardDescription" maxlength="128"></td></tr>
+</table>
+<div class="mod-actions"><button type="submit">Create board</button></div>
 </form>
 </fieldset>
 <% } %>
-<fieldset class="reportFieldset">
-<legend>Boards</legend>
-<ul>
-<% boards.forEach(b => { %>
-<li><a href="/<%= b.boardUri %>/">/<%= b.boardUri %>/<% if (b.boardName) { %> - <%= b.boardName %><% } %></a> / <a href="/mod/board/<%= b.boardUri %>">Mod</a> / <a href="/mod/board/<%= b.boardUri %>/settings">Settings</a> / <a href="/mod/trash/<%= b.boardUri %>">Trash</a><% if (isAdmin) { %> / <a href="#" class="board-delete" data-board="<%= b.boardUri %>" data-name="<%= b.boardName || b.boardUri %>">Delete</a><% } %></li>
-<% }) %>
-</ul>
-</fieldset>

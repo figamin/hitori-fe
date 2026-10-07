@@ -1,7 +1,13 @@
 <% title = 'Account'; %>
-<p><%= roleLabel %></p>
+<h1>Account</h1>
+<fieldset>
+<legend>Change Password</legend>
+<p class="mod-hint">Signed in as <strong><%= user.login %></strong> (<%= roleLabel %>).</p>
 <form id="change-password-form">
-<input type="password" name="currentPassword" placeholder="Current password" required>
-<input type="password" name="newPassword" placeholder="New password" required>
-<button type="submit">Change password</button>
+<table class="mod-settings">
+<tr><th><label for="current-password">Current password</label></th><td><input type="password" id="current-password" name="currentPassword" required autocomplete="current-password"></td></tr>
+<tr><th><label for="new-password">New password</label></th><td><input type="password" id="new-password" name="newPassword" required autocomplete="new-password"></td></tr>
+</table>
+<div class="mod-actions"><button type="submit">Change password</button></div>
 </form>
+</fieldset>

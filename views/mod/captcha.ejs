@@ -1,6 +1,6 @@
 <% title = 'Captcha'; %>
-<hr>
-<p class="captcha-intro">
+<h1>Captcha</h1>
+<p class="captcha-intro mod-intro">
 The captcha is a picture of a character; the reader types the character's name before posting.
 It is a separate little service in <code>wap-captcha/</code> that owns the pictures, the names
 and the ImageMagick settings, and it keeps them in <code><%= configPath %></code> - which this
@@ -8,147 +8,148 @@ page edits for you (a copy of the previous file is kept as <code>config.toml.bak
 file stays plain text you can edit by hand).
 </p>
 
-<h3>Service</h3>
-<table class="captcha-status">
-  <tr><td>Address</td><td><code><%= status.url %></code></td></tr>
-  <tr><td>State</td><td id="captcha-service-state">
+<fieldset>
+<legend>Service</legend>
+<table class="mod-settings captcha-status">
+  <tr><th>Address</th><td><code><%= status.url %></code></td></tr>
+  <tr><th>State</th><td id="captcha-service-state">
     <% if (status.running) { %>running<% } else { %>not running<% } %>
     <% if (!status.running && status.error) { %> &mdash; <%= status.error %><% } %>
     <% if (status.running && !status.managed) { %> (started outside Koshi)<% } %>
   </td></tr>
-  <% if (status.pid) { %><tr><td>Process</td><td><code><%= status.pid %></code></td></tr><% } %>
+  <% if (status.pid) { %><tr><th>Process</th><td><code><%= status.pid %></code></td></tr><% } %>
   <% if (status.health) { %>
-  <tr><td>Characters</td><td><%= (status.health.availableCharacters || []).length %> pools/pictures source</td></tr>
+  <tr><th>Characters</th><td><%= (status.health.availableCharacters || []).length %> pools/pictures source</td></tr>
   <% } %>
-  <tr><td>Log</td><td><code><%= logPath %></code></td></tr>
+  <tr><th>Log</th><td><code><%= logPath %></code></td></tr>
 </table>
-<p>
+<div class="mod-actions">
   <button type="button" class="captcha-service-btn" data-action="start">Start</button>
   <button type="button" class="captcha-service-btn" data-action="restart">Restart</button>
   <button type="button" class="captcha-service-btn" data-action="stop">Stop</button>
   <button type="button" class="captcha-service-btn" data-action="status">Refresh</button>
   <button type="button" id="captcha-log-btn">Show the last log lines</button>
-</p>
+</div>
 <p class="captcha-message" id="captcha-service-message"></p>
 <pre id="captcha-log" hidden></pre>
+</fieldset>
 
-<hr>
-<h3>When the captcha is asked for</h3>
+<fieldset>
+<legend>When the captcha is asked for</legend>
 <form id="captcha-settings-form">
-  <p>
+<table class="mod-settings">
+  <tr><th>Captcha</th><td>
     <label><input type="checkbox" name="enabled" value="true"<%= settings.enabled ? ' checked' : '' %> />
     Require the captcha before posting (all boards)</label>
-  </p>
-  <p>
-    <label>Solving it is good for <input type="number" name="sessionMinutes" min="1" max="1440" value="<%= settings.sessionMinutes %>" style="width: 5em;" /> minutes</label>
-  </p>
-  <p>
-    <label>Let staff skip it:
-      <select name="bypassMinRole">
-        <option value="0"<%= Number(settings.bypassMinRole) === 0 ? ' selected' : '' %>>Nobody (root solves it too)</option>
-        <option value="1"<%= Number(settings.bypassMinRole) === 1 ? ' selected' : '' %>>Root and admins</option>
-        <option value="2"<%= Number(settings.bypassMinRole) === 2 ? ' selected' : '' %>>Moderators and above</option>
-        <option value="3"<%= Number(settings.bypassMinRole) === 3 ? ' selected' : '' %>>Janitors and above</option>
-        <option value="4"<%= Number(settings.bypassMinRole) === 4 ? ' selected' : '' %>>Everyone (only visitors solve it)</option>
-      </select>
-    </label>
-  </p>
-  <p>
-    <label>Service address <input type="text" name="url" value="<%= status.url %>" size="32" /></label>
-    <label><input type="checkbox" name="autostart" value="true"<%= settings.autostart ? ' checked' : '' %> /> start it if nothing answers there</label>
-  </p>
-  <p><button type="submit">Save</button> <span class="captcha-message" id="captcha-settings-message"></span></p>
+  </td></tr>
+  <tr><th><label for="captcha-session">Solving it is good for</label></th><td>
+    <input type="number" id="captcha-session" name="sessionMinutes" min="1" max="1440" value="<%= settings.sessionMinutes %>" /> <span class="mod-unit">minutes</span>
+  </td></tr>
+  <tr><th><label for="captcha-bypass">Let staff skip it</label></th><td>
+    <select id="captcha-bypass" name="bypassMinRole">
+      <option value="0"<%= Number(settings.bypassMinRole) === 0 ? ' selected' : '' %>>Nobody (root solves it too)</option>
+      <option value="1"<%= Number(settings.bypassMinRole) === 1 ? ' selected' : '' %>>Root and admins</option>
+      <option value="2"<%= Number(settings.bypassMinRole) === 2 ? ' selected' : '' %>>Moderators and above</option>
+      <option value="3"<%= Number(settings.bypassMinRole) === 3 ? ' selected' : '' %>>Janitors and above</option>
+      <option value="4"<%= Number(settings.bypassMinRole) === 4 ? ' selected' : '' %>>Everyone (only visitors solve it)</option>
+    </select>
+  </td></tr>
+  <tr><th><label for="captcha-url">Service address</label></th><td>
+    <input type="text" id="captcha-url" name="url" value="<%= status.url %>" />
+    <label class="mod-block"><input type="checkbox" name="autostart" value="true"<%= settings.autostart ? ' checked' : '' %> /> Start it if nothing answers there</label>
+  </td></tr>
+</table>
+<div class="mod-actions"><button type="submit">Save</button> <span class="captcha-message" id="captcha-settings-message"></span></div>
 </form>
+</fieldset>
 
 <% if (configError) { %>
-<hr>
-<h3>config.toml</h3>
+<fieldset>
+<legend>config.toml</legend>
 <p class="captcha-error">The captcha's configuration could not be read: <%= configError %></p>
+</fieldset>
 <% } else { %>
-<hr>
-<h3>Pictures</h3>
+<fieldset>
+<legend>Pictures</legend>
 <form id="captcha-create-form">
-  <p>
-    <label>Where a picture comes from:
-      <select name="use_local">
-        <option value="true"<%= captchaConfig.captcha.use_local ? ' selected' : '' %>>The local folders (below)</option>
-        <option value="false"<%= captchaConfig.captcha.use_local ? '' : ' selected' %>>Safebooru (needs internet)</option>
-      </select>
-    </label>
-  </p>
-  <p>
-    <label>Safebooru tags added to the character's tag<br />
-      <input type="text" name="other_tags" value="<%= captchaConfig.captcha.other_tags || '' %>" size="90" /></label>
-  </p>
-  <p class="captcha-hint">Every picture is run through ImageMagick first (the noise and the squeeze are
-  what make it a puzzle). All of these are passed to <code>convert</code>.</p>
-  <table class="captcha-grid">
-    <tr>
-      <td>Noise (multiplies the source size)</td>
-      <td><input type="number" name="noise_min" min="0" max="50" value="<%= captchaConfig.image.noise_min %>" /> &ndash; <input type="number" name="noise_max" min="0" max="50" value="<%= captchaConfig.image.noise_max %>" /></td>
-    </tr>
-    <tr>
-      <td>Aspect (squeezes the picture)</td>
-      <td><input type="number" step="0.01" name="aspect_min" min="0" max="20" value="<%= captchaConfig.image.aspect_min %>" /> &ndash; <input type="number" step="0.01" name="aspect_max" min="0" max="20" value="<%= captchaConfig.image.aspect_max %>" /></td>
-    </tr>
-    <tr><td>Blur</td><td><input type="number" step="0.1" name="blur" min="0" max="20" value="<%= captchaConfig.image.blur %>" /></td></tr>
-    <tr><td>Rotation (degrees)</td><td><input type="number" step="0.1" name="rotation" min="0" max="360" value="<%= captchaConfig.image.rotation %>" /></td></tr>
-    <tr><td>Brightness (percent)</td><td><input type="number" name="brightness" min="0" max="400" value="<%= captchaConfig.image.brightness %>" /></td></tr>
-    <tr><td>Saturation (percent)</td><td><input type="number" name="saturation" min="0" max="400" value="<%= captchaConfig.image.saturation %>" /></td></tr>
-    <tr>
-      <td>Hue shift (degrees)</td>
-      <td><input type="number" name="hue_min" min="-360" max="360" value="<%= captchaConfig.image.hue_min %>" /> &ndash; <input type="number" name="hue_max" min="-360" max="360" value="<%= captchaConfig.image.hue_max %>" /></td>
-    </tr>
-    <tr><td>JPEG quality</td><td><input type="number" name="compress" min="1" max="100" value="<%= captchaConfig.image.compress %>" /></td></tr>
-    <tr>
-      <td>3D perspective</td>
-      <td><label><input type="checkbox" name="enable_xyz_transform" value="true"<%= captchaConfig.image.enable_xyz_transform ? ' checked' : '' %> /> distort</label></td>
-    </tr>
-  </table>
-  <p><button type="submit">Save picture settings</button> <span class="captcha-message" id="captcha-create-message"></span></p>
+<p class="captcha-hint mod-hint">Every picture is run through ImageMagick first (the noise and the squeeze are
+what make it a puzzle). All of these are passed to <code>convert</code>.</p>
+<table class="mod-settings captcha-grid">
+  <tr><th><label for="captcha-use-local">Where a picture comes from</label></th><td>
+    <select id="captcha-use-local" name="use_local">
+      <option value="true"<%= captchaConfig.captcha.use_local ? ' selected' : '' %>>The local folders (below)</option>
+      <option value="false"<%= captchaConfig.captcha.use_local ? '' : ' selected' %>>Safebooru (needs internet)</option>
+    </select>
+  </td></tr>
+  <tr><th><label for="captcha-other-tags">Safebooru tags</label></th><td>
+    <input type="text" id="captcha-other-tags" name="other_tags" value="<%= captchaConfig.captcha.other_tags || '' %>" class="mod-wide" />
+    <div class="mod-unit">added to the character's tag</div>
+  </td></tr>
+  <tr>
+    <th>Noise</th>
+    <td><input type="number" name="noise_min" min="0" max="50" value="<%= captchaConfig.image.noise_min %>" /> &ndash; <input type="number" name="noise_max" min="0" max="50" value="<%= captchaConfig.image.noise_max %>" /> <span class="mod-unit">multiplies the source size</span></td>
+  </tr>
+  <tr>
+    <th>Aspect</th>
+    <td><input type="number" step="0.01" name="aspect_min" min="0" max="20" value="<%= captchaConfig.image.aspect_min %>" /> &ndash; <input type="number" step="0.01" name="aspect_max" min="0" max="20" value="<%= captchaConfig.image.aspect_max %>" /> <span class="mod-unit">squeezes the picture</span></td>
+  </tr>
+  <tr><th>Blur</th><td><input type="number" step="0.1" name="blur" min="0" max="20" value="<%= captchaConfig.image.blur %>" /></td></tr>
+  <tr><th>Rotation</th><td><input type="number" step="0.1" name="rotation" min="0" max="360" value="<%= captchaConfig.image.rotation %>" /> <span class="mod-unit">degrees</span></td></tr>
+  <tr><th>Brightness</th><td><input type="number" name="brightness" min="0" max="400" value="<%= captchaConfig.image.brightness %>" /> <span class="mod-unit">percent</span></td></tr>
+  <tr><th>Saturation</th><td><input type="number" name="saturation" min="0" max="400" value="<%= captchaConfig.image.saturation %>" /> <span class="mod-unit">percent</span></td></tr>
+  <tr>
+    <th>Hue shift</th>
+    <td><input type="number" name="hue_min" min="-360" max="360" value="<%= captchaConfig.image.hue_min %>" /> &ndash; <input type="number" name="hue_max" min="-360" max="360" value="<%= captchaConfig.image.hue_max %>" /> <span class="mod-unit">degrees</span></td>
+  </tr>
+  <tr><th>JPEG quality</th><td><input type="number" name="compress" min="1" max="100" value="<%= captchaConfig.image.compress %>" /></td></tr>
+  <tr>
+    <th>3D perspective</th>
+    <td><label><input type="checkbox" name="enable_xyz_transform" value="true"<%= captchaConfig.image.enable_xyz_transform ? ' checked' : '' %> /> Distort</label></td>
+  </tr>
+</table>
+<div class="mod-actions"><button type="submit">Save picture settings</button> <span class="captcha-message" id="captcha-create-message"></span></div>
 </form>
+</fieldset>
 
-<hr>
-<h3>Characters</h3>
-<p class="captcha-hint">
+<fieldset>
+<legend>Characters</legend>
+<p class="captcha-hint mod-hint">
 One line per character: the folder its pictures live in, then every name that counts as
 correct &ndash; <code>hatsune_miku = hatsune miku, miku</code>. Names may be in any language.
 The pool named <code>default</code> is the one used; <code>sp</code> would be used for pages
 under <code>/sp/</code>.
 </p>
 <form id="captcha-characters-form">
-  <p>
-    <label>Pool
-      <select name="pool">
-        <% pools.forEach((pool) => { %><option value="<%= pool %>"<%= pool === selectedPool ? ' selected' : '' %>><%= pool %></option><% }) %>
-      </select>
-    </label>
-    <button type="submit">Save character names</button>
-    <span class="captcha-message" id="captcha-characters-message"></span>
-  </p>
-  <p><textarea name="text" rows="18" cols="90" spellcheck="false"><%= characters %></textarea></p>
+  <div class="mod-inline-form">
+    <label for="captcha-pool">Pool</label>
+    <select id="captcha-pool" name="pool">
+      <% pools.forEach((pool) => { %><option value="<%= pool %>"<%= pool === selectedPool ? ' selected' : '' %>><%= pool %></option><% }) %>
+    </select>
+  </div>
+  <textarea name="text" rows="18" spellcheck="false" class="mod-wide mod-code"><%= characters %></textarea>
+  <div class="mod-actions"><button type="submit">Save character names</button> <span class="captcha-message" id="captcha-characters-message"></span></div>
 </form>
+</fieldset>
 
-<hr>
-<h3>Pictures per character</h3>
-<p class="captcha-hint">
+<fieldset>
+<legend>Pictures per character</legend>
+<p class="captcha-hint mod-hint">
 Drop pictures into a character's folder &ndash; or add them here. A character with no picture of
 its own is never picked. <%= categories.length %> categories known.
 </p>
 <form id="captcha-images-form" enctype="multipart/form-data">
-  <p>
-    <label>Category
-      <input type="text" name="category" list="captcha-categories" size="28" required />
-      <datalist id="captcha-categories">
-        <% categories.forEach((category) => { %><option value="<%= category.name %>"><%= category.images %> picture(s)</option><% }) %>
-      </datalist>
-    </label>
+  <div class="mod-inline-form">
+    <label for="captcha-category">Category</label>
+    <input type="text" id="captcha-category" name="category" list="captcha-categories" required />
+    <datalist id="captcha-categories">
+      <% categories.forEach((category) => { %><option value="<%= category.name %>"><%= category.images %> picture(s)</option><% }) %>
+    </datalist>
     <input type="file" name="images" accept="image/*" multiple />
     <button type="submit">Add pictures</button>
     <span class="captcha-message" id="captcha-images-message"></span>
-  </p>
+  </div>
 </form>
-<table class="captcha-images" id="captcha-images-table">
+<table class="mod-table captcha-images" id="captcha-images-table">
   <tr><th>Category</th><th>Pictures</th><th>Names</th><th></th></tr>
   <% categories.forEach((category) => { %>
   <tr data-category="<%= category.name %>">
@@ -164,6 +165,7 @@ its own is never picked. <%= categories.length %> categories known.
   </tr>
   <% }) %>
 </table>
+</fieldset>
 <% } %>
 
 <script src="/js/mod-captcha.js?v=<%= locals.assetVersion('js/mod-captcha.js') %>"></script>

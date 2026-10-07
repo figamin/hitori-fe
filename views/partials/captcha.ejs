@@ -12,19 +12,19 @@
 <div class="captcha<%= locals.captcha.solved ? ' captcha-verified' : '' %>" data-captcha data-verified="<%= locals.captcha.solved ? 1 : 0 %>">
   <p class="captcha-verified-line"><span class="captcha-tick" aria-hidden="true">&#10004;</span> Verified &mdash; you can post.</p>
   <% if (locals.captcha.required) { %>
-  <p class="captcha-actions captcha-actions-open"><button type="button" class="captcha-open">Solve the captcha</button></p>
+  <p class="captcha-actions captcha-actions-open"><button type="button" class="captcha-open">Open Captcha</button></p>
   <div class="captcha-puzzle">
-    <p class="captcha-title">Not a robot? Name the character in the picture.</p>
-    <img class="captcha-image" alt="captcha" />
+    <p class="captcha-title">Name the character shown in the picture.</p>
+    <img class="captcha-image"/>
     <p class="captcha-controls">
-      <input type="text" class="input-text captcha-answer" autocomplete="off" spellcheck="false" placeholder="Character name" />
+      <input type="text" class="input-text captcha-answer" autocomplete="off" spellcheck="false" placeholder="..." />
       <button type="button" class="captcha-check">Check</button>
-      <button type="button" class="captcha-refresh" title="Another picture">&#8635;</button>
+      <button type="button" class="captcha-refresh">&#8635;</button>
     </p>
-    <p class="captcha-message">Loading a picture&hellip;</p>
+    <p class="captcha-message">Loading image&hellip;</p>
     <noscript><p class="captcha-message captcha-bad">The captcha needs JavaScript - without it you cannot post while it is on.</p></noscript>
   </div>
-  <p class="captcha-actions captcha-actions-hide"><button type="button" class="captcha-hide">Hide the captcha</button></p>
+  <p class="captcha-actions captcha-actions-hide"><button type="button" class="captcha-hide">Close Captcha</button></p>
   <% } %>
 </div>
 <% } %>

@@ -1,68 +1,93 @@
 <% title = 'Board ' + board.boardUri; %>
-<h1>/<%= board.boardUri %>/</h1>
+<h1>/<%= board.boardUri %>/ - <%= board.boardName %></h1>
 <%- include('partials/board-nav') %>
-<p><a href="/mod/board/<%= board.boardUri %>">Mod</a> / <a href="/<%= board.boardUri %>/">Public</a></p>
+<p class="mod-subnav"><a href="/mod/board/<%= board.boardUri %>">Moderate board</a> / <a href="/<%= board.boardUri %>/">View public board</a></p>
 
-<h2>Board Settings</h2>
 <% const s = board.settings || []; %>
 <% if (canEditSettings) { %>
 <form id="board-settings-form">
 <input type="hidden" name="boardUri" value="<%= board.boardUri %>">
-<p>Board Name: <input name="boardName" value="<%= board.boardName %>" maxlength="32" required></p>
-<p>Board Description: <input name="boardDescription" value="<%= board.boardDescription %>" maxlength="128"></p>
-<p>Tags: <input name="tags" value="<%= (board.tags || []).join(', ') %>"></p>
-<p>Board Message: <input name="boardMessage" value="<%= board.boardMessage || '' %>" maxlength="256"></p>
-<p>Max Length: 256</p>
-<p>Bump Limit: <input name="autoSageLimit" type="number" min="0" value="<%= board.autoSageLimit || 0 %>"> replies</p>
-<p>Maximum Bump Age: <input name="maxBumpAgeDays" type="number" min="0" value="<%= board.maxBumpAgeDays || 0 %>"> days</p>
-<p>Thread Limit (Total): <input name="maxThreadCount" type="number" min="0" value="<%= board.maxThreadCount || 0 %>"> threads</p>
-<p><label><input type="checkbox" name="archivePrunedThreads" value="1" <%= s.includes('archivePrunedThreads') ? 'checked' : '' %>> Archive threads bumped off the index</label></p>
-<p>Thread Limit (Hourly): <input name="hourlyThreadLimit" type="number" min="0" value="<%= board.hourlyThreadLimit || 0 %>"> threads</p>
-<p>Preferred Language: <input name="preferredLanguage" value="<%= board.preferredLanguage || 'en-us' %>"></p>
-<p><label><input type="checkbox" name="textBoard" value="1" <%= s.includes('textBoard') ? 'checked' : '' %>> Textboard</label></p>
-<p><label><input type="checkbox" name="unindex" value="1" <%= s.includes('unindex') ? 'checked' : '' %>> Hide board</label></p>
+<fieldset>
+<legend>Board Settings</legend>
+<table class="mod-settings">
+<tr><th><label for="bs-name">Board name</label></th><td><input id="bs-name" name="boardName" value="<%= board.boardName %>" maxlength="32" required></td></tr>
+<tr><th><label for="bs-desc">Description</label></th><td><input id="bs-desc" name="boardDescription" value="<%= board.boardDescription %>" maxlength="128"></td></tr>
+<tr><th><label for="bs-tags">Tags</label></th><td><input id="bs-tags" name="tags" value="<%= (board.tags || []).join(', ') %>"></td></tr>
+<tr><th><label for="bs-message">Board message</label></th><td><input id="bs-message" name="boardMessage" value="<%= board.boardMessage || '' %>" maxlength="256"> <span class="mod-unit">max 256 characters</span></td></tr>
+<tr><th><label for="bs-lang">Preferred language</label></th><td><input id="bs-lang" name="preferredLanguage" value="<%= board.preferredLanguage || 'en-us' %>"></td></tr>
+<tr><th><label for="bs-bump">Bump limit</label></th><td><input id="bs-bump" name="autoSageLimit" type="number" min="0" value="<%= board.autoSageLimit || 0 %>"> <span class="mod-unit">replies</span></td></tr>
+<tr><th><label for="bs-bumpage">Maximum bump age</label></th><td><input id="bs-bumpage" name="maxBumpAgeDays" type="number" min="0" value="<%= board.maxBumpAgeDays || 0 %>"> <span class="mod-unit">days</span></td></tr>
+<tr><th><label for="bs-threads">Thread limit (total)</label></th><td><input id="bs-threads" name="maxThreadCount" type="number" min="0" value="<%= board.maxThreadCount || 0 %>"> <span class="mod-unit">threads</span></td></tr>
+<tr><th><label for="bs-hourly">Thread limit (hourly)</label></th><td><input id="bs-hourly" name="hourlyThreadLimit" type="number" min="0" value="<%= board.hourlyThreadLimit || 0 %>"> <span class="mod-unit">threads</span></td></tr>
+<tr><th>Options</th><td class="mod-checks">
+<label><input type="checkbox" name="archivePrunedThreads" value="1" <%= s.includes('archivePrunedThreads') ? 'checked' : '' %>> Archive threads bumped off the index</label>
+<label><input type="checkbox" name="textBoard" value="1" <%= s.includes('textBoard') ? 'checked' : '' %>> Textboard</label>
+<label><input type="checkbox" name="unindex" value="1" <%= s.includes('unindex') ? 'checked' : '' %>> Hide board</label>
+</td></tr>
+</table>
+</fieldset>
 
-<h2>Posting</h2>
-<p>Anonymous Name: <input name="anonymousName" value="<%= board.anonymousName || '' %>" maxlength="32" placeholder="<%= siteDefaultName || '' %>"> (blank uses site default)</p>
-<p><label><input type="checkbox" name="forceAnonymity" value="1" <%= s.includes('forceAnonymity') ? 'checked' : '' %>> Forced Anonymity</label></p>
-<p>Default message: <input name="defaultMessage" value="<%= board.defaultMessage || '' %>" maxlength="4096" placeholder="<%= siteDefaultMessage || '' %>"> (blank uses site default)</p>
-<p>Maximum number of files per post: <input name="maxFiles" type="number" min="0" value="<%= board.maxFiles || 0 %>"> files (0 uses site default)</p>
-<p>Maximum size per file: <input name="maxFileSizeMB" type="number" min="0" value="<%= board.maxFileSizeMB || 0 %>"> MB</p>
-<p>Allowed file types: <input name="acceptedMimes" value="<%= (board.acceptedMimes || []).join(', ') %>"></p>
-<p>
+<fieldset>
+<legend>Posting</legend>
+<table class="mod-settings">
+<tr><th><label for="bs-anon">Anonymous name</label></th><td><input id="bs-anon" name="anonymousName" value="<%= board.anonymousName || '' %>" maxlength="32" placeholder="<%= siteDefaultName || '' %>"> <span class="mod-unit">blank uses site default</span></td></tr>
+<tr><th><label for="bs-defmsg">Default message</label></th><td><input id="bs-defmsg" name="defaultMessage" value="<%= board.defaultMessage || '' %>" maxlength="4096" placeholder="<%= siteDefaultMessage || '' %>"> <span class="mod-unit">blank uses site default</span></td></tr>
+<tr><th><label for="bs-maxfiles">Files per post</label></th><td><input id="bs-maxfiles" name="maxFiles" type="number" min="0" value="<%= board.maxFiles || 0 %>"> <span class="mod-unit">files (0 uses site default)</span></td></tr>
+<tr><th><label for="bs-maxsize">Maximum size per file</label></th><td><input id="bs-maxsize" name="maxFileSizeMB" type="number" min="0" value="<%= board.maxFileSizeMB || 0 %>"> <span class="mod-unit">MB</span></td></tr>
+<tr><th><label for="bs-mimes">Allowed file types</label></th><td><input id="bs-mimes" name="acceptedMimes" value="<%= (board.acceptedMimes || []).join(', ') %>"></td></tr>
+<tr><th>Options</th><td class="mod-checks">
+<label><input type="checkbox" name="forceAnonymity" value="1" <%= s.includes('forceAnonymity') ? 'checked' : '' %>> Forced anonymity</label>
 <label><input type="checkbox" name="disableIds" value="1" <%= s.includes('disableIds') ? 'checked' : '' %>> Disable IDs</label>
 <label><input type="checkbox" name="requireThreadFile" value="1" <%= s.includes('requireThreadFile') ? 'checked' : '' %>> Require file for new threads</label>
-<label><input type="checkbox" name="blockDeletion" value="1" <%= s.includes('blockDeletion') ? 'checked' : '' %>> Disable User Self-Deletion</label>
+<label><input type="checkbox" name="blockDeletion" value="1" <%= s.includes('blockDeletion') ? 'checked' : '' %>> Disable user self-deletion</label>
 <label><input type="checkbox" name="disablePolls" value="1" <%= s.includes('disablePolls') ? 'checked' : '' %>> Disable polls</label>
-<label><input type="checkbox" name="disableYoutube" value="1" <%= s.includes('disableYoutube') ? 'checked' : '' %>> Disable Video Embeds (YouTube, Nicovideo, BiliBili, Twitter/X, Bluesky)</label>
+<label><input type="checkbox" name="disableYoutube" value="1" <%= s.includes('disableYoutube') ? 'checked' : '' %>> Disable video embeds <span class="mod-unit">(YouTube, Nicovideo, BiliBili, Twitter/X, Bluesky)</span></label>
 <label><input type="checkbox" name="disableTegaki" value="1" <%= s.includes('disableTegaki') ? 'checked' : '' %>> Disable Tegaki</label>
-</p>
-<button type="submit">Save</button>
+</td></tr>
+</table>
+</fieldset>
+<div class="mod-actions"><button type="submit">Save changes</button></div>
 </form>
 <% } else { %>
-<p>Owner: <%= board.owner %> /Moderators: <%= (board.volunteers || []).join(', ') || 'none' %></p>
+<fieldset>
+<legend>Board Staff</legend>
+<table class="mod-settings">
+<tr><th>Owner</th><td><%= board.owner %></td></tr>
+<tr><th>Moderators</th><td><%= (board.volunteers || []).join(', ') || 'none' %></td></tr>
+</table>
+</fieldset>
 <% } %>
 
 <% if (isOwner || isAdmin) { %>
-<h2>Moderators</h2>
-<form id="volunteer-form">
+<fieldset>
+<legend>Moderators</legend>
+<p class="mod-hint">Current: <%= (board.volunteers || []).join(', ') || 'none' %></p>
+<form id="volunteer-form" class="mod-inline-form">
 <input type="hidden" name="boardUri" value="<%= board.boardUri %>">
-<input name="login" placeholder="Moderator">
+<input name="login" placeholder="Username">
 <button type="submit" name="add" value="1">Add</button>
 <button type="submit" name="add" value="0">Remove</button>
 </form>
+</fieldset>
 <% } %>
 
-<h2>Filters</h2>
-<form id="filter-form">
+<fieldset>
+<legend>Word Filters</legend>
+<form id="filter-form" class="mod-inline-form">
 <input type="hidden" name="boardUri" value="<%= board.boardUri %>">
 <input name="originalTerm" placeholder="Term" required>
 <input name="replacementTerm" placeholder="Replacement" required>
-<label><input type="checkbox" name="caseInsensitive" value="1"> i</label>
+<label title="Case-insensitive"><input type="checkbox" name="caseInsensitive" value="1"> Ignore case</label>
 <button type="submit">Add</button>
 </form>
-<ul>
+<% if (filters.length) { %>
+<table class="mod-table">
+<tr><th>Term</th><th>Replacement</th><th></th></tr>
 <% filters.forEach(f => { %>
-<li><%= f.originalTerm %> → <%= f.replacementTerm %> <button type="button" class="delete-filter" data-id="<%= f._id %>">Delete</button></li>
+<tr><td><%= f.originalTerm %></td><td><%= f.replacementTerm %></td><td class="mod-cell-action"><button type="button" class="delete-filter" data-id="<%= f._id %>">Delete</button></td></tr>
 <% }) %>
-</ul>
+</table>
+<% } else { %>
+<p class="mod-hint">No filters yet.</p>
+<% } %>
+</fieldset>
