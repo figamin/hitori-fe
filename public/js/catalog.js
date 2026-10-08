@@ -127,11 +127,19 @@ document.addEventListener('DOMContentLoaded', function () {
     panel = null;
   }
 
+  // Fortunes (`be/lib/fortunes.js`) are stored in the post body; the preview leaves
+  // them out. The class names after `.fortune` are those of fortunes written before
+  // that shared class existed (as in the "Hide fortunes" setting, settings.js).
+  const FORTUNES =
+    '.fortune, .excellentLuck, .goodLuck, .averageLuck, .badLuck, .tellYouNow, .outlookGood, ' +
+    '.veryBadLuck, .godlyLuck, .youAreBanned, .divFortune';
+
   // The reply's rendered body (greentext, spoilers, quotes...) on one line: line
-  // breaks become spaces, media is dropped, and inline handlers - written for the
-  // thread page, where their functions exist - are removed.
+  // breaks become spaces, media and fortunes are dropped, and inline handlers -
+  // written for the thread page, where their functions exist - are removed.
   function bodyLine(html) {
     const doc = new DOMParser().parseFromString(String(html || ''), 'text/html');
+    doc.body.querySelectorAll(FORTUNES).forEach((el) => el.remove());
     doc.body.querySelectorAll('br').forEach((br) => br.replaceWith(' '));
     doc.body.querySelectorAll('img, video, audio, iframe, script, style').forEach((el) => el.remove());
     doc.body.querySelectorAll('*').forEach((el) => {
@@ -188,6 +196,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const info = fileEl && fileInfo(fileEl);
     if (info) panel.appendChild(info);
     Array.from(item.children).forEach((child) => panel.appendChild(child.cloneNode(true)));
+    panel.querySelectorAll(FORTUNES).forEach((el) => el.remove());
 
     const replyCount = parseInt(item.dataset.replies, 10) || 0;
     let list = null;

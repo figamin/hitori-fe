@@ -38,6 +38,29 @@ const watchedThreads = {
     } catch (e) {}
   },
 
+  // On a phone a floating window would cover the page, so there the watcher is part of
+  // the page instead: under the banner, board title and description (#banner-container),
+  // above the post form - or at the top of the content on a page without a banner. It
+  // moves back to its floating place when the window is widened past the stylesheet's
+  // 768px line.
+  placeWatchList() {
+    const modal = document.querySelector('.watch-list-modal');
+    if (!modal) return;
+    const inline = window.matchMedia('(max-width: 768px)').matches;
+    modal.classList.toggle('watch-list-inline', inline);
+    if (!inline) {
+      if (modal.parentNode !== document.body) document.body.appendChild(modal);
+      return;
+    }
+    const banner = document.getElementById('banner-container');
+    if (banner) {
+      banner.after(modal);
+    } else {
+      const content = document.querySelector('main.content') || document.body;
+      content.prepend(modal);
+    }
+  },
+
   bindEvents() {
     document.addEventListener('click', (e) => {
       if (e.target.classList.contains('watch-thread-off') || e.target.classList.contains('watch-thread-on')) {
@@ -55,6 +78,8 @@ const watchedThreads = {
         }
       }
     });
+
+    window.matchMedia('(max-width: 768px)').addEventListener('change', () => this.placeWatchList());
   },
 
   processOP(op) {
@@ -215,12 +240,13 @@ const watchedThreads = {
       <div class="watch-list-content">
         <div class="watch-list-header">
           Watched Threads
-          <button class="close-watch-list">&times;</button>
+          <button type="button" class="close-watch-list" title="Close" aria-label="Close">&times;</button>
         </div>
         <div class="watch-list-body"></div>
       </div>
     `;
     document.body.appendChild(modal);
+    this.placeWatchList();
 
     modal.addEventListener('click', (e) => {
       if (e.target.classList.contains('remove-watch')) {
@@ -371,7 +397,10 @@ const watchedThreads = {
       }
 
       const btn = document.createElement('button');
+      btn.type = 'button';
       btn.className = 'remove-watch';
+      btn.title = 'Unwatch';
+      btn.setAttribute('aria-label', `Unwatch /${board}/ - ${label}`);
       btn.dataset.board = board;
       btn.dataset.thread = thread;
       btn.textContent = '×';

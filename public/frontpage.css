@@ -1069,12 +1069,12 @@ body.nsfw-hidden .board.nsfw {
 }
 
 .scroll img {
-    width: 80px;
-    height: 80px;
+    width: 70px;
+    height: 70px;
     object-fit: cover;
     border-radius: 3px;
     display: block;
-    background-color: #000;
+    background-color: #111;
 }
 
 .scroll::-webkit-scrollbar {

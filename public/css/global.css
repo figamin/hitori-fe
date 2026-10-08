@@ -549,12 +549,18 @@ input[type="text"] {
   display: flex;
   align-items: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   color: var(--text-color);
   padding: 1px 2px;
   font-size: 13px;
   line-height: 1.2;
+}
+
+/* The title is cut short with an ellipsis; the row's flex box cannot do that itself. */
+.watch-list-item a {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .watch-list-item a:hover {
@@ -1258,9 +1264,6 @@ mark.search-hit {
   margin: 0 auto;
 }
 
-#delete-modal,
-#report-modal,
-#mod-ban-modal,
 #board-delete-modal {
   background: rgba(0, 0, 0, 0.4);
   display: none;
@@ -1378,13 +1381,6 @@ mark.search-hit {
   position: fixed;
   right: 20px;
   z-index: 1000;
-}
-
-#report-reason {
-  height: 60px;
-  margin-bottom: 10px;
-  resize: vertical;
-  width: 100%;
 }
 
 #settings-modal {
@@ -1678,9 +1674,15 @@ details:not([open]) .hide-file-button::before {
   width: 20px;
 }
 
+/* Every field in the form shares the text inputs' font (input[type="text"], above). */
+#postformTable textarea#message,
+#postformTable select {
+  font-family: arial, helvetica, sans-serif;
+  font-size: 10pt;
+}
+
 #postformTable textarea#message {
   box-sizing: border-box;
-  font: 13.5px Arial, Helvetica, sans-serif;
   min-width: 250px;
   resize: vertical;
   width: 100%;
@@ -1694,6 +1696,75 @@ details:not([open]) .hide-file-button::before {
 
 #postformTable select {
     width: 190px;
+}
+
+/* Options: a dropdown of checkboxes (post-form.ejs). The closed box is a plain <select>
+   inside the <summary>, so it is drawn like every other dropdown; it takes no clicks
+   itself (they fall through to the summary, which opens the <details>). The open list
+   hangs under it like a select's own list: same width, font, border and highlight. */
+.post-options {
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+}
+
+.post-options > summary {
+  display: block;
+  list-style: none;
+}
+
+.post-options > summary::-webkit-details-marker {
+  display: none;
+}
+
+.post-options > summary::marker {
+  content: '';
+}
+
+.post-options > summary:focus {
+  outline: none;
+}
+
+#postformTable select.post-options-select {
+  display: block;
+  pointer-events: none;
+}
+
+.post-options > summary:focus-visible .post-options-select {
+  outline: auto;
+}
+
+.post-options-menu {
+  background: var(--input);
+  border: 1px solid ButtonBorder;
+  box-sizing: border-box;
+  left: 0;
+  min-width: 100%;
+  padding: 1px 0;
+  position: absolute;
+  top: 100%;
+  z-index: 1000;
+}
+
+.post-options-menu label {
+  align-items: center;
+  color: FieldText;
+  cursor: default;
+  display: flex;
+  font: 10pt arial, helvetica, sans-serif;
+  gap: 4px;
+  padding: 1px 4px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.post-options-menu label:hover {
+  background: Highlight;
+  color: HighlightText;
+}
+
+.post-options-menu input[type="checkbox"] {
+  margin: 0;
 }
 
 #postformTable > tbody > tr > td {
@@ -2741,10 +2812,6 @@ code {
   max-width: 640px;
 }
 
-#mod-ban-modal .modal-content {
-  width: 400px;
-}
-
 /* ---------------------------------------------------------------------------
    Captcha (`be/lib/captchaService.js`, `public/js/captcha.js`)
    The widget sits in the post forms; the rest of the block is the mod panel.
@@ -2943,9 +3010,13 @@ code {
    or a thread are the public templates and are not touched by any of this.
    --------------------------------------------------------------------------- */
 
+/* Starts below the header's floated top-right links, as the boxes do (.box-layout), so
+   the nav bar neither runs under them nor narrows to fit beside them. */
 .mod-page {
+  clear: both;
   margin: 0 auto;
   max-width: 960px;
+  padding-top: 15px;
 }
 
 .mod-page h1 {
@@ -2972,7 +3043,7 @@ code {
   flex-wrap: wrap;
   gap: 4px 12px;
   justify-content: space-between;
-  margin: 10px 0 12px;
+  margin: 0 0 12px;
   padding: 6px 10px;
 }
 
@@ -3556,8 +3627,56 @@ html {
     cursor: default;
   }
 
-  .modal-content,
-  #mod-ban-modal .modal-content {
+  /* The watcher is part of the page here (thread-watcher.js moves it under the
+     banner, above the post form): no frame, just the title and the list on the
+     page's own background, the full width of the screen, its list scrolling once
+     it is long. */
+  .watch-list-modal.watch-list-inline {
+    background: none;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    margin: 6px 0 0;
+    max-height: none;
+    max-width: none;
+    padding: 0;
+    position: static;
+    transform: none !important;
+    width: 100%;
+    z-index: auto;
+  }
+
+  /* The title centred, with the close button kept at the right edge. */
+  .watch-list-inline .watch-list-header {
+    border-bottom: none;
+    font-weight: bold;
+    justify-content: center;
+    padding: 0 24px;
+    position: relative;
+  }
+
+  .watch-list-inline .close-watch-list {
+    position: absolute;
+    right: 0;
+  }
+
+  .watch-list-inline .watch-list-body {
+    max-height: 150px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .watch-list-inline .watch-list-item {
+    min-height: 24px;
+  }
+
+  .watch-list-inline .remove-watch {
+    height: 24px;
+    justify-content: center;
+    width: 22px;
+  }
+
+  .modal-content {
     box-sizing: border-box;
     margin: 20vh auto 0;
     max-width: calc(100% - 20px);
@@ -3574,10 +3693,6 @@ html {
   }
 
   /* Text pages, archive and staff pages */
-  .box-layout {
-    margin-top: 10px;
-  }
-
   .box-layout .left-col,
   .box-layout .right-col {
     display: block;
@@ -3610,5 +3725,416 @@ html {
     float: none;
     display: block;
     margin-top: 4px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Post dialogs: report, ban and delete (`dialogMarkup` in public/js/post-menu.js)
+   Floating windows like 4chan X's (and the quick reply's): no backdrop, a slim title
+   bar to drag them by, the fields as joined boxes and the buttons bottom right.
+   #report-modal etc. is the window itself, shown with `display: block` and placed by
+   the script; on a phone it is a sheet across the top of the screen.
+   --------------------------------------------------------------------------- */
+
+#delete-modal,
+#report-modal,
+#mod-ban-modal {
+  display: none;
+  left: calc(50% - 160px);
+  max-width: calc(100vw - 4px);
+  position: fixed;
+  top: 126px;
+  width: 320px;
+  z-index: 1000;
+}
+
+#mod-ban-modal {
+  width: 360px;
+}
+
+.post-dialog {
+  background: var(--post-color);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+  color: var(--text-color);
+  font-size: 12px;
+  max-height: calc(100vh - 20px);
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.post-dialog *,
+.post-dialog *::before,
+.post-dialog *::after {
+  box-sizing: border-box;
+}
+
+.post-dialog-header {
+  align-items: center;
+  cursor: move;
+  display: flex;
+  gap: 4px;
+  padding: 1px 2px 3px;
+  user-select: none;
+}
+
+.post-dialog-title {
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.post-dialog-ref {
+  flex: 1;
+  min-width: 0;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-dialog-close {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.post-dialog-close:hover {
+  color: var(--hover-link-color);
+}
+
+.post-dialog-body .error-message {
+  margin: 0 0 3px;
+}
+
+.post-dialog input[type="text"],
+.post-dialog select,
+.post-dialog textarea {
+  background: var(--input);
+  border: 1px solid var(--border-color);
+  border-radius: 0;
+  color: var(--text-color);
+  font: 12px Arial, Helvetica, sans-serif;
+  margin: 0;
+  max-width: 100%;
+  min-width: 0;
+  padding: 2px 4px;
+  width: 100%;
+}
+
+.post-dialog input[type="text"],
+.post-dialog select {
+  height: 22px;
+}
+
+/* Fields without labels (report, delete): stacked boxes sharing their borders. */
+.post-dialog-fields {
+  display: flex;
+  flex-direction: column;
+}
+
+.post-dialog-fields > * + * {
+  border-top: none !important;
+}
+
+.post-dialog textarea {
+  display: block;
+  height: 90px;
+  min-height: 50px;
+  resize: vertical;
+}
+
+/* Label | field rows (ban), the boxes joined down the right. */
+.post-dialog-form {
+  align-items: center;
+  display: grid;
+  gap: 0 6px;
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+
+.post-dialog-form > input + label + input,
+.post-dialog-form > input + label + select {
+  border-top: none;
+}
+
+.post-dialog-form > label {
+  font-weight: bold;
+}
+
+.post-dialog-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  grid-column: 1 / -1;
+  padding-top: 3px;
+}
+
+.post-dialog-checks label {
+  align-items: center;
+  display: inline-flex;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.post-dialog-checks input {
+  margin: 0;
+}
+
+.post-dialog-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  justify-content: flex-end;
+  padding-top: 3px;
+}
+
+.post-dialog-footer button {
+  cursor: pointer;
+  font-size: 12px;
+  padding: 1px 8px;
+}
+
+@media (max-width: 480px) {
+  #delete-modal,
+  #report-modal,
+  #mod-ban-modal {
+    left: 0 !important;
+    max-width: none;
+    top: 0 !important;
+    width: 100%;
+  }
+
+  .post-dialog {
+    max-height: 75vh;
+    max-height: 75dvh;
+  }
+
+  .post-dialog-header {
+    cursor: default;
+  }
+
+  .post-dialog-footer button {
+    flex: 1;
+    padding: 6px 10px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Boxes (.box-layout / .box-outer: news, ban, warning, text pages)
+   Nothing inside a box may push it wider than the screen: long words wrap, and
+   images, videos, tables and pre blocks shrink or scroll inside it.
+   --------------------------------------------------------------------------- */
+
+/* The header's top-right links float, so a box would start beside them and run under
+   them; it starts below them instead. The gap is padding, as clearing a float swallows
+   a top margin. */
+.box-layout {
+  box-sizing: border-box;
+  clear: both;
+  margin-top: 0;
+  max-width: 750px;
+  padding-top: 15px;
+  width: 100%;
+}
+
+.box-outer {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.boxbar h2 {
+  overflow-wrap: anywhere;
+  padding-right: 0.5em;
+}
+
+.boxcontent {
+  overflow-wrap: anywhere;
+}
+
+.boxcontent img,
+.boxcontent video,
+.boxcontent iframe {
+  height: auto;
+  max-width: 100%;
+}
+
+.boxcontent pre,
+.boxcontent table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* News (views/pages/news.ejs) */
+.news-title {
+  overflow-wrap: anywhere;
+}
+
+.news-content {
+  margin-bottom: 10px;
+  overflow-wrap: anywhere;
+}
+
+.news-content:last-child {
+  margin-bottom: 0;
+}
+
+/* Ban page (views/banned.ejs) */
+.ban-image {
+  float: right;
+  height: auto;
+  margin: 0 0 8px 10px;
+  max-width: 50%;
+}
+
+.appeal-form {
+  border-top: 1px solid var(--border-alt);
+  clear: both;
+  padding-top: 8px;
+}
+
+.appeal-form h3 {
+  margin: 0 0 4px;
+}
+
+.appeal-form p {
+  margin-bottom: 8px;
+}
+
+.appeal-text {
+  background: var(--input);
+  border: 1px solid var(--border-color);
+  box-sizing: border-box;
+  color: var(--text-color);
+  display: block;
+  font: 10pt Arial, Helvetica, sans-serif;
+  margin-bottom: 6px;
+  max-width: 100%;
+  padding: 4px;
+  resize: vertical;
+  width: 100%;
+}
+
+.appeal-status {
+  border: 1px solid var(--border-alt);
+  clear: both;
+  padding: 6px 8px;
+}
+
+.appeal-status.pending {
+  border-color: #c90;
+}
+
+.appeal-status.denied {
+  border-color: #c00;
+  color: #c00;
+}
+
+@media (max-width: 768px) {
+  .box-layout {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .boxbar h2 {
+    font-size: 116%;
+  }
+
+  .boxcontent {
+    padding: 0.4em 0.5em 0.6em;
+  }
+
+  /* The image goes above the text instead of beside it. */
+  .ban-image {
+    display: block;
+    float: none;
+    margin: 0 auto 8px;
+    max-width: 100%;
+  }
+
+  .news-title {
+    font-size: 108%;
+  }
+
+  .appeal-form button,
+  .box-outer form > button[type="submit"] {
+    padding: 6px 14px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Fortunes (`be/lib/fortunes.js`): a line under the post body. Every fortune has the
+   shared `fortune` class plus one naming it; posts from before the shared class
+   only have the latter. Colours are mid-tones so they read on light and dark themes.
+   Hidden by the "Hide fortunes" setting (public/js/settings.js).
+   --------------------------------------------------------------------------- */
+
+.fortune,
+.excellentLuck,
+.goodLuck,
+.averageLuck,
+.badLuck,
+.tellYouNow,
+.outlookGood,
+.veryBadLuck,
+.godlyLuck,
+.youAreBanned,
+.divFortune,
+.mikudayo,
+.voicebankUpdate,
+.roadRoller,
+.replyHazy,
+.goodNewsMail {
+  display: block;
+  font-weight: bold;
+  margin-top: 8px;
+  overflow-wrap: anywhere;
+}
+
+.excellentLuck { color: #f51c6a; }
+.goodLuck { color: #fd4d32; }
+.averageLuck { color: #e7890c; }
+.badLuck { color: #bac200; }
+.tellYouNow { color: #7fec11; }
+.outlookGood { color: #43fd3b; }
+.veryBadLuck { color: #2a56fb; }
+.replyHazy { color: #9370db; }
+.goodNewsMail { color: #e05ab4; }
+.voicebankUpdate { color: #30a9c9; }
+.mikudayo { color: #39c5bb; }
+.roadRoller { color: #ffe600; }
+
+.youAreBanned {
+  color: #f00;
+  text-transform: uppercase;
+}
+
+.divFortune {
+  color: #ff8c00;
+}
+
+
+@keyframes fortuneRainbow {
+  to { background-position: 200% center; }
+}
+
+.godlyLuck {
+  background: linear-gradient(90deg, #ff0000, #ff9900, #ffee00, #33dd33, #00ccff, #6644ff, #ee00ee, #ff0000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fortuneRainbow 3s linear infinite;
+  display: table; /* only as wide as its text, so the whole rainbow shows */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .godlyLuck {
+    animation: none;
   }
 }

@@ -297,13 +297,14 @@ window.modStaffDeletePost = async function (postId, isThread, boardUri, threadId
 
 let banModalContext = null;
 
-// The report, ban and delete boxes share one look, 4chan's: a title bar naming the post
-// with a close button, the fields, and the buttons along the bottom right - in the
-// theme's post colours. The overlay is the element with the box's id (shown with
-// `display: block`); a click on it outside the box, the close button and Escape hide it.
+// The report, ban and delete boxes share one look, 4chan X's (like the quick reply): a
+// floating window with a slim title bar naming the post - the handle it is dragged by -
+// and a close button, the fields as joined boxes, and the buttons along the bottom
+// right. The page stays usable behind it. The element with the box's id is the window
+// (shown with `display: block`); the close button and Escape hide it.
 function dialogMarkup(title, body, buttons) {
   return `
-    <div class="post-dialog" role="dialog" aria-modal="true">
+    <div class="post-dialog" role="dialog">
       <div class="post-dialog-header">
         <span class="post-dialog-title">${title}</span>
         <span class="post-dialog-ref"></span>
@@ -324,13 +325,56 @@ function wireDialog(overlay, onClose) {
     if (onClose) onClose();
   };
   overlay.querySelector('.post-dialog-close').addEventListener('click', close);
-  overlay.addEventListener('mousedown', (e) => {
-    if (e.target === overlay) close();
-  });
   overlay.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') close();
   });
+
+  // Dragged by its title bar, as the quick reply is. Where it is left is where it opens
+  // next time (showDialog keeps it on screen).
+  const header = overlay.querySelector('.post-dialog-header');
+  header.addEventListener('mousedown', (e) => {
+    if (e.button !== 0 || e.target.closest('.post-dialog-close')) return;
+    e.preventDefault();
+    const rect = overlay.getBoundingClientRect();
+    const dx = e.clientX - rect.left;
+    const dy = e.clientY - rect.top;
+    const move = (ev) => {
+      overlay.style.left = `${ev.clientX - dx}px`;
+      overlay.style.top = `${ev.clientY - dy}px`;
+      clampDialog(overlay);
+    };
+    const stop = () => {
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', stop);
+    };
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', stop);
+  });
   return close;
+}
+
+// Keeps a dialog's title bar on screen, so it can always be grabbed again.
+function clampDialog(overlay) {
+  const rect = overlay.getBoundingClientRect();
+  const left = Math.min(Math.max(rect.left, 0), Math.max(window.innerWidth - rect.width, 0));
+  const top = Math.min(Math.max(rect.top, 0), Math.max(window.innerHeight - 30, 0));
+  overlay.style.left = `${left}px`;
+  overlay.style.top = `${top}px`;
+}
+
+// Shows a dialog: the first time centred near the top of the screen, afterwards
+// wherever it was dragged to. Other open dialogs are closed, as one post is handled
+// at a time.
+function showDialog(overlay) {
+  document.querySelectorAll('#delete-modal, #report-modal, #mod-ban-modal').forEach((other) => {
+    if (other !== overlay) other.style.display = 'none';
+  });
+  overlay.style.display = 'block';
+  if (!overlay.style.left) {
+    overlay.style.left = `${(window.innerWidth - overlay.offsetWidth) / 2}px`;
+    overlay.style.top = '126px';
+  }
+  clampDialog(overlay);
 }
 
 // "No.123 on /board/" for a dialog's title.
@@ -372,7 +416,6 @@ function createBanModal() {
     `
       <button type="button" id="mod-menu-ban-submit">Ban</button>
       <button type="button" id="mod-menu-ban-delete-submit">Ban and delete</button>
-      <button type="button" id="mod-menu-ban-cancel">Cancel</button>
     `
   );
   document.body.appendChild(modal);
@@ -386,10 +429,9 @@ function createBanModal() {
     if (messageInput.value !== banNotice && messageInput.value !== warnNotice) return;
     messageInput.value = typeSelect.value === '4' ? warnNotice : banNotice;
   });
-  const closeBan = wireDialog(modal, () => {
+  wireDialog(modal, () => {
     banModalContext = null;
   });
-  document.getElementById('mod-menu-ban-cancel').addEventListener('click', closeBan);
   document.getElementById('mod-menu-ban-submit').addEventListener('click', () => runBanFromModal('ban'));
   document.getElementById('mod-menu-ban-delete-submit').addEventListener('click', () => runBanFromModal('ban-delete'));
 }
@@ -427,7 +469,7 @@ function showBanModal(ctx) {
   banModalContext = ctx;
   const modal = document.getElementById('mod-ban-modal');
   setDialogPost(modal, ctx.postId, ctx.boardUri);
-  modal.style.display = 'block';
+  showDialog(modal);
   document.getElementById('mod-menu-ban-reason')?.focus();
 }
 
@@ -585,14 +627,12 @@ function createModal() {
   modal.innerHTML = dialogMarkup(
     'Delete Post',
     `
-      <div class="post-dialog-form">
-        <label for="delete-password">Password</label>
-        <input type="text" id="delete-password" autocomplete="off" spellcheck="false" placeholder="The post's password">
+      <div class="post-dialog-fields">
+        <input type="text" id="delete-password" autocomplete="off" spellcheck="false" placeholder="Password" aria-label="Password">
       </div>
     `,
     `
       <button type="button" id="confirm-delete">Delete</button>
-      <button type="button" id="cancel-delete">Cancel</button>
     `
   );
   document.body.appendChild(modal);
@@ -604,18 +644,15 @@ function createModal() {
   reportModal.innerHTML = dialogMarkup(
     'Report Post',
     `
-      <div class="post-dialog-form post-dialog-category">
-        <label for="report-category">Category</label>
-        <select id="report-category">
+      <div class="post-dialog-fields">
+        <select id="report-category" class="post-dialog-category" aria-label="Category">
           <option value="">Select a category...</option>
         </select>
+        <textarea id="report-reason" placeholder="What is wrong with this post? (max 256 characters)" maxlength="256" aria-label="Reason"></textarea>
       </div>
-      <label class="post-dialog-label" for="report-reason">Reason</label>
-      <textarea id="report-reason" placeholder="What is wrong with this post? (max 256 characters)" maxlength="256"></textarea>
     `,
     `
       <button type="button" id="confirm-report">Submit</button>
-      <button type="button" id="cancel-report">Cancel</button>
     `
   );
   document.body.appendChild(reportModal);
@@ -667,7 +704,6 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
   const modal = document.getElementById('delete-modal');
   const passwordInput = document.getElementById('delete-password');
   const confirmButton = document.getElementById('confirm-delete');
-  const cancelButton = document.getElementById('cancel-delete');
   const errorDisplay =
     modal.querySelector('.error-message') ||
     (() => {
@@ -678,7 +714,7 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
     })();
 
   setDialogPost(modal, postId, window.location.pathname.split('/')[1]);
-  modal.style.display = 'block';
+  showDialog(modal);
   passwordInput.value = '';
   passwordInput.focus();
   errorDisplay.textContent = errorMessage;
@@ -695,7 +731,6 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
   };
 
   confirmButton.onclick = handleDelete;
-  cancelButton.onclick = handleCancel;
 
   passwordInput.onkeyup = (e) => {
     if (e.key === 'Enter') handleDelete();
@@ -768,14 +803,14 @@ function showReportModal(postId, boardUri, isThread) {
   const categorySelect = document.getElementById('report-category');
   const hasCategories = categorySelect.options.length > 1;
   const confirmButton = document.getElementById('confirm-report');
-  const cancelButton = document.getElementById('cancel-report');
   const errorDisplay = modal.querySelector('.error-message');
 
   setDialogPost(modal, postId, boardUri);
-  modal.style.display = 'block';
+  showDialog(modal);
   reasonInput.value = '';
   categorySelect.value = '';
   errorDisplay.style.display = 'none';
+  (hasCategories ? categorySelect : reasonInput).focus();
 
   const handleReport = () => {
     const reason = reasonInput.value.trim();
@@ -796,12 +831,7 @@ function showReportModal(postId, boardUri, isThread) {
     submitReport(postId, boardUri, reason, category, isThread, modal);
   };
 
-  const handleCancel = () => {
-    modal.style.display = 'none';
-  };
-
   confirmButton.onclick = handleReport;
-  cancelButton.onclick = handleCancel;
 }
 
 async function submitReport(postId, boardUri, reason, category, isThread, modal) {

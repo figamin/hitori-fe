@@ -341,7 +341,8 @@ input[type="text"],
     padding: 5px;
 }
 
-select {
+select,
+.post-options-menu {
     background: #151515;
     border: 1px solid #393939;
     color: #919090;
