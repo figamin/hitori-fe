@@ -5,7 +5,7 @@
 <% if (boardUri) { %><input type="hidden" name="boardUri" value="<%= boardUri %>"><% } else { %><input name="boardUri" placeholder="Board"><% } %>
 <input name="range" placeholder="e.g. 192.168" required>
 <input name="reason" placeholder="Reason" required>
-<input name="duration" value="5y">
+<input name="duration" value="5y" title="Ban length: 30s, 10m, 6h, 3d, 2w, 5y">
 <button type="submit">Ban</button>
 </form>
 <table class="mod-table">

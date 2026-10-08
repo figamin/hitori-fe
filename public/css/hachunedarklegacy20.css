@@ -1,0 +1,171 @@
+:root {
+    --background-color: #222;
+    --background-gradient: #222;
+    --header-highlight: #222;
+    --text-color: #e0e0e0;
+    --border-color: #595959;
+    --border-alt: #595959;
+    --post-color: #2b2b2b;
+    --marked-color: #1a1a1a;
+    --marked-border-color: #ffffff;
+    --link-color: #ddb2ca;
+    --hover-link-color: #ea0075;
+    --name-color: #00ffe5;
+    --file-info-color: #878787;
+    --input: #222;
+    --subject-color: #ffffff;
+    --board-title-color: #ff009c;
+    /* --small-button: #d1d5ee;
+    /* --button-background: #d6daf0; */
+}
+
+body{
+    font-family: Verdana;
+    font-size: 0.7em;
+    cursor: url(img/hachune-cursor.ico), auto;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+	bottom: 0;
+	right: 0;
+    width: 220px;
+    height: 180px;
+    opacity: 0.6;
+    background-image: url("img/miku2.png");
+    background-size: contain;
+    background-position: bottom right;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    z-index: -1;
+}
+
+input, select{
+    color: #e0e0e0;
+    background: #222;
+    border: 1px solid #595959 !important;
+}
+
+.board-title {
+    text-shadow: 1px 1px 2px #000000;
+    font-family: Verdana;
+    letter-spacing: 0px;
+}
+
+.board-description {
+    text-shadow: 1px 1px 2px #000000;
+    font-family: Verdana;
+    letter-spacing: 0px;
+}
+
+
+button {
+    background: #ea0075;
+    border: none;
+    font-weight: bold;
+    color: #fff;
+    border-radius: 5px;
+}
+
+.reply{
+    padding: 4px;
+    border: 1px solid var(--border-alt);
+}
+
+.reply.highlight{
+    border: 1px solid var(--marked-border-color);
+}
+
+.side-arrows{
+    color: transparent;
+}
+
+.time-info{
+    color: #878787;
+}
+
+.linkQuote{
+    color: #878787;
+}
+
+.post-block {
+    border: 1px solid #595959;
+    padding: 1px;
+    border-radius: 5px;
+}
+
+.board-list:not(.footer-board-list) {
+    position: fixed;
+    padding: 7px;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    z-index: 30;
+    box-shadow: 0 1px 5px 1px rgb(0 0 0 / 28%);
+    border-bottom: none;
+    background: #ea0075;
+}
+
+.board-list a {
+    color: #fff;
+    font-weight: bold;
+    font-size: 12px;
+    text-shadow: 1px 1px 1px #000;
+}
+
+#drop-zone{
+    color: #ff009c;
+    border: 1px dashed #ff009c;
+    transition: 0.4s;
+}
+
+#drop-zone:hover{
+    color: #fff;
+    border: 1px dashed #fff;
+}
+
+.box-outer {
+    background: #333;
+    border: 1px solid #ea0075;
+    margin-bottom: 10px;
+}
+
+.boxbar {
+    background: #ea0075;
+    color: #fff;
+}
+
+body .container{
+    margin-top: 40px;
+}
+
+.pagelist {
+    background: #222;
+    color: #f2f2f2;
+    font-size: 11px;
+    border: 1px solid var(--border-alt);
+}
+
+.pagelist .current{
+color: #ea0075;
+}
+
+hr{
+    border-bottom: #595959 2px dotted;
+}
+
+.quoteLink{
+    color: #00ffe5;
+    text-decoration: none;
+}
+
+.quoteLink:hover{
+    color: #00ffe5;
+    text-decoration: underline;
+}
+
+.announcement{
+    color: #ffffff;
+}

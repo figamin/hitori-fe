@@ -393,7 +393,7 @@ function createBanModal() {
     `
       <div class="post-dialog-form">
         <label for="mod-menu-ban-duration">Duration</label>
-        <input type="text" id="mod-menu-ban-duration" value="5y" title="e.g. 3d, 2w, 5y">
+        <input type="text" id="mod-menu-ban-duration" value="5y" title="Ban length: 30s, 10m, 6h, 3d, 2w, 5y">
         <label for="mod-menu-ban-message">Message</label>
         <input type="text" id="mod-menu-ban-message" value="(USER WAS BANNED FOR THIS POST)" title="Shown on the post">
         <label for="mod-menu-ban-reason">Reason</label>

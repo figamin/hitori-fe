@@ -139,6 +139,7 @@ document.getElementById('mod-close-reports')?.addEventListener('submit', async (
     await modPost('/mod/api/reports/close', {
       reportIds: ids,
       banTarget: fd.get('banTarget'),
+      duration: fd.get('banDuration'),
       banReason: fd.get('banReason'),
       deleteContent: !!fd.get('deleteContent')
     });
