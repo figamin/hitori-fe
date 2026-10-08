@@ -7,24 +7,25 @@
 //   a quote link  is part of the text  -> the quoted post opens right under that text
 //   a backlink    is "who replied to me" -> the reply opens above all of the post's text
 //
-// Clicking the same link again closes the box. The number of an inlined post is drawn in a
-// different shade and is the switch for the boxes nested inside it: one click closes them
-// all (exactly how they were is remembered), the next puts them back.
+// Clicking the same link again closes the box. An inlined post's number works like any
+// post's: clicking it quotes the post in the quick reply.
 //
 // The post itself comes from `/cells/post-preview`, the same cell the hover previews use,
 // so an inlined post has its real name, capcode, files and text - and its own quote links
 // are the real ones, which is what makes the nesting work.
 //
-// A reader who does not want this turns it off in Settings -> Other; then a click does
-// what it always did - jump to the post and highlight it (`markPost`).
+// It is off unless the reader turns it on in Settings -> Posts & Threads; off, a click
+// does what it always did - jump to the post and highlight it (`markPost`). The setting
+// used to be on by default under `disablePostInlining`; that key is no longer read, so
+// everyone starts with it off.
 (function () {
-  const ENABLE_KEY = 'disablePostInlining';
+  const ENABLE_KEY = 'enablePostInlining';
 
   // What the reader sees under a box while it loads, or when the post cannot be shown.
   const LOADING = 'Loading…';
 
   function enabled() {
-    return localStorage.getItem(ENABLE_KEY) !== 'true';
+    return localStorage.getItem(ENABLE_KEY) === 'true';
   }
 
   // The post a link points at. The hover previews already parse these urls - including
@@ -88,6 +89,13 @@
       return;
     }
 
+    // Lined up with the text it sits above: a page post's text is a <blockquote>, indented
+    // by the browser on both sides, and the box takes the same indents - on the right too,
+    // or the reply (a shrink-to-fit table) grows to exactly the box and it meets its border.
+    const indent = getComputedStyle(content);
+    box.style.marginLeft = indent.marginLeft;
+    box.style.marginRight = indent.marginRight;
+
     const parent = content.parentNode;
     const index = referenceIndex(host, box.dataset.inlinePost);
     const siblings = [...parent.children].filter((el) => el.classList?.contains('post-inline') && el.__host === host && el.__kind === 'backlink');
@@ -149,7 +157,7 @@
 
     const parts = box.__parts || {};
     const base = `/${parts.boardUri}/${parts.archive ? 'archive/' : ''}thread/${parts.threadId}`;
-    const row = document.createElement('div');
+    const row = document.createElement('span');
     row.className = 'inline-backlinks';
 
     ids.forEach((id, i) => {
@@ -162,54 +170,67 @@
       window.tooltips?.processQuote?.(backlink);
     });
 
-    box.insertBefore(row, box.firstChild);
+    // In the header after the number, as a real post shows them.
+    const info = box.querySelector(':scope > .preview-content > .post-info');
+    if (info) info.appendChild(row);
+    else box.insertBefore(row, box.firstChild);
   }
 
-  // The number of an inlined post: drawn in its own shade, and the switch for the boxes
-  // nested inside this one.
-  function decorate(box) {
-    const info = box.querySelector('.preview-content > .post-info') || box.querySelector('.post-info');
-    const number =
-      info?.querySelector('.post-num') ||
-      [...(info?.children || [])].find((el) => /^No\.\d+$/.test((el.textContent || '').trim()));
+  // The quote, inside the box, of the post the box is opened in: drawn dimmed (4chan X's
+  // "forward link"), since that post is right there around it.
+  function markForwardLinks(box) {
+    const hostId = box.__host?.getAttribute?.('data-post-id') || box.__host?.dataset?.inlinePost;
+    if (!hostId) return;
+    box.querySelectorAll(':scope > .preview-content > .reply-content a.quoteLink').forEach((link) => {
+      if (String(targetOf(link)?.postId) === String(hostId)) link.classList.add('forwardlink');
+    });
+  }
 
-    if (number) {
-      number.classList.add('inline-number');
-      number.title = 'Close or reopen the posts opened inside this one';
-      number.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        toggleChildren(box);
-      });
+  // The number of an inlined post works like a real post's: "No." links to the post and
+  // the number quotes it (`#q<id>`, which the quick reply picks up - qr.js).
+  function decorate(box) {
+    const info = box.querySelector(':scope > .preview-content > .post-info');
+    const number = info?.querySelector('.post-num');
+    const parts = box.__parts || {};
+    if (number && parts.boardUri && parts.threadId) {
+      const base = `/${parts.boardUri}/${parts.archive ? 'archive/' : ''}thread/${parts.threadId}`;
+      const id = box.dataset.inlinePost;
+      const link = document.createElement('a');
+      link.className = 'linkQuote';
+      link.title = 'Link to this post';
+      link.href = `${base}#${id}`;
+      link.textContent = 'No.';
+      const quote = document.createElement('a');
+      quote.className = 'linkQuote';
+      quote.title = 'Reply to this post';
+      quote.href = `${base}#q${id}`;
+      quote.textContent = id;
+      number.replaceChildren(link, quote);
     }
 
     if (box.dataset.inlinePost) addBacklinks(box);
+    markForwardLinks(box);
   }
 
   // ---------------------------------------------------------------- the boxes
 
-  const childrenOf = (box) => [...box.querySelectorAll('.post-inline')].filter((child) => child.parentElement?.closest('.post-inline') === box);
-
-  // Closing the box does not throw its contents away: where each child was is remembered,
-  // so reopening puts the same posts back in the same places.
-  function toggleChildren(box) {
-    if (box.classList.contains('inline-collapsed')) {
-      (box.__inlineChildren || []).forEach(({ child, parent, next }) => {
-        parent.insertBefore(child, next && next.parentNode === parent ? next : null);
-      });
-      box.__inlineChildren = null;
-      box.classList.remove('inline-collapsed');
-      return;
-    }
-
-    box.__inlineChildren = childrenOf(box).map((child) => ({ child, parent: child.parentNode, next: child.nextSibling }));
-    box.__inlineChildren.forEach(({ child }) => child.remove());
-    box.classList.add('inline-collapsed');
+  function close(box) {
+    box.remove();
   }
 
-  function close(box) {
-    if (box.__anchor) box.__anchor.__inlineBox = null;
-    box.remove();
+  // The box this link has open, if any. It is found by what it shows - the post it was
+  // opened in, the post it holds and the kind of link - not by the anchor: `quote.js`
+  // rebuilds a post's backlink row on every change to the page (opening a box is one), so
+  // by the second click the anchor is a new element, and a box remembered on the old one
+  // was never found again - every click opened another copy.
+  function openBoxFor(link, parts) {
+    const host = hostOf(link);
+    const kind = link.classList.contains('backlink') ? 'backlink' : 'quote';
+    return (
+      [...document.querySelectorAll('.post-inline')].find(
+        (box) => box.__host === host && box.__kind === kind && box.dataset.inlinePost === String(parts.postId)
+      ) || null
+    );
   }
 
   function closeAll() {
@@ -220,10 +241,8 @@
     const box = document.createElement('div');
     box.className = 'post-inline';
     box.dataset.inlinePost = parts.postId;
-    box.__anchor = link;
     box.__parts = parts;
     box.innerHTML = `<div class="inline-note">${LOADING}</div>`;
-    link.__inlineBox = box;
     insertBox(box, link);
 
     (async () => {
@@ -248,12 +267,12 @@
   // Is this click the inliner's? Returns false when the reader has it turned off (or the
   // link cannot be resolved), which leaves the click to the browser and `markPost`.
   function toggle(link) {
-    const existing = link.__inlineBox;
+    const parts = targetOf(link);
+    const existing = parts ? openBoxFor(link, parts) : null;
     if (existing) close(existing);
     if (!enabled()) return false;
     if (existing) return true;
 
-    const parts = targetOf(link);
     if (!parts) return false;
     open(link, parts);
     return true;

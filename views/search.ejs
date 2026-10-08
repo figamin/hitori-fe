@@ -93,10 +93,27 @@
   </form>
   </div>
   <script>
-    document.getElementById('search-unselect-boards')?.addEventListener('click', function (e) {
-      e.preventDefault();
-      document.querySelectorAll('.search-board-cb').forEach(function (cb) { cb.checked = false; });
-    });
+    // [Unselect all] while any board is ticked, [Select all] once none is; the link does
+    // what it says and follows the boxes when they are ticked by hand.
+    (function () {
+      var toggle = document.getElementById('search-unselect-boards');
+      var boxes = Array.prototype.slice.call(document.querySelectorAll('.search-board-cb'));
+      if (!toggle) return;
+      function anyChecked() {
+        return boxes.some(function (cb) { return cb.checked; });
+      }
+      function updateLabel() {
+        toggle.textContent = anyChecked() ? '[Unselect all]' : '[Select all]';
+      }
+      toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        var check = !anyChecked();
+        boxes.forEach(function (cb) { cb.checked = check; });
+        updateLabel();
+      });
+      boxes.forEach(function (cb) { cb.addEventListener('change', updateLabel); });
+      updateLabel();
+    })();
   </script>
 
   <script type="application/json" id="search-highlight-terms"><%- JSON.stringify(highlight || { terms: [] }) %></script>

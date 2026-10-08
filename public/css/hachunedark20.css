@@ -314,7 +314,9 @@ hr{
 }
 
 input[type="text"],
-#postformTable textarea#message{
+#postformTable textarea#message,
+#postformTable select.post-options-select,
+.post-options-menu label{
     font-size: 11px;
     color: #919090;
 }
@@ -443,4 +445,8 @@ button:hover{
     font-size: 11px !important;
     color: #919090 !important;
     border: 1px solid #393939 !important;
+}
+
+#quickReply input[type="text"]{
+    font-size: 11px !important;
 }

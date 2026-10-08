@@ -3,7 +3,7 @@
   <div class="box-outer top-box" style="display: flow-root;">
     <div class="boxbar"><h2>You are banned! ;_;</h2></div>
     <div class="boxcontent">
-      <img src="/img/gtfo.webp" style="float: right;" width="400">
+      <img src="/img/gtfo.webp" class="ban-image" width="400" alt="">
       You have been banned from <b><%= ban.boardUri %></b> for the following reason:
       <br><br>
       <b><%= ban.reason %></b>
@@ -24,7 +24,7 @@
         <p>You may submit an appeal to have your ban reviewed by a moderator. Please explain why you believe this ban should be lifted.</p>
         <form action="/appeal" method="POST">
           <input type="hidden" name="banId" value="<%= ban.id %>">
-          <textarea name="appealText" maxlength="512" rows="5" placeholder="Enter plea here (max 512 characters)" required style="width: 255px;"></textarea>
+          <textarea name="appealText" maxlength="512" rows="5" placeholder="Enter plea here (max 512 characters)" required class="appeal-text"></textarea>
           <button type="submit">Submit Appeal</button>
         </form>
       </div>

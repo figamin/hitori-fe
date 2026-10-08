@@ -96,11 +96,14 @@ const settings = {
     const options = [
       { id: 'disable-you-tag', label: 'Disable (You) tags', desc: 'Stop marking your own posts and the replies to them with (You)', checked: localStorage.getItem('disableYouTag') === 'true' },
       { id: 'image-preview-hover', label: 'Image preview on hover', desc: 'Show the full image while the pointer is over a thumbnail', checked: localStorage.getItem('imagePreviewHover') === 'true' },
-      { id: 'disable-auto-watch', label: 'Disable auto-watching', desc: 'Stop adding threads you post in to the Thread Watcher', checked: localStorage.getItem('disableAutoWatch') === 'true' },
-      { id: 'hide-fortunes', label: 'Hide fortunes', desc: 'Hide the fortune line on posts that asked for one', checked: localStorage.getItem('hideFortunes') === 'true' },
+      { id: 'disable-auto-watch', label: 'Disable auto-watching', desc: 'Stop automatically adding threads you post in to the Thread Watcher', checked: localStorage.getItem('disableAutoWatch') === 'true' },
+      { id: 'hide-fortunes', label: 'Hide fortunes', desc: 'Hide fortunes on posts that contain it', checked: localStorage.getItem('hideFortunes') === 'true' },
       { id: 'new-post-sound', label: 'New post sound', desc: 'Play a sound when an open thread gets a new post', checked: localStorage.getItem('newPostSound') === 'true' },
       // On by default: absent means enabled, only an explicit "true" turns it off.
-      { id: 'post-inlining', label: 'Inline quoted posts', desc: 'Clicking a quote opens the quoted post inside the post', checked: localStorage.getItem('disablePostInlining') !== 'true' }
+      { id: 'post-inlining', label: 'Inline quoted posts', desc: 'Clicking a quote opens the quoted post inside the reply', checked: localStorage.getItem('disablePostInlining') !== 'true' },
+      // Off by default: the frame is an alternative to the site's own bars, not the
+      // way the site looks to everyone.
+      { id: 'framed-browsing', label: 'Framed browsing', desc: 'Read boards and threads in a frame with its own top and bottom bars, instead of under the site header and footer', checked: localStorage.getItem('framedBrowsing') === 'true' }
     ];
 
     options.forEach((opt) => {
@@ -268,6 +271,11 @@ const settings = {
     // right now go away, rather than a mix of both behaviours.
     const postInlining = document.getElementById('post-inlining').checked;
     if (!postInlining) window.postInline?.closeAll();
+    // `framed-browsing.js` builds or takes apart the frame; on a page it does not
+    // apply to (the front page, search, the moderation pages) it does nothing but
+    // remember the choice.
+    const framedBrowsing = document.getElementById('framed-browsing').checked;
+    window.framedBrowsing?.setEnabled(framedBrowsing);
 
     localStorage.setItem('customCSS', customCSS);
     localStorage.setItem('customJS', customJS);
@@ -278,6 +286,7 @@ const settings = {
     localStorage.setItem('hideFortunes', hideFortunes);
     localStorage.setItem('newPostSound', newPostSound);
     localStorage.setItem('disablePostInlining', String(!postInlining));
+    localStorage.setItem('framedBrowsing', String(framedBrowsing));
 
     this.applySettings();
     this.hide();

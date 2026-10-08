@@ -139,7 +139,7 @@ var boardSections = [
     <meta name="twitter:image" content="/items/card.png">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/frontpage.css">
+    <link rel="stylesheet" href="/frontpage.css?v=<%= locals.assetVersion('frontpage.css') %>">
 </head>
 
 <body>
@@ -248,7 +248,7 @@ var boardSections = [
                 <div class="box-body">
                     <div class="stat"><span>Total Posts:</span> <span><%= Number(siteStats.totalPosts || 0).toLocaleString() %></span></div>
                     <div class="stat"><span>Total Members (UIPs):</span> <span><%= Number(siteStats.totalUniquePosters || 0).toLocaleString() %></span></div>
-                    <div class="stat"><span>Most Users Online:</span> <span><%= Number(siteStats.mostUsersOnline || 0).toLocaleString() %></span></div>
+                    <div class="stat"><span>Most Users Online:</span> <span class="stat-dated"><%= Number(siteStats.mostUsersOnline || 0).toLocaleString() %><% if (siteStats.mostUsersOnlineAt) { %> <small class="stat-date dim">(<%= new Date(siteStats.mostUsersOnlineAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>)</small><% } %></span></div>
                     <div class="stat"><span>Storage:</span> <span><%= siteStats.totalMediaSize %> GB</span></div>
                     <div class="sep"></div>
                     <span class="center dim" style="display: block;"><small>Users online now: <%= Number(siteStats.usersOnline || 0).toLocaleString() %></small></span>
@@ -481,8 +481,7 @@ var boardSections = [
             <a href="https://x.com/39chanmoe">Twitter</a> &bull;
             <a href="https://bsky.app/profile/39chan.moe">Bluesky</a> &bull;
             <a href="https://stats.uptimerobot.com/OdWm6iTfcy">Site Status</a> &bull;
-            <a href="/rss.xml">RSS Feed</a> &bull;
-            <a href="/contact">Contact</a>
+            <a href="mailto:the39chanmod@proton.me">Contact</a>
         </div>
         <div>Powered by hitori (koshi fork) | Backgrounds by <a href="https://twitter.com/intent/user?user_id=16203043">kaku sugar</a>, <a href="https://twitter.com/intent/user?user_id=726438981496246272">baisishaonian</a>, <a href="https://twitter.com/intent/user?user_id=1307204963022503939">064</a> | 39chan © 2024-2026</div>
         <div style="margin-top: 6px; font-size: 9px;">

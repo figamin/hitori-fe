@@ -1,0 +1,233 @@
+/*
+ * Framed browsing (see public/js/framed-browsing.js).
+ *
+ * Only ever in effect while the reader has the setting on *and* is looking at a board or a
+ * thread: the script then puts `framed-browsing` on <body> and builds the sidebar.
+ * Everything here is scoped under that class, so nothing else on the site is affected.
+ *
+ * The layout is the frameset 39chan served its boards with (`frames/index.html`): a menu
+ * column of 15% of the window and the page in the remaining 85%. The sidebar itself is
+ * styled after that frameset's own (`frames/left.html`, `frames/hachunedark.css`): the
+ * site's logo, pink section bars with a +/- button, and link rows with a line under each.
+ */
+
+body.framed-browsing header.header,
+body.framed-browsing footer#footer {
+  display: none;
+}
+
+/* `global.css` insets the page (`margin-top: 5px; padding: 0 5px` on the body); the frame
+   takes the whole window instead, so the column reaches both edges of it and nothing is
+   left blank beside the page. The content keeps its own inset - `.page-content` has a
+   margin of its own. */
+body.framed-browsing {
+  margin: 0;
+  padding: 0;
+}
+
+body.framed-browsing .container {
+  align-items: flex-start;
+  background: var(--background-color);
+  display: flex;
+  margin: 0;
+}
+
+body.framed-browsing .frame-sidebar {
+  background: #222222;
+  /* 15% of the window, as the frameset's `#menu` frame is, and that is the whole column:
+     without border-box the padding would be added to it. */
+  box-sizing: border-box;
+  color: #ccc;
+  flex: 0 0 15%;
+  font: 11px Verdana, Arial, sans-serif;
+  height: 100vh;
+  line-height: 1.4;
+  min-width: 150px;
+  overflow-y: auto;
+  position: sticky;
+  top: 0;
+}
+
+body.framed-browsing .content {
+  flex: 1 1 auto;
+  margin: 0;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------ the sidebar itself
+   The frameset sidebar's own rules, from `frames/hachunedark.css`, scoped to this sidebar
+   so that they cannot reach the rest of the site. */
+
+body.framed-browsing .frame-sidebar #logo {
+  display: block;
+  max-width: 200px;
+  width: 100%;
+}
+
+body.framed-browsing .frame-sidebar ul {
+  list-style-type: none;
+  margin: 0 0 10px 0;
+  padding: 0;
+}
+
+body.framed-browsing .frame-sidebar li {
+  margin-bottom: 0;
+}
+
+body.framed-browsing .frame-sidebar li a,
+body.framed-browsing .frame-sidebar .submenu a {
+  border-bottom: 1px solid #333333;
+  color: #ffffff;
+  display: block;
+  padding: 5px 8px;
+  text-decoration: none;
+}
+
+body.framed-browsing .frame-sidebar li:hover,
+body.framed-browsing .frame-sidebar .submenu a:hover {
+  background: #333333;
+}
+
+body.framed-browsing .frame-sidebar .section-header {
+  background: linear-gradient(to bottom, #ff1493, #cc1177);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: bold;
+  padding: 4px 10px;
+  text-shadow: 1px 1px 1px #000000;
+}
+
+body.framed-browsing .frame-sidebar .plus {
+  background: linear-gradient(to bottom, #ff1493, #cc1177);
+  color: #ffffff;
+  cursor: pointer;
+  float: right;
+  font-size: 8px;
+  font-weight: normal;
+  padding: 1px 4px 2px 4px;
+}
+
+body.framed-browsing .frame-sidebar .submenu {
+  display: block;
+}
+
+body.framed-browsing .frame-sidebar .submenu.hidden {
+  display: none;
+}
+
+/* ------------------------------------------------- what the top and bottom bars carried
+   The search box, the site's links, the pager, the thread's refresh control and the
+   footer's links. In the bars these were rows - the header's links even have their brackets
+   written as text - so the column un-fixes them and sizes the separators away. */
+
+body.framed-browsing .frame-sidebar .navtopright {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  float: none;
+  font-size: 0;
+  margin: 0;
+  position: static;
+}
+
+body.framed-browsing .frame-sidebar .navtopright a,
+body.framed-browsing .frame-sidebar .navtopright .header-search-form {
+  font-size: 11px;
+}
+
+body.framed-browsing .frame-sidebar .header-search-form {
+  display: block;
+  padding: 5px 8px;
+}
+
+body.framed-browsing .frame-sidebar .header-search-input {
+  box-sizing: border-box;
+  width: 100%;
+}
+
+body.framed-browsing .frame-sidebar .header-search-btn {
+  margin-top: 2px;
+  width: 100%;
+}
+
+/* The pager: `global.css` floats it and the default theme fixes it along the bottom of the
+   window (`hachunedark20.css`, from 769px up). In the column it is an ordinary block, its
+   First/Previous/Next/Last buttons full-width rows, and the page numbers a line of their
+   own - the frameset sidebar lists the same pages as plain links. */
+body.framed-browsing .frame-sidebar .pagination,
+body.framed-browsing .frame-sidebar .pagelist {
+  background: none;
+  border: 0;
+  bottom: auto;
+  box-shadow: none;
+  display: block;
+  float: none;
+  left: auto;
+  margin: 0;
+  padding: 0;
+  position: static;
+  right: auto;
+  width: 100%;
+}
+
+body.framed-browsing .frame-sidebar .pagelist > div {
+  margin: 0;
+  padding: 0;
+}
+
+body.framed-browsing .frame-sidebar .pagelist .page-button a {
+  border: 0;
+  padding: 0;
+}
+
+body.framed-browsing .frame-sidebar .pagelist button {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #333333;
+  color: #ffffff;
+  cursor: pointer;
+  display: block;
+  font: inherit;
+  padding: 5px 8px;
+  text-align: left;
+  width: 100%;
+}
+
+body.framed-browsing .frame-sidebar .pagelist button:disabled {
+  color: #777777;
+  cursor: default;
+}
+
+body.framed-browsing .frame-sidebar .pagelist .pages {
+  padding: 5px 8px;
+}
+
+body.framed-browsing .frame-sidebar .pagelist .pages a,
+body.framed-browsing .frame-sidebar .pagelist .pages .current {
+  border: 0;
+  display: inline;
+  padding: 0 2px;
+}
+
+body.framed-browsing .frame-sidebar .pagelist .pages .current {
+  color: #ff1493;
+}
+
+body.framed-browsing .frame-sidebar .frame-note {
+  border-bottom: 1px solid #333333;
+  color: #999999;
+  padding: 5px 8px;
+}
+
+body.framed-browsing .frame-sidebar .thread-refresh-controls {
+  display: block;
+  padding: 5px 8px;
+}
+
+body.framed-browsing .frame-sidebar #footer-links {
+  color: #999999;
+  display: block;
+  font-size: 11px;
+  padding: 5px 8px;
+  white-space: normal;
+}

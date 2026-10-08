@@ -297,41 +297,99 @@ window.modStaffDeletePost = async function (postId, isThread, boardUri, threadId
 
 let banModalContext = null;
 
+// The report, ban and delete boxes share one look, 4chan's: a title bar naming the post
+// with a close button, the fields, and the buttons along the bottom right - in the
+// theme's post colours. The overlay is the element with the box's id (shown with
+// `display: block`); a click on it outside the box, the close button and Escape hide it.
+function dialogMarkup(title, body, buttons) {
+  return `
+    <div class="post-dialog" role="dialog" aria-modal="true">
+      <div class="post-dialog-header">
+        <span class="post-dialog-title">${title}</span>
+        <span class="post-dialog-ref"></span>
+        <button type="button" class="post-dialog-close" title="Close">&times;</button>
+      </div>
+      <div class="post-dialog-body">
+        <div class="error-message" style="display: none;"></div>
+        ${body}
+      </div>
+      <div class="post-dialog-footer">${buttons}</div>
+    </div>
+  `;
+}
+
+function wireDialog(overlay, onClose) {
+  const close = () => {
+    overlay.style.display = 'none';
+    if (onClose) onClose();
+  };
+  overlay.querySelector('.post-dialog-close').addEventListener('click', close);
+  overlay.addEventListener('mousedown', (e) => {
+    if (e.target === overlay) close();
+  });
+  overlay.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') close();
+  });
+  return close;
+}
+
+// "No.123 on /board/" for a dialog's title.
+function setDialogPost(overlay, postId, boardUri) {
+  const ref = overlay.querySelector('.post-dialog-ref');
+  if (ref) ref.textContent = `No.${postId}${boardUri ? ` on /${boardUri}/` : ''}`;
+}
+
 function createBanModal() {
   if (document.getElementById('mod-ban-modal')) return;
   const modal = document.createElement('div');
   modal.id = 'mod-ban-modal';
   modal.style.display = 'none';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <div class="box-outer">
-        <div class="boxbar"><h2>Ban</h2></div>
-        <div class="boxcontent">
-          <p>Duration <input type="text" id="mod-menu-ban-duration" value="5y"></p>
-          <p>Ban Message <input type="text" id="mod-menu-ban-message"></p>
-          <p>Ban Reason <input type="text" id="mod-menu-ban-reason"></p>
-          <p>Ban type
-            <select id="mod-menu-ban-type">
-              <option value="">IP/Bypass ban</option>
-              <option value="1">/16 range</option>
-              <option value="2">/24 range</option>
-              <option value="3">ASN</option>
-              <option value="4">Warning</option>
-            </select>
-          </p>
-          <p><label><input type="checkbox" id="mod-menu-ban-non-bypass"> Non-Bypassable</label> <label><input type="checkbox" id="mod-menu-ban-global"> Global</label></p>
-          <button type="button" id="mod-menu-ban-submit">Ban</button>
-          <button type="button" id="mod-menu-ban-delete-submit">Ban and delete</button>
-          <button type="button" id="mod-menu-ban-cancel">Cancel</button>
-        </div>
+  modal.innerHTML = dialogMarkup(
+    'Ban Post',
+    `
+      <div class="post-dialog-form">
+        <label for="mod-menu-ban-duration">Duration</label>
+        <input type="text" id="mod-menu-ban-duration" value="5y" title="e.g. 3d, 2w, 5y">
+        <label for="mod-menu-ban-message">Message</label>
+        <input type="text" id="mod-menu-ban-message" value="(USER WAS BANNED FOR THIS POST)" title="Shown on the post">
+        <label for="mod-menu-ban-reason">Reason</label>
+        <input type="text" id="mod-menu-ban-reason" title="Shown to the banned user">
+        <label for="mod-menu-ban-type">Type</label>
+        <select id="mod-menu-ban-type">
+          <option value="">IP/Bypass ban</option>
+          <option value="1">/16 range</option>
+          <option value="2">/24 range</option>
+          <option value="3">ASN</option>
+          <option value="4">Warning</option>
+        </select>
+        <span></span>
+        <span class="post-dialog-checks">
+          <label><input type="checkbox" id="mod-menu-ban-non-bypass"> Non-Bypassable</label>
+          <label><input type="checkbox" id="mod-menu-ban-global"> Global</label>
+        </span>
       </div>
-    </div>
-  `;
+    `,
+    `
+      <button type="button" id="mod-menu-ban-submit">Ban</button>
+      <button type="button" id="mod-menu-ban-delete-submit">Ban and delete</button>
+      <button type="button" id="mod-menu-ban-cancel">Cancel</button>
+    `
+  );
   document.body.appendChild(modal);
-  document.getElementById('mod-menu-ban-cancel').addEventListener('click', () => {
-    modal.style.display = 'none';
+  // As in the moderation panel (mod.js): the message says "warned" while the type is a
+  // warning, as long as it is still one of the two notices.
+  const banNotice = '(USER WAS BANNED FOR THIS POST)';
+  const warnNotice = '(USER WAS WARNED FOR THIS POST)';
+  const typeSelect = document.getElementById('mod-menu-ban-type');
+  const messageInput = document.getElementById('mod-menu-ban-message');
+  typeSelect.addEventListener('change', () => {
+    if (messageInput.value !== banNotice && messageInput.value !== warnNotice) return;
+    messageInput.value = typeSelect.value === '4' ? warnNotice : banNotice;
+  });
+  const closeBan = wireDialog(modal, () => {
     banModalContext = null;
   });
+  document.getElementById('mod-menu-ban-cancel').addEventListener('click', closeBan);
   document.getElementById('mod-menu-ban-submit').addEventListener('click', () => runBanFromModal('ban'));
   document.getElementById('mod-menu-ban-delete-submit').addEventListener('click', () => runBanFromModal('ban-delete'));
 }
@@ -367,7 +425,10 @@ async function runBanFromModal(action) {
 function showBanModal(ctx) {
   createBanModal();
   banModalContext = ctx;
-  document.getElementById('mod-ban-modal').style.display = 'block';
+  const modal = document.getElementById('mod-ban-modal');
+  setDialogPost(modal, ctx.postId, ctx.boardUri);
+  modal.style.display = 'block';
+  document.getElementById('mod-menu-ban-reason')?.focus();
 }
 
 async function runContentAction(ctx, action) {
@@ -521,50 +582,55 @@ function createModal() {
   const modal = document.createElement('div');
   modal.id = 'delete-modal';
   modal.style.display = 'none';
-  modal.innerHTML = `
-    <div class="modal-content">
-      <div class="box-outer">
-        <div class="boxbar"><h2>Delete Post</h2></div>
-        <div class="boxcontent">
-          <div class="error-message" style="display: block; color: red; margin: 10px 0px; font-weight: bold;margin-top: 0;"></div>
-          <input id="delete-password" placeholder="Enter post password">
-          <button id="confirm-delete">Delete</button>
-          <button id="cancel-delete">Cancel</button>
-        </div>
+  modal.innerHTML = dialogMarkup(
+    'Delete Post',
+    `
+      <div class="post-dialog-form">
+        <label for="delete-password">Password</label>
+        <input type="text" id="delete-password" autocomplete="off" spellcheck="false" placeholder="The post's password">
       </div>
-    </div>
-  `;
+    `,
+    `
+      <button type="button" id="confirm-delete">Delete</button>
+      <button type="button" id="cancel-delete">Cancel</button>
+    `
+  );
   document.body.appendChild(modal);
+  wireDialog(modal);
 
   const reportModal = document.createElement('div');
   reportModal.id = 'report-modal';
   reportModal.style.display = 'none';
-  reportModal.innerHTML = `
-    <div class="modal-content">
-      <div class="box-outer">
-        <div class="boxbar"><h2>Report Post</h2></div>
-        <div class="boxcontent">
-          <div class="error-message" style="display: none; color: red; margin-bottom: 10px;"></div>
-          <select id="report-category" style="margin-bottom: 10px; width: 100%;">
-            <option value="">Select a category...</option>
-          </select>
-          <textarea id="report-reason" placeholder="Enter reason (max 256 characters)" 
-            maxlength="256" style="width: 100%; margin-bottom: 10px;"></textarea>
-          <button id="confirm-report">Submit Report</button>
-          <button id="cancel-report">Cancel</button>
-        </div>
+  reportModal.innerHTML = dialogMarkup(
+    'Report Post',
+    `
+      <div class="post-dialog-form post-dialog-category">
+        <label for="report-category">Category</label>
+        <select id="report-category">
+          <option value="">Select a category...</option>
+        </select>
       </div>
-    </div>
-  `;
+      <label class="post-dialog-label" for="report-reason">Reason</label>
+      <textarea id="report-reason" placeholder="What is wrong with this post? (max 256 characters)" maxlength="256"></textarea>
+    `,
+    `
+      <button type="button" id="confirm-report">Submit</button>
+      <button type="button" id="cancel-report">Cancel</button>
+    `
+  );
   document.body.appendChild(reportModal);
+  wireDialog(reportModal);
 
   const categorySelect = reportModal.querySelector('#report-category');
-  (window.reportCategories || []).forEach((cat) => {
+  const categories = window.reportCategories || [];
+  categories.forEach((cat) => {
     const opt = document.createElement('option');
     opt.value = cat;
     opt.textContent = cat;
     categorySelect.appendChild(opt);
   });
+  // No categories configured: no dropdown, and a report needs none.
+  if (!categories.length) reportModal.querySelector('.post-dialog-category').style.display = 'none';
 }
 
 function handleAction(action, dropdown) {
@@ -607,10 +673,11 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
     (() => {
       const err = document.createElement('div');
       err.className = 'error-message';
-      modal.querySelector('.boxcontent').appendChild(err);
+      modal.querySelector('.post-dialog-body').appendChild(err);
       return err;
     })();
 
+  setDialogPost(modal, postId, window.location.pathname.split('/')[1]);
   modal.style.display = 'block';
   passwordInput.value = '';
   passwordInput.focus();
@@ -699,10 +766,12 @@ function showReportModal(postId, boardUri, isThread) {
   const modal = document.getElementById('report-modal');
   const reasonInput = document.getElementById('report-reason');
   const categorySelect = document.getElementById('report-category');
+  const hasCategories = categorySelect.options.length > 1;
   const confirmButton = document.getElementById('confirm-report');
   const cancelButton = document.getElementById('cancel-report');
   const errorDisplay = modal.querySelector('.error-message');
 
+  setDialogPost(modal, postId, boardUri);
   modal.style.display = 'block';
   reasonInput.value = '';
   categorySelect.value = '';
@@ -712,7 +781,7 @@ function showReportModal(postId, boardUri, isThread) {
     const reason = reasonInput.value.trim();
     const category = categorySelect.value;
 
-    if (!category) {
+    if (hasCategories && !category) {
       errorDisplay.textContent = 'Please select a category';
       errorDisplay.style.display = 'block';
       return;

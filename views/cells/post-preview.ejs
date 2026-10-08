@@ -67,5 +67,5 @@
   </div>
   <% } %>
   <% } %>
-  <div class="reply-content"><%- post.markdown || post.message %><% if (post.warningMessage) { %><%- include('../partials/warning-message', { message: post.warningMessage }) %><% } else if (post.banMessage) { %><div class="ban-message"><%- post.banMessage %> <img src="/img/ban.gif" width="60"></div><% } %><% if (post.poll) { %><% if (typeof post.poll === 'string') { %><%- post.poll %><% } else { %><%- include('poll', { poll: post.poll }) %><% } %><% } %></div>
+  <div class="reply-content"><%- post.markdown || post.message %><% if (post.warningMessage) { %><%- include('../partials/warning-message', { message: post.warningMessage }) %><% } else if (post.banMessage) { %><div class="ban-message"><%- post.banMessage %></div><% } %><% if (post.poll) { %><% if (typeof post.poll === 'string') { %><%- post.poll %><% } else { %><%- include('poll', { poll: post.poll }) %><% } %><% } %></div>
 </div>

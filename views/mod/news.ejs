@@ -1,31 +1,234 @@
 <% title = 'News'; %>
-<h2>Posts</h2>
-<% if (newsPosts.length) { %>
-<table class="mod-table">
-<tr><th>#</th><th>Title</th><th>Date</th><th></th></tr>
-<% newsPosts.forEach(n => { %>
-<tr>
-<td><%= n.newsId %></td>
-<td><%= n.title %></td>
-<td><%= new Date(n.date).toLocaleString() %></td>
-<td><a href="/mod/news?edit=<%= n.newsId %>">Edit</a> / <a href="/news#<%= n.newsId %>" target="_blank">View</a></td>
-</tr>
-<% }) %>
-</table>
-<% } else { %><p>None</p><% } %>
-<h2><%= isNew ? 'New' : 'Edit #' + editPost.newsId %></h2>
-<% if (!isNew && !editPost) { %>
-<p>Not found</p>
-<% } else { %>
-<form id="<%= isNew ? 'news-create-form' : 'news-edit-form' %>">
-<% if (!isNew && editPost) { %><input type="hidden" name="newsId" value="<%= editPost.newsId %>"><% } %>
-<input name="title" placeholder="Title" value="<%= editPost ? editPost.title : '' %>" required>
-<input name="author" placeholder="Author" value="<%= editPost ? editPost.author : user.login %>" required>
-<input name="authorEmail" type="email" placeholder="Email" value="<%= editPost ? editPost.authorEmail : (user.email || '') %>" required>
-<input name="image" placeholder="Image URL" value="<%= editPost && editPost.image ? editPost.image : '' %>">
-<input name="date" type="datetime-local" value="<%= editPost ? new Date(editPost.date).toISOString().slice(0, 16) : new Date().toISOString().slice(0, 16) %>">
-<textarea name="contents" placeholder="Contents" required><%= editPost ? editPost.contents : '' %></textarea>
-<button type="submit"><%= isNew ? 'Create' : 'Save' %></button>
-<% if (!isNew && editPost) { %><button type="button" id="news-delete-btn" data-id="<%= editPost.newsId %>">Delete</button><% } %>
-</form>
-<% } %>
+<%# The news editor. The body is written either as post markup (the default) or as raw HTML,
+    the way the post editor works, and the preview is the server's own rendering of it. The
+    styling toolbar and the switch are wired up by public/js/mod-news.js.
+    The styles live here rather than in global.css: this page is the only thing that uses
+    them, and they key off no other page's markup. %>
+<style>
+  .news-admin {
+    margin: 0 auto;
+    max-width: 1100px;
+  }
+
+  .news-note {
+    color: var(--file-info-color);
+    font-size: 12px;
+    margin: 4px 0 10px;
+  }
+
+  .news-list td,
+  .news-list th {
+    vertical-align: middle;
+  }
+
+  .news-row-current {
+    background: var(--marked-color);
+  }
+
+  .news-meta {
+    display: grid;
+    gap: 6px 10px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    margin-bottom: 10px;
+  }
+
+  .news-meta label {
+    display: block;
+    font-size: 11px;
+    opacity: 0.85;
+  }
+
+  .news-meta input {
+    box-sizing: border-box;
+    display: block;
+    font: inherit;
+    margin-top: 2px;
+    width: 100%;
+  }
+
+  .news-columns {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  }
+
+  .news-toolbar {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  #news-contents {
+    box-sizing: border-box;
+    font: 13.5px Arial, Helvetica, sans-serif;
+    min-height: 260px;
+    resize: vertical;
+    width: 100%;
+  }
+
+  .news-button {
+    background: var(--post-color);
+    border: 1px solid var(--border-alt);
+    border-radius: 3px;
+    color: var(--text-color);
+    cursor: pointer;
+    font: inherit;
+    padding: 2px 10px;
+    text-decoration: none;
+  }
+
+  .news-button:hover {
+    color: var(--hover-link-color);
+  }
+
+  .news-primary {
+    font-weight: bold;
+  }
+
+  .news-danger:hover {
+    color: #ff6b6b;
+  }
+
+  .news-styling {
+    display: inline-block;
+  }
+
+  .news-styling-buttons {
+    background: var(--post-color);
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+    max-width: 520px;
+    padding: 6px;
+  }
+
+  .news-styling-buttons button {
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 2px 6px;
+  }
+
+  .news-preview-panel {
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    min-height: 260px;
+    padding: 6px;
+  }
+
+  .news-preview-label {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    margin: 0 0 6px;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  .news-article-preview {
+    overflow-wrap: anywhere;
+  }
+
+  .news-article-preview .news-image {
+    display: block;
+    margin: 6px auto;
+    max-width: 400px;
+  }
+
+  .news-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 0;
+  }
+
+  .news-status {
+    font-size: 12px;
+    opacity: 0.85;
+  }
+
+  .news-status.news-bad {
+    color: #ff6b6b;
+  }
+</style>
+
+<div class="news-admin">
+  <h2>News</h2>
+  <p class="news-note">Articles appear on the front page and on <a href="/news" target="_blank" rel="noopener">/news</a>.</p>
+  <% if (newsPosts.length) { %>
+  <table class="mod-table news-list">
+    <tr><th>#</th><th>Title</th><th>Author</th><th>Date</th><th></th></tr>
+    <% newsPosts.forEach(n => { %>
+    <tr<%= editPost && editPost.newsId === n.newsId ? ' class="news-row-current"' : '' %>>
+      <td><%= n.newsId %></td>
+      <td><%= n.title %></td>
+      <td><%= n.author %></td>
+      <td><%= new Date(n.date).toLocaleString() %></td>
+      <td><a href="/mod/news?edit=<%= n.newsId %>">Edit</a> / <a href="/news#<%= n.newsId %>" target="_blank" rel="noopener">View</a></td>
+    </tr>
+    <% }) %>
+  </table>
+  <% } else { %><p class="news-note">No articles yet.</p><% } %>
+
+  <h2 id="news-editor-heading"><%= isNew ? 'Write an article' : 'Editing #' + editPost.newsId %></h2>
+  <% if (!isNew && !editPost) { %>
+  <p class="news-note">That article no longer exists.</p>
+  <% } else { %>
+  <form id="news-editor-form" data-news-id="<%= editPost ? editPost.newsId : '' %>" data-mode="<%= mode %>">
+    <div class="news-meta">
+      <label>Title<input name="title" value="<%= editPost ? editPost.title : '' %>" required></label>
+      <label>Author<input name="author" value="<%= editPost ? editPost.author : user.login %>" required></label>
+      <label>Email<input name="authorEmail" type="email" value="<%= editPost ? editPost.authorEmail : (user.email || '') %>"></label>
+      <label>Image URL<input name="image" value="<%= editPost && editPost.image ? editPost.image : '' %>" placeholder="/static/news/….png"></label>
+      <label>Date<input name="date" type="datetime-local" value="<%= (editPost ? new Date(editPost.date) : new Date()).toISOString().slice(0, 16) %>"></label>
+    </div>
+
+    <div class="news-columns">
+      <div>
+        <div class="news-toolbar">
+          <button type="button" class="news-button" id="news-mode-toggle">Edit raw HTML</button>
+          <details class="news-styling">
+            <summary class="format-summary">Styling</summary>
+            <div class="news-styling-buttons">
+              <button type="button" data-insert="[b][/b]"><strong>Bold</strong></button>
+              <button type="button" data-insert="[i][/i]"><em>Italics</em></button>
+              <button type="button" data-insert="[s][/s]"><span style="text-decoration: line-through;">Strike</span></button>
+              <button type="button" data-insert="[spoiler][/spoiler]"><span class="spoiler">Spoiler</span></button>
+              <button type="button" data-insert="[s2][/s2]"><span class="s2">Size 2</span></button>
+              <button type="button" data-insert="[s4][/s4]"><span class="s4">Size 4</span></button>
+              <button type="button" data-insert="[code][/code]">Code</button>
+              <button type="button" data-insert="[url=][/url]">Link</button>
+              <button type="button" data-insert="[hr]">Line</button>
+            </div>
+          </details>
+        </div>
+        <textarea id="news-contents" name="contents" spellcheck="false" required placeholder="Write the article the way you would write a post"><%= editPost ? editPost.contents : '' %></textarea>
+        <p class="news-note" id="news-mode-hint"></p>
+      </div>
+
+      <div class="news-preview-panel">
+        <p class="news-preview-label">Preview <span id="news-preview-mode"></span></p>
+        <div class="news-article-preview" id="news-preview-content"></div>
+      </div>
+    </div>
+
+    <p class="news-actions">
+      <button type="submit" class="news-button news-primary"><%= isNew ? 'Publish' : 'Save changes' %></button>
+      <a class="news-button" href="/mod/news">Write a new one</a>
+      <% if (!isNew && editPost) { %><button type="button" class="news-button news-danger" id="news-delete-btn" data-id="<%= editPost.newsId %>">Delete</button><% } %>
+      <span class="news-status" id="news-status"></span>
+    </p>
+  </form>
+  <% } %>
+</div>
+
+<script src="/js/mod-news.js?v=<%= locals.assetVersion('js/mod-news.js') %>"></script>

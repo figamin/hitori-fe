@@ -28,10 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const hiddenBoards = getHiddenBoards().filter((b) => b !== boardUri);
     saveHiddenBoards(hiddenBoards);
 
-    if (boardUri === 'h') {
-      localStorage.setItem('hBoardExplicitlyUnhidden', 'true');
-    }
-
     document.querySelectorAll(`.thread[data-board="${boardUri}"]`).forEach((thread) => {
       thread.style.display = 'block';
       const hr = thread.nextElementSibling;
@@ -46,11 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.classList.contains('hide-board-btn')) {
       const boardUri = e.target.dataset.board;
       hideBoard(boardUri);
-
-      if (boardUri === 'h') {
-        localStorage.removeItem('hBoardExplicitlyUnhidden');
-      }
-
       location.reload();
     }
   });
@@ -61,14 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
     hiddenBoards.forEach(hideBoard);
   };
 
+  // /h/ used to be hidden for everyone by default; the board does not exist, so the
+  // entry this left in every reader's list (and its "unhidden on purpose" flag) is
+  // cleared out.
   const initializeHiddenBoards = () => {
     const hiddenBoards = getHiddenBoards();
-    const hBoardExplicitlyUnhidden = localStorage.getItem('hBoardExplicitlyUnhidden') === 'true';
-
-    if (!hiddenBoards.includes('h') && !hBoardExplicitlyUnhidden) {
-      hiddenBoards.push('h');
-      saveHiddenBoards(hiddenBoards);
-    }
+    if (hiddenBoards.includes('h')) saveHiddenBoards(hiddenBoards.filter((b) => b !== 'h'));
+    localStorage.removeItem('hBoardExplicitlyUnhidden');
   };
 
   initializeHiddenBoards();

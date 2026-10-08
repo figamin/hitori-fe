@@ -23,63 +23,7 @@ document.getElementById('emergency-toggle')?.addEventListener('click', async () 
   }
 });
 
-document.getElementById('news-create-form')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  if (data.date) data.date = new Date(data.date).toISOString();
-  try {
-    const result = await modPost('/mod/api/news', data);
-    location.href = '/mod/news?edit=' + result.newsPost.newsId;
-  } catch (err) {
-    alert(err.message);
-  }
-});
-
-document.getElementById('news-edit-form')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const fd = new FormData(e.target);
-  const data = Object.fromEntries(fd);
-  if (data.date) data.date = new Date(data.date).toISOString();
-  try {
-    await modPost('/mod/api/news/update', data);
-    location.reload();
-  } catch (err) {
-    alert(err.message);
-  }
-});
-
-document.getElementById('news-delete-btn')?.addEventListener('click', async (e) => {
-  if (!confirm('Delete this news post?')) return;
-  try {
-    await modPost('/mod/api/news/delete', { newsId: Number(e.target.dataset.id) });
-    location.href = '/mod/news';
-  } catch (err) {
-    alert(err.message);
-  }
-});
-
-function updateNewsPreview() {
-  const form = document.getElementById('news-create-form') || document.getElementById('news-edit-form');
-  const preview = document.getElementById('news-preview-content');
-  if (!form || !preview) return;
-  const title = form.querySelector('[name=title]')?.value || '';
-  const author = form.querySelector('[name=author]')?.value || '';
-  const contents = form.querySelector('[name=contents]')?.value || '';
-  const image = form.querySelector('[name=image]')?.value || '';
-  let html = `<div class="news-title"><span style="text-transform: uppercase;">${escapeHtml(title)}</span> by ${escapeHtml(author)}</div>`;
-  html += `<div class="news-content">${contents}`;
-  if (image) html += `<p style="text-align:center;"><img src="${escapeHtml(image)}" width="400"></p>`;
-  html += '</div>';
-  preview.innerHTML = html;
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-document.getElementById('news-create-form')?.addEventListener('input', updateNewsPreview);
-document.getElementById('news-edit-form')?.addEventListener('input', updateNewsPreview);
+// The news editor (`/mod/news`) has its own script: public/js/mod-news.js.
 
 document.getElementById('mod-login-form')?.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -411,7 +355,7 @@ document.getElementById('board-settings-form')?.addEventListener('submit', async
   }
   try {
     await modPost('/mod/api/board/settings', data);
-    alert('Saved');
+    await alert('Saved');
     location.reload();
   } catch (err) {
     alert(err.message);
@@ -490,7 +434,7 @@ document.getElementById('banner-upload-form')?.addEventListener('submit', async 
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'Upload failed');
     if (data.skipped?.length) {
-      alert(`Uploaded ${data.count} banner(s).\nSkipped:\n${data.skipped.join('\n')}`);
+      await alert(`Uploaded ${data.count} banner(s).\nSkipped:\n${data.skipped.join('\n')}`);
     }
     location.reload();
   } catch (err) {
@@ -550,7 +494,7 @@ document.getElementById('captcha-global-form')?.addEventListener('submit', async
   const fd = new FormData(e.target);
   try {
     const data = await modPost('/mod/api/captcha/settings', { enabled: fd.get('enabled') === 'true' });
-    alert(data.message || 'Saved.');
+    await alert(data.message || 'Saved.');
     location.reload();
   } catch (err) {
     alert(err.message);

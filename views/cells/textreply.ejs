@@ -51,7 +51,7 @@ data-board="<%= boardUri %>"
     <%- include('../partials/warning-message', { message: reply.warningMessage }) %>
     <% } else if (reply.banMessage) { %>
       <div class="ban-message">
-        <%- reply.banMessage %> <img src="/img/ban.gif" width="60">
+        <%- reply.banMessage %>
       </div>
     <% } %>
   </div>

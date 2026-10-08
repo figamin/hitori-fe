@@ -39,15 +39,22 @@
         <tr>
             <td class="post-block"><label>Options</label></td>
             <td class="postform-input-cell">
-                <label><input type="checkbox" id="fortune" name="fortune" value="true" /> Fortune</label>
+                <%# A dropdown of checkboxes. The closed box is a real <select> (no name, so it
+                    is never posted, and it ignores clicks) so it looks like every other
+                    dropdown; it names what is ticked. Clicking it opens the <details> - which
+                    works without scripts too; the script below keeps the label current and
+                    closes the menu on a click elsewhere. %>
+                <details class="post-options" id="post-options">
+                    <summary><select class="input-text post-options-select" tabindex="-1" aria-hidden="true"><option class="post-options-label">None</option></select></summary>
+                    <div class="post-options-menu">
+                        <label><input type="checkbox" id="fortune" name="fortune" value="true" /> Fortune</label>
+                        <% if (isThread) { %>
+                        <label><input type="checkbox" id="sage" name="sage" value="true" /> Sage</label>
+                        <label><input type="checkbox" id="nonoko" name="nonoko" value="true" /> Nonoko</label>
+                        <% } %>
+                    </div>
+                </details>
                 <% if (isThread) { %>
-                <br>
-                <label><input type="checkbox" id="sage" name="sage" value="true" /> Sage</label>
-                <br>
-                <label><input type="checkbox" id="nonoko" name="nonoko" value="true" /> Nonoko</label>
-                <% } %>
-                <% if (isThread) { %>
-                <br>
                 <button class="new-thread-btn" type="submit">New reply</button>
                 <% } %>
             </td>
@@ -190,6 +197,30 @@
 </table>
 
 <script>
+    (function() {
+        const dropdown = document.getElementById('post-options');
+        if (!dropdown) return;
+        const label = dropdown.querySelector('.post-options-label');
+        const boxes = Array.from(dropdown.querySelectorAll('input[type="checkbox"]'));
+        function updateLabel() {
+            const ticked = boxes.filter(function(cb) { return cb.checked; }).map(function(cb) { return cb.parentNode.textContent.trim(); });
+            label.textContent = ticked.length ? ticked.join(', ') : 'None';
+        }
+        // The quick reply ticks these too (qr.js mirrors its own boxes onto them), and a
+        // posted form is reset, so the label follows every change on the page.
+        document.addEventListener('change', function(e) {
+            if (e.target instanceof HTMLInputElement && e.target.type === 'checkbox') updateLabel();
+        });
+        dropdown.closest('form')?.addEventListener('reset', function() { setTimeout(updateLabel); });
+        document.addEventListener('click', function(e) {
+            if (dropdown.open && !dropdown.contains(e.target)) dropdown.open = false;
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && dropdown.open) dropdown.open = false;
+        });
+        updateLabel();
+    })();
+
     document.getElementById('message').addEventListener('input', function() {
         document.getElementById('charCount').textContent = this.value.length;
     });

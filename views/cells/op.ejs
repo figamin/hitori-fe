@@ -50,12 +50,8 @@ var controls = modView || locals.modControls;
   </span>
   <% } %>
 </div>
-<blockquote class="thread-content" id="m<%= id %>"><%- msg %></blockquote>
-<% if (thread.warningMessage) { %>
-<%- include('../partials/warning-message', { message: thread.warningMessage }) %>
-<% } else if (thread.banMessage) { %>
-<div class="ban-message"><%- thread.banMessage %> <img src="/img/ban.gif" width="60"></div>
-<% } %>
+<%# A ban or warning notice is part of the post's text, under what was written - as on 4chan. %>
+<blockquote class="thread-content" id="m<%= id %>"><%- msg %><% if (thread.warningMessage) { %><%- include('../partials/warning-message', { message: thread.warningMessage }).trim() %><% } else if (thread.banMessage) { %><div class="ban-message"><%- thread.banMessage %></div><% } %></blockquote>
 <% if (thread.poll) { %>
 <%- include('poll', { poll: thread.poll }) %>
 <% } %>

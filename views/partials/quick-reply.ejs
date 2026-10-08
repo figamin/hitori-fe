@@ -1,135 +1,66 @@
+<%# The quick reply, laid out like 4chan X's: a slim draggable title bar, the fields as
+    joined boxes, the comment with its character count in the corner, the attachment (file,
+    embed, poll or tegaki), the captcha, and options and Submit along the bottom. qr.js keeps it in step with the reply
+    form (text, name, password, options and files are shared). %>
 <div id="quickReply">
   <div id="quickReplyHeader">
-    <p>Quick Reply <button id="qr-close">×</button></p>
+    <span class="qr-title">Quick Reply</span>
+    <button type="button" id="qr-close" title="Close">×</button>
   </div>
-  <div class="reply-form-container">
-    <form
-      action="/<%= boardUri %>/thread/<%= thread.threadId %>/reply"
-      class="reply-form"
-      method="POST"
-      enctype="multipart/form-data"
-      id="quick-reply-form"
-      data-max-files="<%= maxUploadFiles || 3 %>"
-      style="padding: 5px;"
-    >
-      <div class="qr-header">
-        <div style="margin-bottom: 2px;">
-          <input type="text" id="name-qr" name="name" placeholder="<%= anonymousName || 'Anonymous' %>" />
-          <input type="text" id="post-password-qr" name="post-password" autocomplete="off" spellcheck="false" value="<%= locals.formPassword %>" title="Password (for deletion)" style="width: 9em;" />
-        </div>
-        <div style="margin-bottom: 2px; padding: 5px 0">
-          Fortune <input type="checkbox" id="fortune-qr" name="fortune" value="true" /> <% if (isThread) { %> Sage
-          <input type="checkbox" id="sage-qr" name="sage" value="true" /> Nonoko <input type="checkbox" id="nonoko-qr" name="nonoko" value="true" />
-          <% } %>
-        </div>
-      </div>
+  <form
+    action="/<%= boardUri %>/thread/<%= thread.threadId %>/reply"
+    class="reply-form"
+    method="POST"
+    enctype="multipart/form-data"
+    id="quick-reply-form"
+    data-max-files="<%= maxUploadFiles || 3 %>"
+  >
+    <div class="qr-row qr-fields">
+      <input type="text" id="name-qr" name="name" placeholder="<%= anonymousName || 'Anonymous' %>" title="Name" />
+      <input type="text" id="post-password-qr" name="post-password" autocomplete="off" spellcheck="false" value="<%= locals.formPassword %>" placeholder="Password" title="Password (for deletion)" />
+    </div>
 
-      <div style="margin-bottom: 5px;">
-        <textarea required id="message-qr" name="message" rows="4" style="height: 9em;" class="qr-textarea"></textarea>
-        <p class="file-info" style="margin: 0;">Max comment length: <span id="qr-charCount">0</span>/4096</p>
-      </div>
-      <div style="margin-bottom: 5px; max-width: 100%;">
-        <details class="format-summary">
-          <summary class="format-summary">Styling</summary>
-          <button data-emote="[b][/b]" type="button">
-            <span><strong>Bold</strong></span>
-          </button>
-          <button data-emote="[i][/i]" type="button">
-            <span><em>Italics</em></span>
-          </button>
-          <button data-emote="[s][/s]" type="button">
-            <span>Strike</span>
-          </button>
-          <button data-emote="[spoiler][/spoiler]" type="button"><span class="spoiler">Spoiler</span></button>
-          <button data-emote="[moe][/moe]" type="button"><span class="moeText">Moe</span></button>
-          <button data-emote="[doom][/doom]" type="button"><span class="doomText">DOOM</span></button>
-          <button data-emote="[s1][/s1]" type="button"><span class="s1">Size 1</span></button>
-          <button data-emote="[s2][/s2]" type="button"><span class="s2">Size 2</span></button>
-          <button data-emote="[s3][/s3]" type="button"><span class="s3">Size 3</span></button>
-          <button data-emote="[s4][/s4]" type="button"><span class="s4">Size 4</span></button>
-          <button data-emote="[s5][/s5]" type="button"><span class="s5">Size 5</span></button>
-          <button data-emote="[s6][/s6]" type="button"><span class="s6">Size 6</span></button>
-          <button data-emote="[s7][/s7]" type="button"><span class="s7">Size 7</span></button>
-          <button data-emote="[red][/red]" type="button"><span class="c1">Red</span></button>
-          <button data-emote="[orange][/orange]" type="button"><span class="c2">Orange</span></button>
-          <button data-emote="[brown][/brown]" type="button"><span class="c3">Brown</span></button>
-          <button data-emote="[purple][/purple]" type="button"><span class="c4">Purple</span></button>
-          <button data-emote="[pink][/pink]" type="button"><span class="c5">Pink</span></button>
-          <button data-emote="[yellow][/yellow]" type="button"><span class="c6">Yellow</span></button>
-          <button data-emote="[green][/green]" type="button"><span class="c7">Green</span></button>
-          <button data-emote="[blue][/blue]" type="button"><span class="c8">Blue</span></button>
-          <button data-emote="[lightblue][/lightblue]" type="button"><span class="c9">Light Blue</span></button>
-          <button data-emote="[rainbow][/rainbow]" type="button"><span class="powerful">Rainbow</span></button>
-          <button data-emote="[code][/code]" type="button"><span>Codeblock</span></button>
-        </details>
-      </div>
+    <div class="qr-comment">
+      <textarea required id="message-qr" name="message" class="qr-textarea" placeholder="Comment"></textarea>
+      <span class="qr-count" title="Max comment length: 4096"><span id="qr-charCount">0</span>/4096</span>
+    </div>
 
-      <div id="qr-file-section"></div>
+    <%# File / Embed / Poll / Tegaki, mirroring the reply form's "Select" row (qr.js builds the
+        links from it). The embed and poll fields are the reply form's own, borrowed into the
+        slots below while the quick reply is open. %>
+    <div class="qr-modes" id="qr-modes" hidden></div>
+    <div class="qr-dropzone" id="qr-dropzone" title="Click to select files">Drop files here, click to select, or paste</div>
+    <div id="qr-file-section"></div>
+    <div class="qr-slot" id="qr-embed-slot"></div>
+    <div class="qr-slot" id="qr-poll-slot"></div>
 
-      <div class="captcha-cell"><%- include('captcha') %></div>
+    <div class="captcha-cell"><%- include('captcha').trim() %></div>
 
-      <div style="text-align: right; margin-top: 10px;">
-        <button class="new-thread-btn" type="submit">Submit Reply</button>
-      </div>
-    </form>
-  </div>
+    <div class="qr-row qr-bottom">
+      <label title="Show a fortune on the post"><input type="checkbox" id="fortune-qr" name="fortune" value="true" />Fortune</label>
+      <% if (isThread) { %>
+      <label title="Do not bump the thread"><input type="checkbox" id="sage-qr" name="sage" value="true" />Sage</label>
+      <label title="Go back to the board after posting"><input type="checkbox" id="nonoko-qr" name="nonoko" value="true" />Nonoko</label>
+      <% } %>
+      <button class="new-thread-btn" type="submit">Submit</button>
+    </div>
+  </form>
 </div>
 
 <style>
   #quickReply {
-    position: fixed;
-    left: calc(100vw - 326px);
-    top: 126px;
-    z-index: 9;
-    display: none;
-    background-color: var(--background-color);
-    border: 1px solid var(--border-alt);
-    border-radius: 5px;
-    width: 315px;
-    min-height: 200px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    box-sizing: border-box;
-    overflow-x: hidden;
-  }
-
-  #quickReplyHeader {
-    border-top-left-radius: 10%;
-    border-top-right-radius: 10%;
-    padding: 2px 5px;
-    height: 20px;
-    line-height: 20px;
     background-color: var(--post-color);
-    cursor: move;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: left;
-    user-select: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  #quickReplyHeader p {
-    margin: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-  }
-
-  #qr-close {
-    background: none;
-    border: none;
-    color: var(--text-color);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 0 5px;
-    line-height: 1;
-    height: 20px;
-  }
-
-  #qr-close:hover {
-    color: var(--link-color);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    box-sizing: border-box;
+    display: none;
+    font-size: 12px;
+    left: calc(100vw - 326px);
+    padding: 2px;
+    position: fixed;
+    top: 126px;
+    width: 320px;
+    z-index: 9;
   }
 
   .show-quickreply {
@@ -137,62 +68,218 @@
     height: auto !important;
   }
 
-  #quickReply .reply-form-container {
-    min-width: 0;
-    width: 100%;
-    box-sizing: border-box;
-    border-radius: 5px;
+  #quickReplyHeader {
+    align-items: center;
+    cursor: move;
+    display: flex;
+    justify-content: space-between;
+    padding: 1px 2px 3px;
+    user-select: none;
   }
 
-  #quickReply .qr-textarea,
-  #quickReply input[type="text"],
-  #quickReply textarea,
-  #quickReply #drop-zone,
-  #quickReply #standard-file-input input {
-    box-sizing: border-box;
-    max-width: 100%;
-    min-width: 0;
-    width: 100%;
+  #quickReplyHeader .qr-title {
+    font-weight: bold;
   }
 
-  /* Every input is full width here, but the captcha's answer box is not one of them: it shares
-     its row with the Check and refresh buttons, and it is sized in global.css so that it comes
-     out exactly the same in this form as it does in the reply form. */
-
-  #quickReply .qr-textarea {
-    font-family: Arial, serif;
-    font-size: 13.5px;
-    background: var(--background-color);
+  #qr-close {
+    background: none;
+    border: none;
     color: var(--text-color);
-    border: 1px solid var(--border-alt);
-    resize: vertical;
-    overflow: auto;
-  }
-
-  #quickReply details {
-    max-width: 100%;
-  }
-
-  #quickReply details button {
-    max-width: 100%;
-  }
-
-  #qr-drop-zone {
-    border: 2px dashed var(--border-color);
-    padding: 10px;
-    text-align: center;
     cursor: pointer;
-    margin-top: 5px;
-    font-size: 12px;
-    position: relative;
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1;
+    padding: 0 2px;
+  }
+
+  #qr-close:hover {
+    color: var(--hover-link-color);
+  }
+
+  /* The fields are joined boxes, one border between neighbours. */
+  #quick-reply-form {
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+  }
+
+  #quick-reply-form .qr-row {
+    align-items: center;
+    display: flex;
+    min-width: 0;
+  }
+
+  #quick-reply-form input[type="text"],
+  #quick-reply-form .qr-textarea {
+    background: var(--input);
+    border: 1px solid var(--border-color);
+    border-radius: 0;
     box-sizing: border-box;
+    color: var(--text-color);
+    font: 12px Arial, sans-serif;
+    margin: 0;
+    min-width: 0;
+    padding: 2px 4px;
+  }
+
+  #quick-reply-form .qr-fields input {
+    flex: 1 1 0;
+    height: 22px;
+  }
+
+  #quick-reply-form .qr-fields input + input {
+    border-left: none;
+  }
+
+  #quick-reply-form .qr-comment {
+    position: relative;
+  }
+
+  #quick-reply-form .qr-textarea {
+    border-top: none;
+    display: block;
+    height: 120px;
+    min-height: 60px;
+    resize: vertical;
+    width: 100%;
+  }
+
+  #quick-reply-form .qr-count {
+    bottom: 3px;
+    color: var(--text-color);
+    font-size: 10px;
+    opacity: 0.5;
+    pointer-events: none;
+    position: absolute;
+    right: 16px;
+  }
+
+  #quick-reply-form .captcha-cell:not(:empty) {
+    margin-top: 3px;
+    text-align: center;
+  }
+
+  #quick-reply-form .captcha-cell .captcha-controls {
+    justify-content: center;
+  }
+
+  #quick-reply-form .captcha-cell .captcha-image {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  #quick-reply-form .captcha-cell:empty {
+    display: none;
+  }
+
+  /* The selected files, as small cards (with their spoiler/NSFW choice). */
+  #qr-file-section .preview-container,
+  #qr-file-section #qr-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px !important;
+  }
+
+  #qr-file-section #qr-preview-container:empty {
+    display: none;
+  }
+
+  #qr-file-section .preview-item {
+    font-size: 10px;
     max-width: 100%;
   }
 
-  .post-label {
-    display: inline-block;
-    width: 60px;
+  #qr-file-section .preview-item img,
+  #qr-file-section .preview-item video {
+    max-height: 60px;
+    max-width: 90px;
+  }
+
+  #quickReply.qr-dragover {
+    outline: 2px dashed var(--link-color);
+  }
+
+  /* File / Embed / Poll / Tegaki */
+  #quick-reply-form .qr-modes {
+    font-size: 11px;
+    margin-top: 3px;
+    text-align: center;
+  }
+
+  #quick-reply-form .qr-modes[hidden] {
+    display: none;
+  }
+
+  #quick-reply-form .qr-mode {
+    color: var(--link-color);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  #quick-reply-form .qr-mode.active {
+    color: var(--text-color);
+    font-weight: bold;
+    text-decoration: none;
+  }
+
+  #quick-reply-form .qr-dropzone {
+    border: 1px dashed var(--border-color);
+    cursor: pointer;
+    font-size: 11px;
+    margin-top: 3px;
+    opacity: 0.75;
+    padding: 8px 4px;
+    text-align: center;
+  }
+
+  #quick-reply-form .qr-dropzone:hover,
+  #quickReply.qr-dragover .qr-dropzone {
+    opacity: 1;
+  }
+
+  #quick-reply-form .qr-dropzone[hidden] {
+    display: none;
+  }
+
+  /* The reply form's embed and poll fields, while they are borrowed. */
+  #quick-reply-form .qr-slot:empty {
+    display: none;
+  }
+
+  #quick-reply-form .qr-slot {
+    margin-top: 3px;
+  }
+
+  #quick-reply-form .qr-slot #poll-details {
+    padding: 0 !important;
+  }
+
+  #quick-reply-form .qr-slot input[type="text"] {
+    width: 100% !important;
+  }
+
+  #quick-reply-form .qr-bottom {
+    gap: 6px;
+    margin-top: 3px;
+  }
+
+  #quick-reply-form .qr-bottom label {
+    align-items: center;
+    display: inline-flex;
+    font-size: 11px;
+    gap: 2px;
+    white-space: nowrap;
+  }
+
+  #quick-reply-form .qr-bottom input[type="checkbox"] {
+    margin: 0;
+  }
+
+  #quick-reply-form .qr-bottom .new-thread-btn {
+    margin-left: auto;
+    min-width: 75px;
   }
 </style>
 
-<script src="/js/qr.js"></script>
+<script src="/js/qr.js?v=<%= locals.assetVersion('js/qr.js') %>"></script>

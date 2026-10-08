@@ -569,6 +569,25 @@ a {
     font-weight: bold;
 }
 
+/* A figure with the date it was set (e.g. "Most Users Online"). The sidebar is too
+   narrow for label, figure and date on one row, so the date sits just under the figure. */
+.stat span:first-child {
+    white-space: nowrap;
+}
+
+.stat-dated {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.stat-date {
+    font-size: 9px;
+    font-weight: normal;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
 .box-time {
     text-align: center;
     padding: 10px 5px;
