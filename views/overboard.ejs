@@ -4,6 +4,7 @@
 <%- include('partials/banner', { title: 'Latest Posts', boardUri: false }) %>
 <div class="board-top"><a href="/rss.xml" title="RSS" class="feed-link"><img src="/img/feed.svg" alt="RSS" width="16" height="16" class="feed-icon"></a></div>
 <%- include('partials/announcement') %>
+<% if (locals.rotatingBanner) { %><hr><% } %>
 <div class="threads"><%- include('cells/thread-list', { threads: threads, boardUri: boardUri }) %></div>
 <div id="loading" style="text-align: center; display: none">
   <p>Loading more threads...</p>
