@@ -1030,7 +1030,10 @@ const thumbs = {
       thumbLink,
       media,
       hideLink,
-      () => media.play(),
+      // The promise is caught because the element can be replaced under it (the CDN
+      // refusing the file swaps their frame in, see `vocarooAudio`), and an
+      // interrupted play() otherwise reports itself in the console.
+      () => media.play().catch(() => {}),
       () => media.pause()
     );
 
