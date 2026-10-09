@@ -4074,67 +4074,58 @@ html {
    Hidden by the "Hide fortunes" setting (public/js/settings.js).
    --------------------------------------------------------------------------- */
 
-.fortune,
-.excellentLuck,
-.goodLuck,
-.averageLuck,
-.badLuck,
-.tellYouNow,
-.outlookGood,
-.veryBadLuck,
-.godlyLuck,
-.youAreBanned,
-.divFortune,
-.mikudayo,
-.voicebankUpdate,
-.roadRoller,
-.replyHazy,
-.goodNewsMail {
+.fortune {
   display: block;
   font-weight: bold;
-  margin-top: 8px;
+  margin-top: 10px;
   overflow-wrap: anywhere;
 }
 
-.excellentLuck { color: #f51c6a; }
-.goodLuck { color: #fd4d32; }
-.averageLuck { color: #e7890c; }
-.badLuck { color: #bac200; }
-.tellYouNow { color: #7fec11; }
-.outlookGood { color: #43fd3b; }
-.veryBadLuck { color: #2a56fb; }
-.replyHazy { color: #9370db; }
-.goodNewsMail { color: #e05ab4; }
-.voicebankUpdate { color: #30a9c9; }
-.mikudayo { color: #39c5bb; }
-.roadRoller { color: #ffe600; }
-
-.youAreBanned {
-  color: #f00;
-  text-transform: uppercase;
-}
-
-.divFortune {
-  color: #ff8c00;
-}
-
+.excellentLuck { color: #fd4d32; }
+.goodLuck { color: #e7890c; }
+.averageLuck { color: #bac200; }
+.badLuck { color: #7fec11; }
+.tellYouNow { color: #2a56fb; }
+.outlookGood { color: #6023f8; }
+.veryBadLuck { color: #9d05da; }
+.replyHazy { color: #f51c6a; }
+.goodNewsMail { color: #43fd3b; } 
+.mikudayo { color: #00cbb0; }
+.roadRoller { color: #ebcc34; }
+.fortWeird { color: #16f174; }
+.fortKita { color: #00cbb0; }
+.godlyLuck { color: #d302a7;}
+.voicebankUpdate { color: #009614;}
 
 @keyframes fortuneRainbow {
   to { background-position: 200% center; }
 }
 
-.godlyLuck {
+.goodThings {
   background: linear-gradient(90deg, #ff0000, #ff9900, #ffee00, #33dd33, #00ccff, #6644ff, #ee00ee, #ff0000);
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   animation: fortuneRainbow 3s linear infinite;
-  display: table; /* only as wide as its text, so the whole rainbow shows */
+  display: table;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .godlyLuck {
+  .goodThings {
     animation: none;
   }
+}
+
+/* The rotating banner under the announcement (views/partials/rotating-banner.ejs). */
+.rotating-banner {
+  margin: 6px 0;
+  text-align: center;
+}
+
+.rotating-banner img {
+  display: inline-block;
+  height: auto;
+  max-width: 100%;
+  vertical-align: middle;
 }

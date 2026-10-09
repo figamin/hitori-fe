@@ -26,13 +26,13 @@
     </div>
 
     <%# File / Embed / Poll / Tegaki, mirroring the reply form's "Select" row (qr.js builds the
-        links from it). The embed and poll fields are the reply form's own, borrowed into the
-        slots below while the quick reply is open. %>
+        links from it). The embed and poll fields are copies of the reply form's, kept in step
+        with them; a poll keeps the drop zone under it, as in the reply form. %>
     <div class="qr-modes" id="qr-modes" hidden></div>
+    <div class="qr-slot" id="qr-embed-slot" hidden></div>
+    <div class="qr-slot" id="qr-poll-slot" hidden></div>
     <div class="qr-dropzone" id="qr-dropzone" title="Click to select files">Drop files here, click to select, or paste</div>
     <div id="qr-file-section"></div>
-    <div class="qr-slot" id="qr-embed-slot"></div>
-    <div class="qr-slot" id="qr-poll-slot"></div>
 
     <div class="captcha-cell"><%- include('captcha').trim() %></div>
 
@@ -242,8 +242,9 @@
     display: none;
   }
 
-  /* The reply form's embed and poll fields, while they are borrowed. */
-  #quick-reply-form .qr-slot:empty {
+  /* The copies of the reply form's embed and poll fields. */
+  #quick-reply-form .qr-slot:empty,
+  #quick-reply-form .qr-slot[hidden] {
     display: none;
   }
 
@@ -251,7 +252,7 @@
     margin-top: 3px;
   }
 
-  #quick-reply-form .qr-slot #poll-details {
+  #quick-reply-form .qr-slot #poll-details-qr {
     padding: 0 !important;
   }
 

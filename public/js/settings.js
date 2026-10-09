@@ -99,10 +99,7 @@ const settings = {
       { id: 'disable-auto-watch', label: 'Disable auto-watching', desc: 'Stop automatically adding threads you post in to the Thread Watcher', checked: localStorage.getItem('disableAutoWatch') === 'true' },
       { id: 'hide-fortunes', label: 'Hide fortunes', desc: 'Hide fortunes on posts that contain it', checked: localStorage.getItem('hideFortunes') === 'true' },
       { id: 'new-post-sound', label: 'New post sound', desc: 'Play a sound when an open thread gets a new post', checked: localStorage.getItem('newPostSound') === 'true' },
-      // On by default: absent means enabled, only an explicit "true" turns it off.
       { id: 'post-inlining', label: 'Inline quoted posts', desc: 'Clicking a quote opens the quoted post inside the reply', checked: localStorage.getItem('disablePostInlining') !== 'true' },
-      // Off by default: the frame is an alternative to the site's own bars, not the
-      // way the site looks to everyone.
       { id: 'framed-browsing', label: 'Framed browsing', desc: 'Read boards and threads in a frame with its own top and bottom bars, instead of under the site header and footer', checked: localStorage.getItem('framedBrowsing') === 'true' }
     ];
 

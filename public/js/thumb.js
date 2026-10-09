@@ -25,6 +25,57 @@ const TWITCH_CHANNEL_RE = /(?:^|\/\/)(?:www\.|m\.)?twitch\.tv\/([A-Za-z0-9_]+)\/
 const TWITCH_VOD_RE = /(?:^|\/\/)(?:www\.|m\.)?twitch\.tv\/videos\/(\d+)/i;
 const TWITCH_CLIP_RE = /(?:^|\/\/)(?:www\.|m\.)?clips\.twitch\.tv\/([A-Za-z0-9_-]+)/i;
 const TWITCH_CHANNEL_CLIP_RE = /(?:^|\/\/)(?:www\.|m\.)?twitch\.tv\/[A-Za-z0-9_]+\/clip\/([A-Za-z0-9_-]+)/i;
+// A Vocaroo recording: the id in a share link (`vocaroo.com/<id>`, `voca.ro/<id>`),
+// an `embed/` URL or the CDN's `mp3/` path. The id is opaque, so this is the same
+// shape `be/lib/vocaroo.js` accepts - and a link that is not a recording (their
+// `/about`) is not read as one.
+const VOCAROO_RE =
+  /(?:^|\/\/)(?:[a-z0-9-]+\.)?(?:vocaroo\.com|voca\.ro)\/(?:e(?:mbed)?\/|i\/|mp3\/)?([A-Za-z0-9_-]{8,32})(?:[/?#]|$)/i;
+const VOCAROO_MP3_BASE = 'https://media.vocaroo.com/mp3/';
+const VOCAROO_EMBED_BASE = 'https://vocaroo.com/embed/';
+
+function vocarooIdFrom(href) {
+  const match = String(href || '').match(VOCAROO_RE);
+  return match ? match[1] : null;
+}
+
+// Vocaroo's own player, asked not to autoplay - the form their embed code uses.
+// This is the fallback for a recording their CDN will not serve any more: without
+// it the block could only ever show a silent 0:00.
+function vocarooFrame(id) {
+  const frame = document.createElement('iframe');
+  frame.src = VOCAROO_EMBED_BASE + id + '?autoplay=0';
+  frame.width = '640';
+  frame.height = '150';
+  frame.style.maxWidth = '100%';
+  frame.style.marginTop = '3px';
+  frame.setAttribute('frameborder', '0');
+  frame.setAttribute('allow', 'autoplay; encrypted-media');
+  frame.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+  return frame;
+}
+
+// An `<audio>` element pointed at the recording, with their player standing in if
+// the file cannot be fetched. A failed `<source>` fires `error` on the source, and
+// only the media element hears about it when nothing else is left to try - so both
+// are watched.
+function vocarooAudio(id) {
+  const media = document.createElement('audio');
+  media.controls = true;
+  media.preload = 'metadata';
+  media.style.maxWidth = '100%';
+  media.style.marginTop = '3px';
+  const source = document.createElement('source');
+  source.src = VOCAROO_MP3_BASE + id;
+  source.type = 'audio/mpeg';
+  media.appendChild(source);
+  const fallback = () => {
+    if (media.isConnected) media.replaceWith(vocarooFrame(id));
+  };
+  media.addEventListener('error', fallback, { once: true });
+  source.addEventListener('error', fallback, { once: true });
+  return media;
+}
 
 // A posted embed is stored as a file whose `path` is the watch URL; the player
 // URL is derived from it here, so YouTube, nicovideo, bilibili and Twitch share
@@ -952,6 +1003,42 @@ const thumbs = {
     if (autoExpand) thumbLink.onclick({ which: 1 });
   },
 
+  // A Vocaroo recording is audio, so it plays in the site's own player - the same
+  // `<audio controls>` an uploaded mp3 gets - rather than inside Vocaroo's iframe.
+  // Their CDN serves the file with `audio/mpeg`, `Accept-Ranges` and
+  // `Access-Control-Allow-Origin: *`, and the URL is one of the constants in
+  // Vocaroo's own page config. The stored `path` stays the *share* URL (that is what
+  // `[Embed]` shows and what a reader clicks), so the media URL is derived here - and
+  // if that file is not served any more, their own player takes its place.
+  //
+  // Opening the block starts it, exactly like an uploaded audio file in the same
+  // block: the click on the thumbnail is the play action.
+  setVocarooAudio(link, mime, autoExpand) {
+    const id = vocarooIdFrom(link.href);
+    if (!id) return this.setEmbedVideo(link, mime, autoExpand);
+
+    const parent = link.parentNode;
+    const media = vocarooAudio(id);
+    media.style.display = 'none';
+
+    const container = document.createElement('span');
+    const hideLink = makeHideLink();
+    const thumbLink = cloneThumbLink(link, mime);
+
+    wireToggle(
+      parent,
+      thumbLink,
+      media,
+      hideLink,
+      () => media.play(),
+      () => media.pause()
+    );
+
+    container.append(hideLink, media, thumbLink);
+    parent.replaceChild(container, link);
+    if (autoExpand) thumbLink.onclick({ which: 1 });
+  },
+
   // Twitter/X and Bluesky embeds play the raw mp4 FxEmbed resolves, not an
   // iframe of the post. (video.twimg.com answers 403 when a request carries a
   // referrer, so the global `Referrer-Policy: no-referrer` header is what lets
@@ -1098,6 +1185,33 @@ const thumbs = {
     watchCytubeBlock(channel, { alive: () => container.isConnected, update: apply });
   },
 
+  // A Vocaroo link written in a post's text (see `vocarooBlock` in
+  // `be/lib/embeds.js`): the same audio player as the file block, mounted when the
+  // block is opened. It is not started there, though - the block is opened by
+  // clicking a summary rather than a thumbnail, so the reader presses play in the
+  // controls, exactly as for a Twitter/X or Bluesky video mounted by the function
+  // above.
+  mountVocarooBlock(container) {
+    const id = vocarooIdFrom(container.dataset.url);
+    if (!id) return;
+    container.dataset.vocarooMounted = 'true';
+
+    const details = container.closest('details');
+    let mounted = false;
+    const mount = () => {
+      if (mounted) return;
+      mounted = true;
+      container.textContent = '';
+      container.appendChild(vocarooAudio(id));
+    };
+
+    // Mounted when the block is opened rather than on page load: a thread can hold
+    // several of these and nothing should be fetched for one nobody opened.
+    if (!details) return mount();
+    if (details.open) return mount();
+    details.addEventListener('toggle', () => details.open && mount(), { once: true });
+  },
+
   // A Twitter/X or Bluesky link written in a post's text (see `postVideoBlock` in
   // `be/lib/embeds.js`): the post's video is asked of FxEmbed when the reader opens
   // the block, and mounted here with the poster the API hands out - paused, like
@@ -1168,6 +1282,16 @@ const thumbs = {
       // Opened as soon as it is on the page; the room is read then (see
       // `setCytubeStream`).
       this.setCytubeStream(link, mime, true);
+    } else if (mime === 'vocaroo/audio') {
+      link.addEventListener(
+        'click',
+        (e) => {
+          if (isModifiedClick(e)) return;
+          e.preventDefault();
+          this.setVocarooAudio(link, mime, true);
+        },
+        { once: true }
+      );
     } else if (mime === 'youtube/video' || mime === 'nicovideo/video' || mime === 'bilibili/video' || mime === 'twitch/video') {
       link.addEventListener(
         'click',
@@ -1210,6 +1334,12 @@ window.initializeThumbnails = function () {
   // when the block is opened (see `mountPostVideoBlock`).
   document.querySelectorAll('.post-video:not([data-post-video-mounted])').forEach((container) => {
     if (container.querySelector('.post-video-play')) thumbs.mountPostVideoBlock(container);
+  });
+
+  // A Vocaroo link in a post's text: mount the audio player when the block is
+  // opened (see `mountVocarooBlock`).
+  document.querySelectorAll('.vocaroo-embed:not([data-vocaroo-mounted])').forEach((container) => {
+    if (container.querySelector('.vocaroo-embed-play')) thumbs.mountVocarooBlock(container);
   });
 };
 

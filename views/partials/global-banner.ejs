@@ -1,9 +1,0 @@
-<%# A random banner from public/img/global/, linked to where its file name says
-    (be/middleware/locals.js: randomGlobalBanner). %>
-<% var globalBanner = locals.randomGlobalBanner ? randomGlobalBanner() : null; %>
-<% if (globalBanner) { %>
-<hr>
-<div class="global-banner">
-  <a href="<%= globalBanner.href %>"><img src="<%= globalBanner.src %>" alt="" width="468" height="60"></a>
-</div>
-<% } %>

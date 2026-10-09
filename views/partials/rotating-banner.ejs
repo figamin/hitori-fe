@@ -1,0 +1,7 @@
+<%# A random banner from public/img/global/, picked anew on every page load and linked to
+    the board its file is named after (be/middleware/locals.js: randomRotatingBanner). %>
+<% if (locals.rotatingBanner) { %>
+<div class="rotating-banner">
+  <a href="<%= rotatingBanner.href %>"<% if (/^https?:/.test(rotatingBanner.href)) { %> target="_blank" rel="noopener"<% } %>><img src="<%= rotatingBanner.src %>" alt="" width="468" height="60"></a>
+</div>
+<% } %>

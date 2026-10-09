@@ -204,6 +204,65 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // Embed and poll fields: the quick reply has copies of the reply form's, kept in step
+  // with them both ways (as the comment is), so both forms always show the same embed URL
+  // and poll. Fields pair up by position; "+ Add Option" clicks the reply form's button,
+  // and any change to the reply form's fields (an option added, the button hidden at the
+  // limit) makes a new copy.
+  function mirrorFields(source, slot) {
+    if (!source || !slot) return null;
+    const fields = (root) => root.querySelectorAll('input, select, textarea');
+    let copy;
+
+    function refresh() {
+      const from = fields(source);
+      fields(copy).forEach((field, i) => {
+        if (from[i]) field.value = from[i].value;
+      });
+    }
+
+    function build() {
+      copy = source.cloneNode(true);
+      copy.removeAttribute('style');
+      [copy, ...copy.querySelectorAll('[id]')].forEach((el) => {
+        el.id += '-qr';
+      });
+      slot.replaceChildren(copy);
+      refresh();
+    }
+
+    function copyValue(e, from, to) {
+      const index = Array.from(fields(from)).indexOf(e.target);
+      const target = fields(to)[index];
+      if (index !== -1 && target) target.value = e.target.value;
+    }
+
+    slot.addEventListener('input', (e) => copyValue(e, copy, source));
+    slot.addEventListener('change', (e) => copyValue(e, copy, source));
+    source.addEventListener('input', (e) => copyValue(e, source, copy));
+    source.addEventListener('change', (e) => copyValue(e, source, copy));
+    slot.addEventListener('click', (e) => {
+      const button = e.target instanceof Element && e.target.closest('button[id$="-qr"]');
+      if (!button) return;
+      e.preventDefault();
+      document.getElementById(button.id.slice(0, -3))?.click();
+    });
+    new MutationObserver(build).observe(source, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    build();
+    return { slot, refresh };
+  }
+
+  const qrEmbed = mirrorFields(document.getElementById('embed-mode-content'), document.getElementById('qr-embed-slot'));
+  const qrPoll = mirrorFields(document.getElementById('poll-details'), document.getElementById('qr-poll-slot'));
+
+  // The reply form clears its fields without an input event (the embed URL when leaving
+  // Embed, everything on reset), so the copies are refreshed after those too.
+  function refreshMirrors() {
+    qrEmbed?.refresh();
+    qrPoll?.refresh();
+  }
+  mainForm?.addEventListener('reset', () => setTimeout(refreshMirrors));
+
   // File / Embed / Poll / Tegaki. The reply form owns the mode (its "Select" row shows and
   // hides its fields, and Tegaki opens the drawing board), so these links click its
   // buttons and then follow whichever one is active.
@@ -219,8 +278,11 @@ document.addEventListener('DOMContentLoaded', () => {
   function updateMode() {
     const mode = activeMode();
     qrModeLinks.forEach((link) => link.classList.toggle('active', link.dataset.mode === mode));
-    if (qrDropZone && mainFileInput) qrDropZone.hidden = mode === 'youtube' || mode === 'poll';
+    if (qrDropZone && mainFileInput) qrDropZone.hidden = mode === 'youtube';
     qrFileSection.hidden = mode === 'youtube';
+    if (qrEmbed) qrEmbed.slot.hidden = mode !== 'youtube';
+    if (qrPoll) qrPoll.slot.hidden = mode !== 'poll';
+    refreshMirrors();
   }
 
   if (qrModes && mainModeButtons.length > 1) {
@@ -239,32 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     qrModes.hidden = false;
     mainModeButtons.forEach((btn) => btn.addEventListener('click', () => setTimeout(updateMode)));
-    updateMode();
   }
-
-  // While the quick reply is open, the reply form's embed and poll fields live in it (the
-  // same elements, so they are posted with it and the poll's "+ Add Option" keeps
-  // working); closing it puts them back where they were.
-  const borrowed = [
-    { el: document.getElementById('embed-mode-content'), slot: document.getElementById('qr-embed-slot') },
-    { el: document.getElementById('poll-details'), slot: document.getElementById('qr-poll-slot') }
-  ].filter((b) => b.el && b.slot);
-
-  function syncBorrowed() {
-    const open = quickReplyEl.classList.contains('show-quickreply');
-    borrowed.forEach((b) => {
-      if (open && b.el.parentNode !== b.slot) {
-        b.home = { parent: b.el.parentNode, next: b.el.nextSibling };
-        b.slot.appendChild(b.el);
-      } else if (!open && b.home && b.el.parentNode === b.slot) {
-        b.home.parent.insertBefore(b.el, b.home.next);
-      }
-    });
-    updateMode();
-  }
-
-  new MutationObserver(syncBorrowed).observe(quickReplyEl, { attributes: true, attributeFilter: ['class'] });
-  syncBorrowed();
+  updateMode();
 
   function reattachEventListeners() {
     // Remove button event listeners
