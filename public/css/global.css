@@ -203,6 +203,14 @@ input[type="text"] {
   font-weight: bold;
 }
 
+/* A tripcode imported from vichan: there, `name` holds only the name and the tripcode sits in its
+   own column, so it is appended when the post is rendered. It goes inside `.name`, which is bold,
+   and a tripcode is not - Koshi's own posts carry the same markup in the name column itself, with
+   the weight set inline. */
+.name .trip {
+  font-weight: normal;
+}
+
 .name-block {
   display: inline-block;
 }
@@ -4157,6 +4165,6 @@ html {
   opacity: .8;
 }
 
-#mod-content .mod-table code {
+#mod-content .mod-table code {  
   word-break: break-all;
 }
