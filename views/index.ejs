@@ -274,49 +274,44 @@ var boardSections = [
                     <button class="collapse-toggle collapse-toggle--mobile" aria-expanded="true" aria-label="Toggle section">&minus;</button>
                 </div>
                 <div class="featured collapsible">
-                    <a href="j/thread/753" class="item">
+                    <%
+                    // Which threads are up here is an editorial list, edited at /mod/featured
+                    // from any thread on any board; the table behind it is
+                    // `koshi_featured_threads` and the order is the order of the cards.
+                    //
+                    // The box is four cards wide and is never narrower than four. The panel
+                    // keeps the list at four or more, but a featured thread can be deleted
+                    // after it was picked, so a gap is filled from this snapshot's busiest
+                    // threads instead of the box drawing three cards.
+                    var featured = (featuredThreads || []).filter(function (t) { return t.exists; });
+                    var featuredKeys = {};
+                    featured.forEach(function (t) { featuredKeys[t.boardUri + '/' + t.threadId] = true; });
+                    (activeThreads || []).forEach(function (t) {
+                      if (featured.length >= 4) return;
+                      var key = t.boardUri + '/' + t.threadId;
+                      if (featuredKeys[key]) return;
+                      featuredKeys[key] = true;
+                      featured.push({
+                        boardUri: t.boardUri,
+                        boardName: t.boardName,
+                        threadId: t.threadId,
+                        title: t.subject || postSnippet(t.message, 100),
+                        thumb: t.files && t.files.length ? t.files[0].thumb : null
+                      });
+                    });
+                    %>
+                    <% featured.slice(0, 4).forEach(function (thread) { %>
+                    <a href="/<%= thread.boardUri %>/thread/<%= thread.threadId %>" class="item">
                         <div class="fthumb">
-                            <img src="j/thumb/1789597544865.jpg">
+                            <% if (thread.thumb) { %><img src="<%= thread.thumb %>" alt="Thread thumbnail" loading="lazy"><% } %>
                             <span class="star">&#9733;</span>
                         </div>
                         <div class="meta">
-                            <div class="ftitle">Japanese Indie Horror Games</div>
-                            <div class="fboard">Japanese Culture</div>
+                            <div class="ftitle"><%= thread.title || 'No subject' %></div>
+                            <div class="fboard"><%= thread.boardName || thread.boardUri %></div>
                         </div>
                     </a>
-                    
-                    <a href="leek/thread/10912" class="item">
-                        <div class="fthumb">
-                            <img src="leek/thumb/1762144102072.png">
-                            <span class="star">&#9733;</span>
-                        </div>
-                        <div class="meta">
-                            <div class="ftitle">/leek/ Original Content</div>
-                            <div class="fboard">Vocaloid Live Events</div>
-                        </div>
-                    </a>
-                    
-                    <a href="leek/thread/18662" class="item">
-                        <div class="fthumb">
-                            <img src="leek/thumb/1771708949926.png">
-                            <span class="star">&#9733;</span>
-                        </div>
-                        <div class="meta">
-                            <div class="ftitle">A thread for producers</div>
-                            <div class="fboard">Vocaloid Lounge</div>
-                        </div>
-                    </a>
-
-                    <a href="live/thread/2479" class="item">
-                        <div class="fthumb">
-                            <img src="live/thumb/1785640119589.jpg">
-                            <span class="star">&#9733;</span>
-                        </div>
-                        <div class="meta">
-                            <div class="ftitle">MikuExpo Memories</div>
-                            <div class="fboard">Vocaloid Live Events</div>
-                        </div>
-                    </a>
+                    <% }); %>
                 </div>
             </div>
 

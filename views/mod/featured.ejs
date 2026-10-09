@@ -1,0 +1,218 @@
+<% title = 'Featured Threads'; %>
+<%# The front page's FEATURED THREADS box. The list lives in `koshi_featured_threads`
+    (one row per thread, `position` is the order) and is edited here: pick a board,
+    find the thread, order the cards. The picker, the four-card rule and the save are
+    wired up by public/js/mod-featured.js.
+    Styles live here for the same reason the news editor's do: this page is the only
+    one that uses them. %>
+<style>
+  .featured-admin {
+    margin: 0 auto;
+    max-width: 1000px;
+  }
+
+  .featured-note {
+    color: var(--file-info-color);
+    font-size: 12px;
+    margin: 4px 0 10px;
+  }
+
+  .featured-slot {
+    background: var(--post-color);
+    border: 1px solid var(--border-alt);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    padding: 8px;
+  }
+
+  .featured-slot-head {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .featured-slot-number {
+    color: var(--board-title-color);
+    font-weight: bold;
+    min-width: 62px;
+  }
+
+  .featured-slot-head .featured-slot-move {
+    margin-left: auto;
+  }
+
+  .featured-slot-body {
+    align-items: flex-start;
+    display: flex;
+    gap: 8px;
+  }
+
+  .featured-thumb {
+    background: var(--marked-color);
+    border: 1px solid var(--border-alt);
+    height: 64px;
+    object-fit: cover;
+    width: 64px;
+  }
+
+  .featured-thumb-empty {
+    color: var(--file-info-color);
+    font-size: 10px;
+    line-height: 64px;
+    text-align: center;
+  }
+
+  .featured-info {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .featured-title {
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .featured-title.featured-missing {
+    color: #ff6b6b;
+  }
+
+  .featured-sub {
+    color: var(--file-info-color);
+    font-size: 11px;
+    margin-top: 2px;
+  }
+
+  .featured-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
+  }
+
+  .featured-picker input[type=text] {
+    flex: 1 1 160px;
+    min-width: 120px;
+  }
+
+  .featured-picker input[type=number] {
+    width: 90px;
+  }
+
+  .featured-results {
+    margin-top: 4px;
+  }
+
+  .featured-result {
+    align-items: center;
+    border-top: 1px solid var(--border-alt);
+    cursor: pointer;
+    display: flex;
+    gap: 6px;
+    padding: 3px 2px;
+  }
+
+  .featured-result:hover {
+    background: var(--marked-color);
+  }
+
+  .featured-result img {
+    height: 28px;
+    object-fit: cover;
+    width: 28px;
+  }
+
+  .featured-result-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .featured-result-meta {
+    color: var(--file-info-color);
+    font-size: 10px;
+  }
+
+  .featured-actions {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .featured-status {
+    font-size: 12px;
+    opacity: 0.85;
+  }
+
+  .featured-status.featured-bad {
+    color: #ff6b6b;
+  }
+</style>
+
+<div class="featured-admin">
+  <h2>Featured Threads</h2>
+  <p class="featured-note">
+    The <strong>FEATURED THREADS</strong> box on <a href="/" target="_blank" rel="noopener">the front page</a> shows
+    <%= shownOnFrontPage %> threads, picked from any board, in this order. It cannot be shorter than
+    <%= minFeatured %>: if a featured thread is deleted the front page fills the gap with a busy thread until the
+    slot is filled in again.
+  </p>
+
+  <div id="featured-slots"></div>
+
+  <div class="featured-actions">
+    <button type="button" id="featured-add">Add a thread</button>
+    <button type="button" id="featured-save" class="btn-accent">Save</button>
+    <a class="btn-accent" href="/" target="_blank" rel="noopener">See the front page</a>
+    <span class="featured-status" id="featured-status"></span>
+  </div>
+
+  <%# The picker's markup, cloned per slot by js/mod-featured.js so the board list
+      and the button labels live in one place. %>
+  <template id="featured-slot-template">
+    <div class="featured-slot">
+      <div class="featured-slot-head">
+        <span class="featured-slot-number"></span>
+        <span class="featured-slot-move">
+          <button type="button" data-move="-1" title="Move up">&uarr;</button>
+          <button type="button" data-move="1" title="Move down">&darr;</button>
+          <button type="button" data-remove title="Remove this thread">Remove</button>
+        </span>
+      </div>
+      <div class="featured-slot-body">
+        <div class="featured-thumb-wrap">
+          <img class="featured-thumb" alt="" hidden>
+          <div class="featured-thumb featured-thumb-empty">no file</div>
+        </div>
+        <div class="featured-info">
+          <div class="featured-title"></div>
+          <div class="featured-sub"></div>
+          <div class="featured-picker">
+            <select class="featured-board"></select>
+            <input type="number" class="featured-thread-id" min="1" placeholder="thread #">
+            <button type="button" data-find-id>Use this thread</button>
+            <input type="text" class="featured-query" placeholder="or search this board for words in the OP">
+            <button type="button" data-find-query>Search</button>
+          </div>
+          <div class="featured-results"></div>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script type="application/json" id="featured-data"><%- JSON.stringify({
+    featured,
+    boards,
+    shownOnFrontPage,
+    minFeatured,
+    maxFeatured
+  }).replace(/</g, '\\u003c') %></script>
+</div>
+
+<script src="/js/mod-featured.js?v=<%= locals.assetVersion('js/mod-featured.js') %>"></script>
