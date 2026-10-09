@@ -2,7 +2,7 @@
 <h1><%= boardUri ? 'Bans on /' + boardUri + '/' : 'Bans' %></h1>
 <%- include('partials/board-nav') %>
 <p class="mod-subnav">
-<% if (boardUri) { %><a href="/mod/bans?board=<%= boardUri %>">Bans</a> / <% } else { %><a href="/mod/bans">Global</a> / <% } %>
+<% if (boardUri) { %><a href="/mod/bans?board=<%= boardUri %>">Bans</a> / <% } else { %><a href="/mod/bans">All</a> / <% } %>
 <a href="/mod/bans/appeals<%= boardUri ? '?board=' + boardUri : '' %>">Appeals</a> /
 <a href="/mod/bans/range<%= boardUri ? '?board=' + boardUri : '' %>">Range</a> /
 <a href="/mod/bans/hash<%= boardUri ? '?board=' + boardUri : '' %>">Hash</a> /

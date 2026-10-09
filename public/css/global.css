@@ -4041,6 +4041,31 @@ html {
   color: #c00;
 }
 
+/* Confirmation page after submitting a ban appeal (views/appeal-submitted.ejs). */
+.appeal-done {
+  box-sizing: border-box;
+  color: var(--text-color);
+  margin: 40px auto 20px;
+  max-width: 480px;
+  padding: 28px 28px 24px;
+  text-align: center;
+}
+
+.appeal-done h1 {
+  color: var(--board-title-color);
+  font-size: 22px;
+  margin: 0 0 8px;
+}
+
+.appeal-done-message {
+  font-size: 11pt;
+  margin: 0;
+}
+
+.appeal-done-home {
+  margin-top: 20px;
+}
+
 @media (max-width: 768px) {
   .box-layout {
     margin-left: 0;
@@ -4065,6 +4090,11 @@ html {
 
   .news-title {
     font-size: 108%;
+  }
+
+  .appeal-done {
+    margin: 20px 10px;
+    padding: 20px 16px;
   }
 
   .appeal-form button,

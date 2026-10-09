@@ -1,6 +1,8 @@
-<% title = siteName; %>
-<div style="text-align: center;">
-  <h2>Appeal Submitted</h2>
-  <p><%= message %></p>
-  <p><a href="/">Return to homepage</a></p>
+<% title = 'Appeal Submitted'; %>
+<div class="appeal-done">
+  <h1>Appeal Submitted</h1>
+  <p class="appeal-done-message"><%= message %></p>
+  <form class="appeal-done-home" action="/" method="GET">
+    <button type="submit">Return to homepage</button>
+  </form>
 </div>
