@@ -1030,12 +1030,10 @@ mark.search-hit {
   color: #00b585;
 }
 
-.heading{
-    font-weight: bold;
-    font-size: 11pt;
-    margin: 0;
-    padding: 0;
-    color: var(--board-title-color);
+.heading {
+  color: #AF0A0F;
+  font-size: 11pt;
+  font-weight: bold;
 }
 
 .redtext {
