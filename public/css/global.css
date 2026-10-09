@@ -4129,3 +4129,34 @@ html {
   max-width: 100%;
   vertical-align: middle;
 }
+
+/* Global filters screen: word filters rewrite a post, moderation filters refuse it (and may
+   ban). The second table carries more per row, so its notes are quiet and the condition is
+   monospaced. */
+.filter-hint {
+  margin: 8px 0;
+}
+
+.filter-message,
+.filter-note,
+.filter-source {
+  font-size: 90%;
+  margin-top: 2px;
+}
+
+.filter-note {
+  color: #a33;
+}
+
+.filter-source {
+  opacity: .7;
+}
+
+.filter-scope {
+  font-size: 90%;
+  opacity: .8;
+}
+
+#mod-content .mod-table code {
+  word-break: break-all;
+}

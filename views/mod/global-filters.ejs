@@ -1,4 +1,12 @@
 <% title = 'Global Filters'; %>
+<p class="filter-hint">
+  <b>Word filters</b> rewrite what a poster typed before the post is stored. <b>Moderation
+  filters</b> refuse a post, and the ones marked <b>Ban</b> also ban whoever posted it - they come
+  from vichan's <code>$config['filters']</code> and are checked on every post, in order, with the
+  first match acting.
+</p>
+
+<h3>Word filters</h3>
 <form id="global-filter-form">
 <input name="originalTerm" placeholder="Term" required>
 <input name="replacementTerm" placeholder="Replacement" required>
@@ -15,4 +23,37 @@
 </tr>
 <% }) %>
 <% if (!filters.length) { %><tr><td colspan="3">None</td></tr><% } %>
+</table>
+
+<h3>Moderation filters</h3>
+<table class="mod-table">
+<tr><th>Action</th><th>Condition</th><th>Ban</th><th>State</th><th></th></tr>
+<% moderationFilters.forEach(f => { %>
+<tr>
+<td><%= f.action === 'ban' ? 'Ban' : 'Reject' %></td>
+<td>
+  <code><%= f.summary %></code>
+  <% if (f.message) { %><div class="filter-message">Posted back: <%= f.message %></div><% } %>
+  <% if (f.note) { %><div class="filter-note">Imported switched off: <%= f.note %></div><% } %>
+  <% if (f.source === 'vichan') { %><div class="filter-source">from vichan's filter list #<%= f.sourceIndex %></div><% } %>
+</td>
+<td>
+  <% if (f.action === 'ban') { %>
+    <%= f.banReason ? f.banReason : '(no reason)' %><br>
+    <span class="filter-scope">
+      <%= f.banAllBoards ? 'every board' : 'this board only' %>,
+      <%= f.banExpires ? `${f.banExpires}s` : 'permanent' %>
+    </span>
+  <% } else { %>-<% } %>
+</td>
+<td><%= f.enabled ? 'On' : 'Off' %></td>
+<td>
+  <button type="button" class="toggle-moderation-filter" data-id="<%= f._id %>" data-enabled="<%= f.enabled ? 1 : 0 %>">
+    <%= f.enabled ? 'Turn off' : 'Turn on' %>
+  </button>
+  <button type="button" class="delete-moderation-filter" data-id="<%= f._id %>">Delete</button>
+</td>
+</tr>
+<% }) %>
+<% if (!moderationFilters.length) { %><tr><td colspan="5">None</td></tr><% } %>
 </table>

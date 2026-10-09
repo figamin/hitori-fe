@@ -417,6 +417,33 @@ document.querySelectorAll('.delete-global-filter').forEach((btn) => {
   });
 });
 
+// Moderation filters (vichan's $config['filters']): an enabled one can ban whoever trips it, so
+// switching one on says so before doing it.
+document.querySelectorAll('.toggle-moderation-filter').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const turningOn = btn.dataset.enabled !== '1';
+    if (turningOn && !confirm('Turn this filter on? It can ban whoever trips it.')) return;
+    try {
+      await modPost('/mod/api/moderation-filters', { action: 'toggle', id: btn.dataset.id, enabled: turningOn ? '1' : '0' });
+      location.reload();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+});
+
+document.querySelectorAll('.delete-moderation-filter').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    if (!confirm('Delete this moderation filter?')) return;
+    try {
+      await modPost('/mod/api/moderation-filters', { action: 'delete', id: btn.dataset.id });
+      location.reload();
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+});
+
 const bannerInput = document.querySelector('#banner-upload-form input[type="file"]');
 bannerInput?.addEventListener('change', () => {
   const status = document.getElementById('banner-upload-status');
