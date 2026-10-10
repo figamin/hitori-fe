@@ -27,7 +27,7 @@ body.miku-mode {
             var(--chan-bg-main) 88%,
             var(--chan-bg-main) 100%
         ),
-        url("back_mm.png");
+        url("back_mm.webp");
 }
 
 body.miku-mode .forumnav {
@@ -55,7 +55,7 @@ body.teto-mode {
             var(--chan-bg-main) 88%,
             var(--chan-bg-main) 100%
         ),
-        url("back_te.png");
+        url("back_te.webp");
 }
 
 body.teto-mode .forumnav {
@@ -120,7 +120,7 @@ body {
             var(--chan-bg-main) 88%,
             var(--chan-bg-main) 100%
         ),
-        url("back.png");
+        url("back.webp");
     background-repeat: no-repeat, no-repeat;
     background-position: top center, top center;
     background-size: 100% 100%, cover;
