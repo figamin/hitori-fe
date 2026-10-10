@@ -13,7 +13,6 @@
 <% styles.forEach(function (s) { %>
 <link rel="stylesheet" href="<%= s %>">
 <% }) %>
-<link rel="stylesheet" href="/css/framed-browsing.css?v=<%= locals.assetVersion('css/framed-browsing.css') %>">
 <%- head %>
 </head>
 <body>
@@ -27,15 +26,10 @@
 <script src="/js/captcha.js?v=<%= locals.assetVersion('js/captcha.js') %>"></script>
 <script src="/js/thumb.js"></script>
 <script src="/js/thread-watcher.js"></script>
-<script src="/js/framed-browsing.js?v=<%= locals.assetVersion('js/framed-browsing.js') %>"></script>
 <script src="/js/settings.js"></script>
 <script>
 // Options for the report dialog's category dropdown (post-menu.js reads this).
 window.reportCategories = <%- JSON.stringify(locals.reportCategories || []).replace(/</g, '\\u003c') %>;
-// Every board the site has, for the framed browsing sidebar (js/framed-browsing.js):
-// the sidebar groups them into sections, and anything it does not recognise still shows
-// up under "Other Boards".
-window.frameBoards = <%- JSON.stringify((locals.allBoards || []).map((b) => ({ uri: b.boardUri, name: b.boardName || b.boardUri }))).replace(/</g, '\\u003c') %>;
 // What an open thread does with a post that is deleted underneath the reader
 // (`deletedPostDisplay` in the server config): `remove` or `mark`.
 window.deletedPostDisplay = '<%= locals.deletedPostDisplay %>';

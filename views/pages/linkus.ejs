@@ -1,6 +1,8 @@
 <%
-    // Optional: pass `siteUrl`, `banners`, or `currentPage` from your route to override these defaults.
-    const siteUrl = locals.siteUrl || 'https://39chan.moe';
+    // Optional: pass `banners` or `currentPage` from your route to override these defaults.
+    // siteUrl is fixed (not the global res.locals.siteUrl, which follows the request host) so the
+    // embed snippets always point at production.
+    const siteUrl = 'https://39chan.moe';
     const currentPage = locals.currentPage || 'linkus.html';
 
     const banners = locals.banners || ['icon1.png', 'icon2.png', 'icon3.gif', 'icon4.png'];
@@ -11,7 +13,6 @@
         { href: 'faq.html',                   icon: 'fa-question-circle', label: 'FAQ',        mobile: true },
         { href: 'rules.html',                 icon: 'fa-gavel',           label: 'Rules',      mobile: true },
         { href: 'linkus.html',                icon: 'fa-link',            label: 'Link Us',    mobile: true },
-        { href: '/frames',                    icon: 'fa-window-restore',  label: 'Frames',     mobile: false },
         { href: 'https://radio.39chan.moe/',  icon: 'fa-broadcast-tower', label: 'Live Radio', mobile: true },
         { href: 'https://downloads.39chan.moe/', icon: 'fa-download',     label: 'Downloads',  mobile: true }
     ];

@@ -1155,6 +1155,127 @@ body.nsfw-hidden .board.nsfw {
     font-style: italic;
 }
 
+/* A preview shows the post as written - emotes as pictures, links, emphasis, greentext - but
+   the row it sits in is one line tall, so everything inside it is drawn inline and pictures are
+   capped to the size of the text around them (an emote's `<img height="45">` would otherwise
+   stretch the row). Same idea as the catalog preview's `.catalog-preview-body`. */
+.snippet *,
+.ttitle * {
+    display: inline !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    white-space: nowrap !important;
+}
+
+.snippet img,
+.snippet video,
+.snippet iframe,
+.ttitle img,
+.ttitle video,
+.ttitle iframe {
+    max-height: 1.6em;
+    max-width: 10em;
+    vertical-align: middle;
+}
+
+/* The post formatting the thread pages take from `global.css` (`be/lib/markdown.js` emits
+   these classes): the front page loads this stylesheet only, so without them greentext,
+   mikutext, redtext, headings, sizes, colours and spoilers arrived as ordinary text. */
+.snippet .greenText,
+.snippet .quote {
+    color: #429406;
+}
+
+.snippet .mikutext {
+    color: #00b585;
+}
+
+.snippet .heading {
+    color: #AF0A0F;
+    font-size: 11pt;
+    font-weight: bold;
+}
+
+.snippet .redtext {
+    color: red;
+    text-shadow: rgba(112, 0, 0, 1) 0 0 16px;
+    font-weight: bold;
+}
+
+.snippet .s1 { font-size: 70%; }
+.snippet .s2 { font-size: 120%; }
+.snippet .s3 { font-size: 140%; }
+.snippet .s4 { font-size: 160%; }
+.snippet .s5 { font-size: 180%; }
+.snippet .s6 { font-size: 200%; }
+.snippet .s7 { font-size: 220%; }
+
+.snippet .powerful {
+    animation: rainbow 0.5s infinite;
+}
+
+@keyframes rainbow {
+    0% { color: red; }
+    20% { color: orange; }
+    40% { color: yellow; }
+    60% { color: green; }
+    80% { color: blue; }
+    100% { color: purple; }
+}
+
+.snippet .c1 { color: red; }
+.snippet .c2 { color: orange; }
+.snippet .c3 { color: brown; }
+.snippet .c4 { color: purple; }
+.snippet .c5 { color: pink; }
+.snippet .c6 { color: yellow; }
+.snippet .c7 { color: green; }
+.snippet .c8 { color: blue; }
+.snippet .c9 { color: lightblue; }
+
+.snippet .spoiler a {
+    color: inherit !important;
+}
+
+.snippet .spoiler {
+    background: #000;
+    color: #000;
+    padding: 0 1px;
+}
+
+.snippet .spoiler:hover {
+    color: #fff !important;
+}
+
+.snippet .moeText {
+    position: relative;
+}
+
+.snippet .moeText:before {
+    background: url('/img/moesparkle.gif') repeat-x;
+    background-size: 8em;
+    content: '';
+    height: 100%;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+}
+
+.snippet .doomText {
+    color: #cd3b2b;
+    font-family: DOOM, serif;
+}
+
+.snippet .ascii {
+    font-family: Mona, 'MS PGothic' !important;
+}
+
+/* Fortunes are removed from a preview before it is rendered (`be/lib/fortunes.js`); this is
+   the belt to that braces, for any shape the stripper does not know. */
+.snippet .fortune {
+    display: none !important;
+}
+
 .snippet-link {
     color: #fff;
     text-decoration: none;

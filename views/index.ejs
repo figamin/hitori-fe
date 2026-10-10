@@ -185,7 +185,7 @@ var boardSections = [
             <a href="/news" class="tab"><i class="fas fa-newspaper"></i> News</a>
             <a href="/faq" class="tab"><i class="fas fa-question-circle"></i> FAQ</a>
             <a href="/rules" class="tab"><i class="fas fa-gavel"></i> Rules</a>
-            <a href="/links" class="tab"><i class="fas fa-link"></i> Link Us</a>
+            <a href="/linkus" class="tab"><i class="fas fa-link"></i> Link Us</a>
             <a href="https://radio.39chan.moe/" class="tab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
             <a href="https://downloads.39chan.moe/" class="tab"><i class="fas fa-download"></i> Downloads</a>
         </div>
@@ -204,7 +204,7 @@ var boardSections = [
                     <a href="/news" class="mobtab"><i class="fas fa-newspaper"></i> News</a>
                     <a href="/faq" class="mobtab"><i class="fas fa-question-circle"></i> FAQ</a>
                     <a href="/rules" class="mobtab"><i class="fas fa-gavel"></i> Rules</a>
-                    <a href="/links" class="mobtab"><i class="fas fa-link"></i> Link Us</a>
+                    <a href="/linkus" class="mobtab"><i class="fas fa-link"></i> Link Us</a>
                     <a href="https://radio.39chan.moe/" class="mobtab"><i class="fas fa-broadcast-tower"></i> Live Radio</a>
                     <a href="https://downloads.39chan.moe/" class="mobtab"><i class="fas fa-download"></i> Downloads</a>
                 </div>
@@ -353,7 +353,7 @@ var boardSections = [
                     <div class="box-title">RECENT POSTS</div>
                     <div class="box-body posts">
                         <% (latestPosts || []).slice(0, 17).forEach(function (post) { %>
-                        <div class="line"><a href="/<%= post.boardUri %>/" class="pboard"><%= boardLabel(post.boardUri) %></a> - <span class="snippet"><a href="<%= postUrl(post) %>" class="snippet-link"><%- post.message || 'No message' %></a></span></div>
+                        <div class="line"><a href="/<%= post.boardUri %>/" class="pboard"><%= boardLabel(post.boardUri) %></a> - <span class="snippet"><a href="<%= postUrl(post) %>" class="snippet-link"><%- post.markdown || post.message || 'No message' %></a></span></div>
                         <% }); %>
                     </div>
                 </div>
@@ -366,7 +366,12 @@ var boardSections = [
                             <div class="tthumb"><% if (thread.files && thread.files.length > 0) { %><img src="<%= thread.files[0].thumb %>" alt="Thread thumbnail"><% } %></div>
                             <div class="chan-active-thread-info">
                                 <div class="tboard"><%= thread.boardName %></div>
-                                <div class="ttitle"><%- thread.subject || thread.message || 'No subject' %></div>
+                                <%# The thread's own title, or a plain-text snippet of the post when
+                                    it has none. This cannot be the post's rendered HTML: the whole
+                                    card is one anchor, so a post that contains a link would close
+                                    that anchor early and the browser would drop the rest of the
+                                    card - this very div - outside it. %>
+                                <div class="ttitle"><%= thread.subject || postSnippet(thread.markdown || thread.message, 100) || 'No subject' %></div>
                                 <div class="tmeta"><%= thread.postCount %> replies &bull; <span class="relative-time" data-ts="<%= new Date(thread.lastBump).getTime() %>"><%= activeTimeLabel(new Date(thread.lastBump).getTime()) %></span></div>
                             </div>
                         </a>
