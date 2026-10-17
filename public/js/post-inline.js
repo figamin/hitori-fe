@@ -225,7 +225,12 @@
     }
 
     const parts = targetOf(link);
-    if (parts && document.querySelector(`[data-post-id="${parts.postId}"]`) && window.markPost) {
+    const onPage =
+      parts &&
+      document.querySelector(
+        `.post[data-board="${parts.boardUri}"][data-thread-id="${parts.threadId}"][data-post-id="${parts.postId}"]`
+      );
+    if (onPage && window.markPost) {
       window.markPost(parts.postId);
     }
   });

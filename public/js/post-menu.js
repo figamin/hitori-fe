@@ -7,36 +7,45 @@ function getCookie(name) {
   return null;
 }
 
-function getPostPassword(postId, isThread) {
+function postSelector(boardUri, threadId, postId) {
+  const board = boardUri ? `[data-board="${boardUri}"]` : '';
+  const thread = threadId ? `[data-thread-id="${threadId}"]` : '';
+  return `.post[data-post-id="${postId}"]${board}${thread}`;
+}
+
+function findPostElement(ctx) {
+  if (ctx.postEl) return ctx.postEl;
+  return document.querySelector(postSelector(ctx.boardUri, ctx.threadId, ctx.postId));
+}
+
+function hiddenTarget(key, isThread) {
+  const parts = key.split('/');
+  if (parts.length !== 3) {
+    return isThread
+      ? document.querySelector(`.thread[id="${key}"]`)
+      : document.querySelector(`.reply[data-post-id="${key}"]`);
+  }
+  const [boardUri, threadId, postId] = parts;
+  if (isThread) {
+    return (
+      document.querySelector(`article.thread[id="${postId}"][data-board="${boardUri}"]`) ||
+      document.querySelector(`.thread[id="${postId}"]`)
+    );
+  }
+  return document.querySelector(
+    `.reply[data-post-id="${postId}"][data-board="${boardUri}"][data-thread-id="${threadId}"]`
+  );
+}
+
+function getPostPassword(ctx) {
   try {
     const storedPasswords = localStorage.getItem('postingPasswords');
     if (storedPasswords) {
       const passwords = JSON.parse(storedPasswords);
-      const boardUri = window.location.pathname.split('/')[1];
-
-      if (isThread) {
-        const key = `${boardUri}/${postId}`;
-        if (passwords[key]) return passwords[key];
-      } else {
-        const pathParts = window.location.pathname.split('/');
-        if (pathParts.length >= 4 && pathParts[2] === 'thread') {
-          const threadId = pathParts[3];
-          const key = `${boardUri}/${threadId}/${postId}`;
-          if (passwords[key]) return passwords[key];
-        } else {
-          const replyElement = document.querySelector(`.reply[data-post-id="${postId}"]`);
-          if (replyElement) {
-            const threadElement = replyElement.closest('.thread');
-            if (threadElement) {
-              const threadId = threadElement.id || threadElement.dataset.postId;
-              if (threadId) {
-                const key = `${boardUri}/${threadId}/${postId}`;
-                if (passwords[key]) return passwords[key];
-              }
-            }
-          }
-        }
-      }
+      const key = ctx.isThread
+        ? `${ctx.boardUri}/${ctx.postId}`
+        : `${ctx.boardUri}/${ctx.threadId}/${ctx.postId}`;
+      if (passwords[key]) return passwords[key];
     }
   } catch (e) {
     console.error('Error getting password from localStorage:', e);
@@ -263,8 +272,10 @@ function removeReplyFromDom(replyElement) {
 function removePostFromDom(ctx) {
   if (ctx.isThread) {
     const threadContainer =
-      document.querySelector(`article.thread[id="${ctx.postId}"], article.textthread[id="${ctx.postId}"]`) ||
-      ctx.postEl?.closest('article');
+      ctx.postEl?.closest('article.thread, .thread') ||
+      document.querySelector(
+        `article.thread[id="${ctx.postId}"][data-board="${ctx.boardUri}"], article.textthread[id="${ctx.postId}"][data-board="${ctx.boardUri}"], .thread[id="${ctx.postId}"]`
+      );
     if (threadContainer) {
       const nextElement = threadContainer.nextElementSibling;
       if (nextElement?.tagName?.toLowerCase() === 'hr') nextElement.remove();
@@ -275,20 +286,27 @@ function removePostFromDom(ctx) {
   }
 }
 
-window.modStaffDeletePost = async function (postId, isThread, boardUri, threadId) {
+window.modStaffDeletePost = async function (postId, isThread, boardUri, threadId, postEl) {
   if (!confirm('Delete this post?')) return;
   const selections = isThread ? [`${boardUri}-${threadId}`] : [`${boardUri}-${threadId}-${postId}`];
   try {
     await modPost('/mod/api/content', { action: 'delete', selections });
     if (isThread) {
-      const threadContainer = document.querySelector(`article.thread[id="${postId}"], article.textthread[id="${postId}"]`);
+      const threadContainer =
+        postEl?.closest('article.thread') ||
+        document.querySelector(`article.thread[id="${postId}"][data-board="${boardUri}"]`);
       if (threadContainer) {
         const nextElement = threadContainer.nextElementSibling;
         if (nextElement?.tagName?.toLowerCase() === 'hr') nextElement.remove();
         threadContainer.remove();
       }
     } else {
-      removeReplyFromDom(document.querySelector(`.reply[data-post-id="${postId}"]`));
+      removeReplyFromDom(
+        postEl ||
+          document.querySelector(
+            `.reply[data-post-id="${postId}"][data-board="${boardUri}"][data-thread-id="${threadId}"]`
+          )
+      );
     }
   } catch (err) {
     alert(err.message);
@@ -664,15 +682,15 @@ function handleAction(action, dropdown) {
   switch (action) {
     case 'delete':
       if (window.modUser && typeof window.modStaffDeletePost === 'function') {
-        window.modStaffDeletePost(postId, isThread, boardUri, threadId);
+        window.modStaffDeletePost(postId, isThread, boardUri, threadId, ctx.postEl);
         break;
       }
       {
-        const savedPassword = getPostPassword(postId, isThread);
+        const savedPassword = getPostPassword(ctx);
         if (savedPassword) {
-          deletePost(postId, savedPassword, isThread, boardUri);
+          deletePost(ctx, savedPassword);
         } else {
-          showDeleteModal(postId, isThread);
+          showDeleteModal(ctx);
         }
       }
       break;
@@ -680,12 +698,12 @@ function handleAction(action, dropdown) {
       showReportModal(postId, boardUri, isThread);
       break;
     case 'hide':
-      hidePost(postId, isThread);
+      hidePost(ctx);
       break;
   }
 }
 
-function showDeleteModal(postId, isThread, errorMessage = '') {
+function showDeleteModal(ctx, errorMessage = '') {
   const modal = document.getElementById('delete-modal');
   const passwordInput = document.getElementById('delete-password');
   const confirmButton = document.getElementById('confirm-delete');
@@ -698,7 +716,7 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
       return err;
     })();
 
-  setDialogPost(modal, postId, window.location.pathname.split('/')[1]);
+  setDialogPost(modal, ctx.postId, ctx.boardUri);
   showDialog(modal);
   passwordInput.value = '';
   passwordInput.focus();
@@ -706,9 +724,7 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
   errorDisplay.style.display = errorMessage ? 'block' : 'none';
 
   const handleDelete = () => {
-    const password = passwordInput.value;
-    const boardUri = window.location.pathname.split('/')[1];
-    deletePost(postId, password, isThread, boardUri);
+    deletePost(ctx, passwordInput.value);
   };
 
   const handleCancel = () => {
@@ -723,7 +739,8 @@ function showDeleteModal(postId, isThread, errorMessage = '') {
   };
 }
 
-async function deletePost(postId, password, isThread, boardUri) {
+async function deletePost(ctx, password) {
+  const { postId, isThread, boardUri } = ctx;
   try {
     const response = await fetch('/api/delete-post', {
       method: 'POST',
@@ -736,35 +753,23 @@ async function deletePost(postId, password, isThread, boardUri) {
     const result = await response.json();
 
     if (result.success) {
-      if (isThread) {
-        const threadContainer = document.querySelector(`article.thread[id="${postId}"]`);
-        if (threadContainer) {
-          const nextElement = threadContainer.nextElementSibling;
-          if (nextElement && nextElement.tagName.toLowerCase() === 'hr') {
-            nextElement.remove();
-          }
-          threadContainer.remove();
-        }
-      } else {
-        const replyElement = document.querySelector(`.reply[data-post-id="${postId}"]`);
-        removeReplyFromDom(replyElement);
-      }
+      removePostFromDom(ctx);
 
       const modal = document.getElementById('delete-modal');
       if (modal) {
         modal.style.display = 'none';
       }
     } else {
-      showDeleteModal(postId, isThread, result.message);
+      showDeleteModal(ctx, result.message);
     }
   } catch (error) {
     console.error('Delete error:', error);
-    showError(postId, 'An error occurred while deleting the post');
+    showError(postId, 'An error occurred while deleting the post', ctx.postEl);
   }
 }
 
-function showError(postId, message) {
-  const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+function showError(postId, message, postEl) {
+  const postElement = postEl || document.querySelector(`[data-post-id="${postId}"]`);
   if (postElement) {
     const errorElement = document.createElement('div');
     errorElement.className = 'error-message';
@@ -852,11 +857,11 @@ async function submitReport(postId, boardUri, reason, category, isThread, modal)
   }
 }
 
-function hidePost(postId, isThread) {
+function hidePost(ctx) {
   const hiddenPosts = getHiddenPosts();
-  const postElement = isThread
-    ? document.querySelector(`.thread[id="${postId}"]`)
-    : document.querySelector(`.reply[data-post-id="${postId}"]`);
+  const postElement = ctx.isThread
+    ? ctx.postEl?.closest('article.thread, .thread') || document.querySelector(`.thread[id="${ctx.postId}"]`)
+    : findPostElement(ctx);
 
   if (!postElement) return;
 
@@ -864,9 +869,10 @@ function hidePost(postId, isThread) {
   const name = postInfo.querySelector('.name')?.textContent || 'Anonymous';
   const time = postInfo.querySelector('.time-info')?.textContent || '';
   const originalContent = postElement.outerHTML;
+  const key = `${ctx.boardUri}/${ctx.threadId}/${ctx.postId}`;
 
-  hiddenPosts[postId] = {
-    isThread,
+  hiddenPosts[key] = {
+    isThread: ctx.isThread,
     name,
     time,
     hidden: true,
@@ -874,13 +880,14 @@ function hidePost(postId, isThread) {
   };
 
   setHiddenPosts(hiddenPosts);
-  replaceWithCollapsed(postElement, postId, name, time, isThread);
+  replaceWithCollapsed(postElement, key, name, time, ctx.isThread);
 }
 
-function replaceWithCollapsed(postElement, postId, name, time, isThread) {
+function replaceWithCollapsed(postElement, key, name, time, isThread) {
   const collapsedDiv = document.createElement('div');
   collapsedDiv.className = isThread ? 'thread collapsed-post' : 'reply collapsed-post';
-  collapsedDiv.setAttribute('data-post-id', postId);
+  collapsedDiv.setAttribute('data-post-key', key);
+  collapsedDiv.setAttribute('data-post-id', key.split('/').pop());
 
   collapsedDiv.innerHTML = `
     <div class="post-info">
@@ -892,7 +899,7 @@ function replaceWithCollapsed(postElement, postId, name, time, isThread) {
 
   collapsedDiv.querySelector('.expand-post').addEventListener('click', (e) => {
     e.preventDefault();
-    unhidePost(postId, isThread);
+    unhidePost(key);
   });
 
   if (isThread) {
@@ -905,13 +912,13 @@ function replaceWithCollapsed(postElement, postId, name, time, isThread) {
   postElement.replaceWith(collapsedDiv);
 }
 
-function unhidePost(postId, isThread) {
+function unhidePost(key) {
   const hiddenPosts = getHiddenPosts();
-  const postData = hiddenPosts[postId];
+  const postData = hiddenPosts[key];
 
   if (!postData) return;
 
-  const collapsedElement = document.querySelector(`.collapsed-post[data-post-id="${postId}"]`);
+  const collapsedElement = document.querySelector(`.collapsed-post[data-post-key="${key}"]`);
   if (!collapsedElement) return;
 
   const tempContainer = document.createElement('div');
@@ -920,7 +927,7 @@ function unhidePost(postId, isThread) {
 
   collapsedElement.replaceWith(originalPost);
 
-  delete hiddenPosts[postId];
+  delete hiddenPosts[key];
   setHiddenPosts(hiddenPosts);
 
   window.initializePostMenus(originalPost);
@@ -931,15 +938,13 @@ function unhidePost(postId, isThread) {
 function initializeHiddenPosts() {
   const hiddenPosts = getHiddenPosts();
 
-  Object.entries(hiddenPosts).forEach(([postId, data]) => {
+  Object.entries(hiddenPosts).forEach(([key, data]) => {
     if (!data.hidden) return;
 
-    const postElement = data.isThread
-      ? document.querySelector(`.thread[id="${postId}"]`)
-      : document.querySelector(`.reply[data-post-id="${postId}"]`);
+    const postElement = hiddenTarget(key, data.isThread);
 
     if (postElement) {
-      replaceWithCollapsed(postElement, postId, data.name, data.time, data.isThread);
+      replaceWithCollapsed(postElement, key, data.name, data.time, data.isThread);
     }
   });
 }

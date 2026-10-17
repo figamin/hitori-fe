@@ -364,36 +364,12 @@ const backlinks = {
   init() {
     const quoteLinks = document.querySelectorAll('.quoteLink');
     const backlinkMap = new Map();
-    const userPostIds = new Set();
+    const youKeys = new Set();
 
     document.querySelectorAll('.name.youName').forEach((nameElement) => {
       const post = nameElement.closest('[data-post-id]');
-      if (post) userPostIds.add(post.getAttribute('data-post-id'));
+      if (post) youKeys.add(`${post.getAttribute('data-board')}/${post.getAttribute('data-post-id')}`);
     });
-
-    try {
-      const cookieValue = document.cookie.split('; ').find((row) => row.startsWith('postPasswords='));
-      if (cookieValue) {
-        const passwords = JSON.parse(decodeURIComponent(cookieValue.split('=')[1]));
-        Object.keys(passwords).forEach((key) => {
-          const parts = key.split('_');
-          if (parts.length >= 2) {
-            userPostIds.add(parts.length === 3 ? parts[2] : parts[1]);
-          }
-        });
-      }
-    } catch (e) {
-      console.error('Error parsing postPasswords cookie:', e);
-    }
-
-    document.querySelectorAll('[data-post-id]').forEach((post) => {
-      const postId = post.getAttribute('data-post-id');
-      if (document.cookie.includes(`post_${postId}_password=`)) {
-        userPostIds.add(postId);
-      }
-    });
-
-    const threadId = document.querySelector('.thread')?.getAttribute('data-thread-id') || document.querySelector('.op')?.getAttribute('data-post-id');
 
     document.querySelectorAll('.backlinks').forEach((div) => {
       div.textContent = '';
@@ -406,29 +382,34 @@ const backlinks = {
 
       if (isCrossboardQuote(link)) return;
 
-      const sourceId = sourcePost.getAttribute('data-post-id');
-      const quotedId = fullUrl.split('#')[1];
-
       if (link.closest('.post-inline')) return;
 
-      if (userPostIds.has(quotedId)) link.classList.add('you');
-      if (quotedId === threadId) link.classList.add('opReply');
+      const target = tooltips.parseQuoteUrl(fullUrl);
+      if (!target) return;
 
-      if (!backlinkMap.has(quotedId)) backlinkMap.set(quotedId, new Map());
-      backlinkMap.get(quotedId).set(sourceId, fullUrl.split('#')[0]);
+      const sourceId = sourcePost.getAttribute('data-post-id');
+      const targetKey = `${target.boardUri}/${target.threadId}/${target.postId}`;
+
+      if (youKeys.has(`${target.boardUri}/${target.postId}`)) link.classList.add('you');
+      if (target.postId === target.threadId) link.classList.add('opReply');
+
+      if (!backlinkMap.has(targetKey)) backlinkMap.set(targetKey, { target, sources: new Map() });
+      backlinkMap.get(targetKey).sources.set(sourceId, fullUrl.split('#')[0]);
     });
 
-    backlinkMap.forEach((sourceMap, quotedId) => {
-      const quotedPost = document.querySelector(`[data-post-id="${quotedId}"]`);
+    backlinkMap.forEach(({ target, sources }) => {
+      const quotedPost = document.querySelector(
+        `.post[data-board="${target.boardUri}"][data-thread-id="${target.threadId}"][data-post-id="${target.postId}"]`
+      );
       if (!quotedPost) return;
 
       const backlinksDiv = quotedPost.querySelector('.backlinks');
       if (!backlinksDiv) return;
 
-      const links = Array.from(sourceMap.entries()).map(([id, baseUrl]) => {
-        let classes = ['backlink'];
-        if (userPostIds.has(id)) classes.push('you');
-        if (id === threadId) classes.push('opReply');
+      const links = Array.from(sources.entries()).map(([id, baseUrl]) => {
+        const classes = ['backlink'];
+        if (youKeys.has(`${target.boardUri}/${id}`)) classes.push('you');
+        if (String(id) === String(target.threadId)) classes.push('opReply');
         const a = document.createElement('a');
         a.className = classes.join(' ');
         a.href = `${baseUrl}#${id}`;

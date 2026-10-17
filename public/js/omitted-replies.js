@@ -1,5 +1,5 @@
 (function () {
-  const CHUNK_SIZE = 10;
+  const BULK_SIZE = 250;
 
   function announce(container) {
     if (window.initializePostMenus) window.initializePostMenus(container);
@@ -55,31 +55,29 @@
           return;
         }
 
-        for (let i = 0; i < earlier.length; i += CHUNK_SIZE) {
-          const chunk = earlier.slice(i, i + CHUNK_SIZE);
-          const cells = await Promise.all(
-            chunk.map(({ post, position }) =>
-              fetch(`/${board}/cells/reply`, {
-                method: 'POST',
-                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({
-                  reply: { ...post, sage: Boolean(post.sage) },
-                  thread: { threadId, boardUri: board },
-                  replyNumber: position + 1
-                })
-              }).then((response) => {
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.text();
-              })
-            )
-          );
-
-          const holder = document.createElement('div');
-          holder.innerHTML = cells.join('');
-          while (holder.firstElementChild) container.appendChild(holder.firstElementChild);
-
-          if (i + CHUNK_SIZE < earlier.length) await new Promise((resolve) => setTimeout(resolve, 50));
+        const batches = [];
+        for (let i = 0; i < earlier.length; i += BULK_SIZE) {
+          batches.push(earlier.slice(i, i + BULK_SIZE));
         }
+
+        const rendered = await Promise.all(
+          batches.map((batch) =>
+            fetch(`/${board}/cells/replies`, {
+              method: 'POST',
+              headers: csrfHeaders({ 'Content-Type': 'application/json' }),
+              body: JSON.stringify({
+                replies: batch.map(({ post }) => ({ ...post, sage: Boolean(post.sage) })),
+                replyNumbers: batch.map(({ position }) => position + 1),
+                thread: { threadId, boardUri: board }
+              })
+            }).then((response) => {
+              if (!response.ok) throw new Error(`HTTP ${response.status}`);
+              return response.text();
+            })
+          )
+        );
+
+        container.innerHTML = rendered.join('');
 
         announce(container);
         omittedLine.style.display = 'none';

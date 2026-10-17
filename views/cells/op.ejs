@@ -56,7 +56,7 @@ var controls = modView || locals.modControls;
 </div>
 <% if (!locals.isThread && thread.totalReplies > 5) { %>
 <span class="summary thread-footer" data-thread-id="<%= id %>">
-  <span class="omitted-posts"><a href="#" class="expand-thread" title="Expand thread"><%= omitted %> repl<%= omitted !== 1 ? 'ies' : 'y' %><% if (thread.omittedImages > 0) { %> and <%= thread.omittedImages %> image<%= thread.omittedImages !== 1 ? 's' : '' %><% } %> omitted.</a> Click <a href="<%= threadHref %>">here</a> to view.</span>
+  <span class="omitted-posts"><a href="#" class="expand-thread" title="Expand thread"><%= omitted %> repl<%= omitted !== 1 ? 'ies' : 'y' %><% if (thread.omittedImages > 0) { %> and <%= thread.omittedImages %> image<%= thread.omittedImages !== 1 ? 's' : '' %><% } %> omitted. Click to expand.</a></span>
   <span class="expanded-posts" style="display: none"><a href="#" class="collapse-thread reply-link">Collapse thread</a></span>
 </span>
 <div class="additional-replies" style="display: none;"></div>

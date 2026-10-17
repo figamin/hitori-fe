@@ -1,5 +1,6 @@
 window.initializeExpansion = function () {
   const threadFooters = document.querySelectorAll('.thread-footer');
+  const bulkSize = 250;
 
   threadFooters.forEach((footer) => {
     const threadId = footer.dataset.threadId;
@@ -18,13 +19,16 @@ window.initializeExpansion = function () {
         try {
           isExpanding = true;
           const currentPath = location.pathname.split('/').filter((p) => p)[0];
+          const threadRoot = footer.closest('.thread');
           const boardUri =
-            currentPath === 'all'
+            threadRoot?.querySelector('[data-board]')?.getAttribute('data-board') ||
+            (currentPath === 'all'
               ? footer
                   .closest('.thread')
                   .querySelector('a[href^="/"]')
                   .textContent.match(/\/(\w+)\//)[1]
-              : currentPath;
+              : currentPath);
+          const modView = Boolean(window.modBoardUri);
 
           const response = await fetch(`/${boardUri}/thread/${threadId}.json`);
           if (!response.ok) throw new Error('Network response was not ok');
@@ -37,56 +41,42 @@ window.initializeExpansion = function () {
             (reply) => !existingReplies.has(reply.postId.toString()) && !lastFivePostIds.has(reply.postId.toString())
           );
 
-          const chunkSize = 10;
-          for (let i = 0; i < newReplies.length; i += chunkSize) {
-            const chunk = newReplies.slice(i, i + chunkSize);
+          if (newReplies.length) {
+            const positions = new Map();
+            data.posts.forEach((post, index) => positions.set(String(post.postId), index + 1));
 
-            const replyPromises = chunk.map((reply, chunkIndex) => {
-              const originalIndex = data.posts.findIndex((p) => p.postId === reply.postId);
-              const replyNumber = originalIndex + 1; 
-
-              return fetch(`/${boardUri}/cells/reply`, {
-                method: 'POST',
-                headers: csrfHeaders({ 'Content-Type': 'application/json' }),
-                body: JSON.stringify({
-                  reply,
-                  thread: { threadId, boardUri },
-                  replyNumber: replyNumber
-                })
-              }).then((r) => r.text());
-            });
-
-            const renderedReplies = await Promise.all(replyPromises);
-
-            const tempContainer = document.createElement('div');
-
-            renderedReplies.forEach((replyHtml) => {
-              tempContainer.innerHTML += replyHtml;
-            });
-
-            additionalReplies.appendChild(tempContainer);
-
-            if (window.initializePostMenus) {
-              window.initializePostMenus(tempContainer);
+            const batches = [];
+            for (let i = 0; i < newReplies.length; i += bulkSize) {
+              batches.push(newReplies.slice(i, i + bulkSize));
             }
 
-            const newThumbnails = tempContainer.querySelectorAll('.media-toggle');
-            if (newThumbnails.length && typeof initializeThumbnails === 'function') {
-              initializeThumbnails();
-            }
+            const rendered = await Promise.all(
+              batches.map(async (batch) => {
+                const cellResponse = await fetch(`/${boardUri}/cells/replies`, {
+                  method: 'POST',
+                  headers: csrfHeaders({ 'Content-Type': 'application/json' }),
+                  body: JSON.stringify({
+                    replies: batch,
+                    replyNumbers: batch.map((reply) => positions.get(String(reply.postId)) || 0),
+                    thread: { threadId, boardUri },
+                    modView
+                  })
+                });
+                if (!cellResponse.ok) throw new Error(`HTTP ${cellResponse.status}`);
+                return cellResponse.text();
+              })
+            );
 
-            if (i + chunkSize < newReplies.length) {
-              await new Promise((resolve) => setTimeout(resolve, 50));
-            }
+            additionalReplies.innerHTML = rendered.join('');
           }
 
           additionalReplies.style.display = 'block';
           omittedPosts.style.display = 'none';
           expandedPosts.style.display = 'inline';
 
-          if (typeof backlinks?.init === 'function') {
-            backlinks.init();
-          }
+          if (window.initializePostMenus) window.initializePostMenus(additionalReplies);
+          if (typeof window.initializeThumbnails === 'function') window.initializeThumbnails();
+          if (window.backlinks?.init) window.backlinks.init();
         } catch (error) {
           console.error('Error fetching additional replies:', error);
           additionalReplies.textContent = '';
